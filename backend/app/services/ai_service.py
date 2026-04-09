@@ -222,7 +222,7 @@ Make the letter POWERFUL. This should make the company want to resolve it immedi
 
 
 async def generate_call_script(
-    scan_result: dict,
+    scan_result: Optional[dict],
     dispute_letter: Optional[dict],
     company_name: str,
     objective: str,

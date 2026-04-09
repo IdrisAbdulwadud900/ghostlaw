@@ -35,7 +35,7 @@ async def request_call(
     # Generate call script
     if settings.gemini_api_key:
         script = await generate_call_script(
-            scan_result=scan,
+            scan_result=scan or {},
             dispute_letter=dispute,
             company_name=req.company_name,
             objective=req.objective,
