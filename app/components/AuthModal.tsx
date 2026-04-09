@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Ghost, X, Loader2, Mail, Lock, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { signup, login } from "@/lib/api";
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH MODAL — dark terminal style
+   ═══════════════════════════════════════════════════════════ */
 
 interface AuthModalProps {
   mode: "login" | "signup";
@@ -23,7 +26,6 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       if (mode === "signup") {
         await signup(email, password, name);
@@ -31,8 +33,9 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
         await login(email, password);
       }
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -43,94 +46,134 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
-      
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="relative glass-card p-7 w-full max-w-sm"
+        className="relative w-full max-w-sm"
+        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
-        <button 
-          onClick={onClose} 
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        {/* Red top line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--red)]" />
 
-        <div className="text-center mb-7">
-          <Ghost className="w-10 h-10 text-purple-400 mx-auto mb-3" />
-          <h2 className="text-xl font-bold">
-            {mode === "signup" ? "Create your account" : "Welcome back"}
-          </h2>
-          <p className="text-gray-500 text-sm mt-1">
-            {mode === "signup" ? "Start scanning bills in 30 seconds" : "Pick up where you left off"}
-          </p>
+        {/* Header bar */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border)] bg-[var(--surface2)]">
+          <div className="flex items-center gap-2.5">
+            <div className="dot-group">
+              <div className="dot-r" />
+              <div className="dot-y" />
+              <div className="dot-g" />
+            </div>
+            <span style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 12, color: "var(--muted)", letterSpacing: "0.05em" }}>
+              {mode === "signup" ? "ghostlaw — sign up" : "ghostlaw — sign in"}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[var(--muted)] hover:text-white transition-colors"
+            style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 14 }}
+          >
+            ✕
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
-          {mode === "signup" && (
-            <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+        <div className="px-6 py-6">
+          {/* Title */}
+          <div className="text-center mb-6">
+            <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 32, letterSpacing: "0.03em" }}>
+              Ghost<span style={{ color: "var(--red)" }}>Law</span>
+            </div>
+            <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+              {mode === "signup" ? "Create your account — start fighting back" : "Welcome back — pick up the fight"}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {mode === "signup" && (
+              <div>
+                <label
+                  className="block mb-1.5"
+                  style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input-ghost"
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+            )}
+
+            <div>
+              <label
+                className="block mb-1.5"
+                style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
+              >
+                Email
+              </label>
               <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 input-base text-sm"
-                placeholder="Your name"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input-ghost"
+                placeholder="you@email.com"
                 required
               />
             </div>
-          )}
-          <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 input-base text-sm"
-              placeholder="you@email.com"
-              required
-            />
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 input-base text-sm"
-              placeholder="••••••••"
-              required
-              minLength={6}
-            />
-          </div>
 
-          {error && (
-            <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/15">
-              <p className="text-red-400 text-sm text-center">{error}</p>
+            <div>
+              <label
+                className="block mb-1.5"
+                style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-ghost"
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 btn-primary rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {mode === "signup" ? "Create account" : "Sign in"}
-          </button>
-        </form>
+            {error && (
+              <div className="p-3 bg-[var(--red-dim)] border border-[rgba(232,25,44,0.3)]">
+                <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 12, color: "var(--red)", textAlign: "center" }}>
+                  {error}
+                </p>
+              </div>
+            )}
 
-        <p className="text-center text-gray-500 text-xs mt-5">
-          {mode === "signup" ? "Already have an account?" : "Don't have an account?"}{" "}
-          <button onClick={onSwitchMode} className="text-purple-400 hover:text-purple-300 transition-colors">
-            {mode === "signup" ? "Sign in" : "Sign up"}
-          </button>
-        </p>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full flex items-center justify-center gap-2 mt-2"
+              style={{ padding: "14px 36px" }}
+            >
+              {loading && <span className="spinner-sm" />}
+              {mode === "signup" ? "Create Account" : "Sign In"}
+            </button>
+          </form>
+
+          <p className="text-center mt-5" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)" }}>
+            {mode === "signup" ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button onClick={onSwitchMode} className="text-[var(--red)] hover:underline transition-colors">
+              {mode === "signup" ? "Sign in" : "Sign up"}
+            </button>
+          </p>
+        </div>
       </motion.div>
     </motion.div>
   );

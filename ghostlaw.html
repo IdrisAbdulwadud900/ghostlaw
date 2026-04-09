@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GhostLaw — Fight Back</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #060608;
+  --obsidian: #0d0d12;
+  --surface: #111118;
+  --surface2: #18181f;
+  --surface3: #1e1e28;
+  --border: rgba(255,255,255,0.07);
+  --border-bright: rgba(255,255,255,0.15);
+  --red: #e8192c;
+  --red-dim: rgba(232,25,44,0.15);
+  --red-glow: rgba(232,25,44,0.35);
+  --white: #f2f2f0;
+  --muted: #6b6b7a;
+  --muted2: #9090a0;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --display: 'Bebas Neue', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--mono);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+.cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--red);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: normal;
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(232,25,44,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s ease-out, width 0.2s, height 0.2s, border-color 0.2s;
+}
+body:has(a:hover) .cursor, body:has(button:hover) .cursor { width: 20px; height: 20px; }
+body:has(a:hover) .cursor-ring, body:has(button:hover) .cursor-ring { width: 50px; height: 50px; border-color: var(--red); }
+
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.4;
+}
+
+/* SCANLINE */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 3rem;
+  background: linear-gradient(to bottom, rgba(6,6,8,0.95), transparent);
+  backdrop-filter: blur(10px);
+}
+
+.nav-logo {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 0.05em;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-logo .ghost-icon {
+  width: 32px; height: 32px;
+  position: relative;
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 var(--red-glow); }
+  50% { box-shadow: 0 0 0 8px transparent; }
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--white); }
+
+.nav-cta {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--red);
+  border: none;
+  padding: 10px 20px;
+  cursor: none;
+  transition: background 0.2s, transform 0.15s;
+}
+.nav-cta:hover { background: #ff2d42; transform: translateY(-1px); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8rem 3rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(232,25,44,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,25,44,0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  animation: grid-drift 20s linear infinite;
+}
+
+@keyframes grid-drift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(80px); }
+}
+
+.hero-bg-radial {
+  position: absolute;
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(232,25,44,0.06) 0%, transparent 65%);
+  top: -200px; right: -200px;
+  animation: radial-breathe 6s ease-in-out infinite;
+}
+
+@keyframes radial-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: fade-up 0.8s ease both;
+}
+
+.hero-tag::before {
+  content: '';
+  width: 40px; height: 1px;
+  background: var(--red);
+}
+
+.hero-headline {
+  font-family: var(--display);
+  font-size: clamp(72px, 10vw, 140px);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  color: var(--white);
+  margin-bottom: 1rem;
+  animation: fade-up 0.8s 0.1s ease both;
+}
+
+.hero-headline .red { color: var(--red); }
+.hero-headline .outline {
+  -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+  color: transparent;
+}
+
+.hero-sub {
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--muted2);
+  max-width: 540px;
+  line-height: 1.7;
+  margin-bottom: 3rem;
+  animation: fade-up 0.8s 0.2s ease both;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  animation: fade-up 0.8s 0.3s ease both;
+}
+
+.btn-primary {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--red);
+  border: none;
+  padding: 16px 36px;
+  cursor: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.15);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+.btn-primary:hover::after { transform: translateX(0); }
+.btn-primary:hover { transform: translateY(-2px); }
+.btn-primary:active { transform: translateY(0) scale(0.98); }
+
+.btn-ghost {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  background: transparent;
+  border: 1px solid var(--border-bright);
+  padding: 16px 36px;
+  cursor: none;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-ghost:hover { color: var(--white); border-color: var(--white); }
+
+.hero-stats {
+  display: flex;
+  gap: 3rem;
+  margin-top: 5rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--border);
+  animation: fade-up 0.8s 0.4s ease both;
+}
+
+.stat-item { }
+.stat-num {
+  font-family: var(--display);
+  font-size: 42px;
+  color: var(--white);
+  line-height: 1;
+}
+.stat-num .red { color: var(--red); }
+.stat-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* MARQUEE */
+.marquee-wrap {
+  background: var(--red);
+  overflow: hidden;
+  padding: 14px 0;
+  position: relative;
+}
+.marquee-track {
+  display: flex;
+  gap: 0;
+  animation: marquee 25s linear infinite;
+  white-space: nowrap;
+}
+.marquee-item {
+  font-family: var(--display);
+  font-size: 14px;
+  letter-spacing: 0.15em;
+  color: var(--black);
+  padding: 0 2rem;
+  opacity: 0.9;
+}
+.marquee-sep { color: rgba(0,0,0,0.3); }
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* SCANNER SECTION */
+.scanner-section {
+  padding: 8rem 3rem;
+  background: var(--obsidian);
+  position: relative;
+}
+
+.section-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+.section-label::before {
+  content: '';
+  width: 20px; height: 1px;
+  background: var(--red);
+}
+
+.section-title {
+  font-family: var(--display);
+  font-size: clamp(48px, 6vw, 80px);
+  line-height: 1;
+  color: var(--white);
+  margin-bottom: 1.5rem;
+}
+
+.section-title .outline {
+  -webkit-text-stroke: 1px rgba(255,255,255,0.2);
+  color: transparent;
+}
+
+/* SCANNER UI */
+.scanner-ui {
+  margin-top: 4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.scanner-ui::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--red), transparent);
+  animation: scan-top 3s ease-in-out infinite;
+}
+
+@keyframes scan-top {
+  0%, 100% { opacity: 0; transform: scaleX(0.3); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+.scanner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.scanner-dots {
+  display: flex;
+  gap: 6px;
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #e85142; }
+.dot-y { background: #e8c541; }
+.dot-g { background: #41e866; }
+
+.scanner-title-bar {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.scanner-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--red);
+}
+.status-dot {
+  width: 6px; height: 6px;
+  background: var(--red);
+  border-radius: 50%;
+  animation: blink 1.2s ease-in-out infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+.scanner-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 480px;
+}
+
+.scanner-input-panel {
+  padding: 2rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.quick-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.template-chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--muted2);
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  cursor: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.template-chip:hover { color: var(--white); border-color: var(--red); background: var(--red-dim); }
+.template-chip.active { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+
+.doc-textarea {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 1.25rem;
+  resize: none;
+  min-height: 260px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.doc-textarea::placeholder { color: var(--muted); font-size: 12px; line-height: 1.8; }
+.doc-textarea:focus { border-color: rgba(232,25,44,0.4); }
+
+.scan-btn {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--red);
+  border: none;
+  padding: 16px;
+  cursor: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s, transform 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+.scan-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.1);
+  transform: translateX(-100%) skewX(-20deg);
+  transition: transform 0.4s ease;
+}
+.scan-btn:hover::after { transform: translateX(110%) skewX(-20deg); }
+.scan-btn:hover { background: #ff2d42; }
+.scan-btn:active { transform: scale(0.99); }
+
+/* RESULTS PANEL */
+.scanner-results-panel {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  max-height: 480px;
+}
+
+.results-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+  color: var(--muted);
+}
+
+.ghost-icon-large {
+  width: 60px; height: 60px;
+  opacity: 0.15;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.results-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+}
+
+.severity-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  text-transform: uppercase;
+}
+.badge-critical { background: var(--red-dim); color: var(--red); border: 1px solid rgba(232,25,44,0.3); }
+.badge-warn { background: rgba(232,197,65,0.1); color: #e8c541; border: 1px solid rgba(232,197,65,0.3); }
+.badge-info { background: rgba(65,120,232,0.1); color: #4178e8; border: 1px solid rgba(65,120,232,0.3); }
+
+.finding-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.2s;
+}
+.finding-card.revealed { opacity: 1; transform: translateX(0); }
+.finding-card:hover { border-color: var(--border-bright); }
+
+.finding-card.critical { border-left: 3px solid var(--red); }
+.finding-card.warning { border-left: 3px solid #e8c541; }
+.finding-card.info { border-left: 3px solid #4178e8; }
+
+.finding-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--red), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.finding-card.critical::before { opacity: 1; }
+
+.finding-type {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.finding-card.critical .finding-type { color: var(--red); }
+.finding-card.warning .finding-type { color: #e8c541; }
+
+.finding-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.finding-desc {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted2);
+  line-height: 1.6;
+}
+
+.finding-amount {
+  font-family: var(--display);
+  font-size: 24px;
+  color: var(--red);
+  margin-top: 8px;
+}
+
+/* SCAN PROGRESS */
+.scan-progress {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+.scan-progress.active { display: flex; }
+
+.progress-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.3s, transform 0.3s, color 0.3s;
+}
+.progress-line.done { opacity: 1; transform: translateX(0); color: var(--muted2); }
+.progress-line.active-line { opacity: 1; transform: translateX(0); color: var(--white); }
+.progress-line .check { color: var(--red); font-size: 14px; }
+.progress-line .spinner {
+  width: 12px; height: 12px;
+  border: 1.5px solid rgba(232,25,44,0.3);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.progress-bar-wrap {
+  height: 2px;
+  background: var(--border);
+  margin-top: 0.5rem;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--red);
+  width: 0%;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 8px var(--red-glow);
+}
+
+/* FEATURES SECTION */
+.features-section {
+  padding: 8rem 3rem;
+  background: var(--black);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-top: 4rem;
+  border: 1px solid var(--border);
+}
+
+.feature-card {
+  background: var(--black);
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.feature-card:hover { background: var(--surface); }
+
+.feature-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--red-dim), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature-card:hover::after { opacity: 1; }
+
+.feature-num {
+  font-family: var(--display);
+  font-size: 80px;
+  color: rgba(255,255,255,0.03);
+  line-height: 1;
+  position: absolute;
+  top: 1rem; right: 1.5rem;
+  transition: color 0.3s;
+}
+.feature-card:hover .feature-num { color: rgba(232,25,44,0.08); }
+
+.feature-icon {
+  width: 40px; height: 40px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+  transition: border-color 0.3s;
+}
+.feature-card:hover .feature-icon { border-color: var(--red); }
+
+.feature-icon svg { width: 18px; height: 18px; color: var(--muted2); transition: color 0.3s; }
+.feature-card:hover .feature-icon svg { color: var(--red); }
+
+.feature-title {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.02em;
+  position: relative; z-index: 1;
+}
+
+.feature-desc {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
+  position: relative; z-index: 1;
+  transition: color 0.3s;
+}
+.feature-card:hover .feature-desc { color: var(--muted2); }
+
+/* DISPUTE FLOW */
+.flow-section {
+  padding: 8rem 3rem;
+  background: var(--obsidian);
+}
+
+.flow-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+  margin-top: 4rem;
+}
+
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.flow-step {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  cursor: none;
+  transition: padding-left 0.3s;
+}
+.flow-step:hover { padding-left: 8px; }
+.flow-step:first-child { padding-top: 0; }
+.flow-step:last-child { border-bottom: none; }
+
+.step-num {
+  font-family: var(--display);
+  font-size: 48px;
+  color: rgba(255,255,255,0.05);
+  line-height: 1;
+  min-width: 50px;
+  transition: color 0.3s;
+}
+.flow-step:hover .step-num { color: var(--red-dim); }
+
+.step-content { flex: 1; }
+.step-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 6px;
+}
+.step-title {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.step-desc {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.step-arrow {
+  color: var(--muted);
+  font-size: 18px;
+  align-self: center;
+  transition: color 0.2s, transform 0.2s;
+}
+.flow-step:hover .step-arrow { color: var(--red); transform: translateX(4px); }
+
+/* LETTER PREVIEW */
+.letter-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.letter-preview::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--red);
+}
+
+.letter-header {
+  background: var(--surface2);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.letter-type {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.letter-actions {
+  display: flex;
+  gap: 8px;
+}
+.letter-action-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  cursor: none;
+  transition: all 0.2s;
+}
+.letter-action-btn:hover { color: var(--white); border-color: var(--border-bright); }
+
+.letter-body {
+  padding: 1.5rem;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted2);
+}
+
+.letter-body .highlight {
+  background: var(--red-dim);
+  color: var(--red);
+  padding: 0 4px;
+}
+
+.letter-cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--red);
+  margin-left: 2px;
+  animation: blink 1s ease-in-out infinite;
+  vertical-align: middle;
+}
+
+/* HISTORY SECTION */
+.history-section {
+  padding: 8rem 3rem;
+  background: var(--black);
+}
+
+.history-table {
+  margin-top: 4rem;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  gap: 0;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.th {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 1rem 1.25rem;
+  border-right: 1px solid var(--border);
+}
+.th:last-child { border-right: none; }
+
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+  animation: row-in 0.5s ease both;
+}
+.table-row:last-child { border-bottom: none; }
+.table-row:hover { background: var(--surface); }
+
+@keyframes row-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.td {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted2);
+  padding: 1.1rem 1.25rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+}
+.td:last-child { border-right: none; }
+.td-title { color: var(--white); font-weight: 500; }
+.td-amount { color: var(--red); font-family: var(--display); font-size: 16px; }
+
+.status-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  text-transform: uppercase;
+}
+.pill-won { background: rgba(65,232,102,0.1); color: #41e866; border: 1px solid rgba(65,232,102,0.3); }
+.pill-pending { background: rgba(232,197,65,0.1); color: #e8c541; border: 1px solid rgba(232,197,65,0.3); }
+.pill-sent { background: rgba(65,120,232,0.1); color: #4178e8; border: 1px solid rgba(65,120,232,0.3); }
+
+/* CTA SECTION */
+.cta-section {
+  padding: 8rem 3rem;
+  background: var(--obsidian);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(232,25,44,0.08) 0%, transparent 70%);
+}
+
+.cta-overline {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.5rem;
+}
+
+.cta-title {
+  font-family: var(--display);
+  font-size: clamp(56px, 8vw, 100px);
+  line-height: 0.95;
+  color: var(--white);
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.cta-title .outline {
+  -webkit-text-stroke: 1px rgba(255,255,255,0.15);
+  color: transparent;
+}
+
+.cta-sub {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--muted2);
+  max-width: 500px;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
+}
+
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.free-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  margin-top: 2rem;
+}
+.free-badge .dot-green {
+  width: 6px; height: 6px;
+  background: #41e866;
+  border-radius: 50%;
+  animation: blink 2s ease-in-out infinite;
+}
+
+/* FOOTER */
+footer {
+  padding: 3rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-logo {
+  font-family: var(--display);
+  font-size: 24px;
+  color: var(--white);
+  letter-spacing: 0.05em;
+}
+
+.footer-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* SCROLL REVEAL */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--surface3); }
+::-webkit-scrollbar-thumb:hover { background: rgba(232,25,44,0.4); }
+
+/* SELECTION */
+::selection { background: var(--red-dim); color: var(--white); }
+
+@media (max-width: 768px) {
+  nav { padding: 1.25rem 1.5rem; }
+  .nav-links { display: none; }
+  .hero { padding: 7rem 1.5rem 3rem; }
+  .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+  .scanner-body { grid-template-columns: 1fr; }
+  .scanner-results-panel { max-height: none; border-top: 1px solid var(--border); }
+  .features-grid { grid-template-columns: 1fr; }
+  .flow-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .table-header, .table-row { grid-template-columns: 2fr 1fr 1fr; }
+  .th:nth-child(2), .td:nth-child(2),
+  .th:nth-child(4), .td:nth-child(4) { display: none; }
+  .cta-section { padding: 6rem 1.5rem; }
+  footer { flex-direction: column; gap: 1rem; text-align: center; }
+  .scanner-section, .features-section, .flow-section, .history-section { padding: 5rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    Ghost<span style="color:var(--red)">Law</span>
+    <span class="logo-dot"></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#scanner">Scanner</a></li>
+    <li><a href="#features">Arsenal</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#history">My Cases</a></li>
+  </ul>
+  <button class="nav-cta">Fight Back — Free</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-bg-radial"></div>
+
+  <div class="hero-tag">AI Consumer Protection</div>
+  <h1 class="hero-headline">
+    STOP<br>
+    GETTING<br>
+    <span class="red">RIPPED</span><br>
+    <span class="outline">OFF</span>
+  </h1>
+
+  <p class="hero-sub">
+    GhostLaw scans your contracts, bills, and policies for illegal clauses and hidden fees — then generates the legal firepower to fight back. No lawyer needed. No cost. Ever.
+  </p>
+
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="scrollToScanner()">Scan a Document</button>
+    <button class="btn-ghost">See How It Works</button>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">$2.<span class="red">4</span>B</div>
+      <div class="stat-label">Disputed for users</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">94<span class="red">%</span></div>
+      <div class="stat-label">Win rate on disputes</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">1.<span class="red">2</span>M</div>
+      <div class="stat-label">Fights filed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span class="red">$0</span></div>
+      <div class="stat-label">Cost to you</div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">Medical Bill Disputes</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Lease Clause Analysis</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">CFPB Complaints</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Hidden Fee Detection</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Call Scripts</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">FTC Filings</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Illegal Clause Flags</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Subscription Cancellations</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Insurance Disputes</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <!-- duplicate for seamless loop -->
+    <span class="marquee-item">Medical Bill Disputes</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Lease Clause Analysis</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">CFPB Complaints</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Hidden Fee Detection</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Call Scripts</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">FTC Filings</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Illegal Clause Flags</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Subscription Cancellations</span>
+    <span class="marquee-item marquee-sep">///</span>
+    <span class="marquee-item">Insurance Disputes</span>
+    <span class="marquee-item marquee-sep">///</span>
+  </div>
+</div>
+
+<!-- SCANNER -->
+<section class="scanner-section reveal" id="scanner">
+  <div class="section-label">Core Weapon</div>
+  <h2 class="section-title">DOCUMENT<br><span class="outline">SCANNER</span></h2>
+
+  <div class="scanner-ui">
+    <div class="scanner-header">
+      <div class="scanner-dots">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+      </div>
+      <div class="scanner-title-bar">ghostlaw_scanner — v2.4.1</div>
+      <div class="scanner-status">
+        <div class="status-dot"></div>
+        AI Ready
+      </div>
+    </div>
+
+    <div class="scanner-body">
+      <!-- INPUT -->
+      <div class="scanner-input-panel">
+        <div>
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Quick Start</div>
+          <div class="quick-templates">
+            <button class="template-chip active" onclick="setTemplate('medical')">Medical Bill</button>
+            <button class="template-chip" onclick="setTemplate('lease')">Lease</button>
+            <button class="template-chip" onclick="setTemplate('phone')">Phone Contract</button>
+            <button class="template-chip" onclick="setTemplate('insurance')">Insurance</button>
+            <button class="template-chip" onclick="setTemplate('subscription')">Subscription</button>
+          </div>
+        </div>
+
+        <textarea class="doc-textarea" id="docInput" placeholder="Paste your document, bill, or contract here...
+
+Or describe the situation:
+'My medical bill has a $450 charge for a blood test 
+that Medicare covers. The hospital is saying I owe it.'
+
+GhostLaw will scan for:
+• Hidden fees & overcharges
+• Illegal or unenforceable clauses  
+• Violations of consumer protection law
+• Your rights and dispute options"></textarea>
+
+        <button class="scan-btn" onclick="startScan()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Analyze & Generate Dispute
+        </button>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="scanner-results-panel" id="resultsPanel">
+        <div class="results-placeholder" id="placeholder">
+          <svg class="ghost-icon-large" viewBox="0 0 60 60" fill="none">
+            <path d="M30 5C17.85 5 8 14.85 8 27v28l7-7 7 7 8-7 8 7 7-7V27C45 14.85 35.15 5 30 5z" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="22" cy="26" r="3" fill="currentColor"/>
+            <circle cx="38" cy="26" r="3" fill="currentColor"/>
+          </svg>
+          <div style="font-family:var(--mono);font-size:12px;text-align:center;line-height:1.8;">
+            Paste a document<br>and hit Analyze
+          </div>
+        </div>
+
+        <div class="scan-progress" id="scanProgress">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:var(--muted2);margin-bottom:0.5rem;text-transform:uppercase;">Scanning...</div>
+          <div class="progress-line" id="p1"><span class="spinner" id="s1"></span> Parsing document structure</div>
+          <div class="progress-line" id="p2"><span id="c2">○</span> Detecting hidden fees</div>
+          <div class="progress-line" id="p3"><span id="c3">○</span> Checking legal compliance</div>
+          <div class="progress-line" id="p4"><span id="c4">○</span> Identifying dispute grounds</div>
+          <div class="progress-line" id="p5"><span id="c5">○</span> Generating dispute letter</div>
+          <div class="progress-bar-wrap" style="margin-top:1rem;">
+            <div class="progress-bar-fill" id="progressBar"></div>
+          </div>
+        </div>
+
+        <div id="findings" style="display:none;flex-direction:column;gap:1rem;">
+          <div class="results-header">
+            <div class="results-title">Findings — 3 Issues</div>
+            <span class="severity-badge badge-critical">Critical</span>
+          </div>
+
+          <div class="finding-card critical" id="f1">
+            <div class="finding-type">Critical · Hidden Charge</div>
+            <div class="finding-title">Facility Fee Not Disclosed</div>
+            <div class="finding-desc">A $420 "facility fee" was added without prior disclosure, violating the No Surprises Act (effective Jan 2022). This charge is legally disputable.</div>
+            <div class="finding-amount">−$420</div>
+          </div>
+
+          <div class="finding-card warning" id="f2">
+            <div class="finding-type">Warning · Billing Code</div>
+            <div class="finding-title">Duplicate Procedure Code</div>
+            <div class="finding-desc">CPT code 99213 appears twice on the same date of service. This is a known medical billing error that is almost always reversed on dispute.</div>
+            <div class="finding-amount">−$185</div>
+          </div>
+
+          <div class="finding-card info" id="f3">
+            <div class="finding-type">Info · Coverage Gap</div>
+            <div class="finding-title">Medicare-Covered Service Billed</div>
+            <div class="finding-desc">The blood panel (CPT 80053) is covered under Medicare Part B with zero patient liability. You should not have been billed for this.</div>
+            <div class="finding-amount">−$230</div>
+          </div>
+
+          <button class="btn-primary" style="width:100%;margin-top:0.5rem;" onclick="showLetter()">
+            Generate Dispute Letter →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section reveal" id="features">
+  <div class="section-label">Your Arsenal</div>
+  <h2 class="section-title">EVERY WEAPON<br><span class="outline">YOU NEED</span></h2>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-num">01</div>
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div class="feature-title">Dispute Letters</div>
+      <div class="feature-desc">Word-for-word legal demand letters customized to your situation, citing the exact laws and regulations that protect you.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-num">02</div>
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+      </div>
+      <div class="feature-title">Call Scripts</div>
+      <div class="feature-desc">Exact word-for-word scripts for every call — what to say, what to demand, and what to do if they push back.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-num">03</div>
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      </div>
+      <div class="feature-title">Regulatory Filings</div>
+      <div class="feature-desc">File formal complaints to CFPB, FCC, FTC, and state AGs with step-by-step guidance and pre-filled forms.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-num">04</div>
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="feature-title">Post-Dispute Guidance</div>
+      <div class="feature-desc">Deadlines, follow-up steps, escalation paths. Know exactly what to do after you send each letter.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-num">05</div>
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </div>
+      <div class="feature-title">Case Tracker</div>
+      <div class="feature-desc">Every dispute tracked. Every win logged. Monitor your cases and see how much money you've recovered.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-num">06</div>
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div class="feature-title">Quick Templates</div>
+      <div class="feature-desc">Jump straight into common fights. Medical bills, leases, phone contracts, subscriptions — pre-loaded and ready.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="flow-section reveal" id="how">
+  <div class="section-label">Process</div>
+  <h2 class="section-title">HOW YOU<br><span class="outline">WIN</span></h2>
+
+  <div class="flow-grid">
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-label">Input</div>
+          <div class="step-title">Paste or Describe</div>
+          <div class="step-desc">Drop in your bill, contract, or just describe the situation in plain English. GhostLaw handles the rest.</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-label">AI Analysis</div>
+          <div class="step-title">Deep Legal Scan</div>
+          <div class="step-desc">AI cross-references your document against consumer protection law, billing codes, and known company violations.</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-label">Weapons</div>
+          <div class="step-title">Get Your Arsenal</div>
+          <div class="step-desc">Receive a dispute letter, call script, and regulatory filing instructions — ready to send in minutes.</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <div class="step-label">Execute</div>
+          <div class="step-title">Send & Track</div>
+          <div class="step-desc">Deploy your dispute and track the outcome. GhostLaw guides you through every follow-up step until you win.</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- LETTER PREVIEW -->
+    <div class="letter-preview" id="letterPreview" style="display:none;">
+      <div class="letter-header">
+        <div class="letter-type">⚡ Dispute Letter Generated</div>
+        <div class="letter-actions">
+          <button class="letter-action-btn">Copy</button>
+          <button class="letter-action-btn">Download</button>
+        </div>
+      </div>
+      <div class="letter-body" id="letterContent"></div>
+    </div>
+
+    <div id="letterPlaceholder" style="background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;min-height:400px;">
+      <div style="text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px;line-height:2;">
+        <div style="font-size:40px;margin-bottom:1rem;opacity:0.2;">✉</div>
+        Dispute letter appears<br>after scanning
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section class="history-section reveal" id="history">
+  <div class="section-label">Case Files</div>
+  <h2 class="section-title">YOUR WINS<br><span class="outline">ON RECORD</span></h2>
+
+  <div class="history-table">
+    <div class="table-header">
+      <div class="th">Case</div>
+      <div class="th">Company</div>
+      <div class="th">Amount</div>
+      <div class="th">Filed</div>
+      <div class="th">Status</div>
+    </div>
+
+    <div class="table-row" style="animation-delay:0.1s">
+      <div class="td td-title">Medical Bill — Facility Fee</div>
+      <div class="td">St. Mary's Hospital</div>
+      <div class="td td-amount">$835</div>
+      <div class="td" style="color:var(--muted)">Mar 12</div>
+      <div class="td"><span class="status-pill pill-won">Won ✓</span></div>
+    </div>
+
+    <div class="table-row" style="animation-delay:0.2s">
+      <div class="td td-title">Unauthorized Subscription</div>
+      <div class="td">StreamMax Inc.</div>
+      <div class="td td-amount">$156</div>
+      <div class="td" style="color:var(--muted)">Mar 8</div>
+      <div class="td"><span class="status-pill pill-won">Won ✓</span></div>
+    </div>
+
+    <div class="table-row" style="animation-delay:0.3s">
+      <div class="td td-title">Lease — Illegal Late Fee</div>
+      <div class="td">Arbor Property Mgmt</div>
+      <div class="td td-amount">$300</div>
+      <div class="td" style="color:var(--muted)">Feb 28</div>
+      <div class="td"><span class="status-pill pill-pending">Pending</span></div>
+    </div>
+
+    <div class="table-row" style="animation-delay:0.4s">
+      <div class="td td-title">Insurance Claim Denial</div>
+      <div class="td">BlueCross Shield</div>
+      <div class="td td-amount">$2,400</div>
+      <div class="td" style="color:var(--muted)">Feb 19</div>
+      <div class="td"><span class="status-pill pill-sent">Sent</span></div>
+    </div>
+
+    <div class="table-row" style="animation-delay:0.5s">
+      <div class="td td-title">Phone Overcharge — Data</div>
+      <div class="td">Verizon Wireless</div>
+      <div class="td td-amount">$89</div>
+      <div class="td" style="color:var(--muted)">Feb 11</div>
+      <div class="td"><span class="status-pill pill-won">Won ✓</span></div>
+    </div>
+
+    <div style="background:var(--surface2);padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">5 cases · 3 wins · 1 pending · 1 sent</div>
+      <div style="font-family:var(--display);font-size:22px;color:var(--red);">$1,380 recovered</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+  <div class="cta-bg"></div>
+  <div class="cta-overline">No Lawyers. No Fees. No Mercy.</div>
+  <h2 class="cta-title">
+    FIGHT<br>
+    <span class="outline">BACK</span><br>
+    NOW
+  </h2>
+  <p class="cta-sub">Regular people shouldn't need a lawyer to stop getting ripped off. GhostLaw levels the playing field. Free. Forever.</p>
+  <div class="cta-actions">
+    <button class="btn-primary" onclick="scrollToScanner()">Start Your First Dispute</button>
+    <button class="btn-ghost">See All Templates</button>
+  </div>
+  <div style="display:flex;justify-content:center;margin-top:2rem;">
+    <div class="free-badge">
+      <div class="dot-green"></div>
+      100% Free · No Account Required · No Paywall
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Ghost<span style="color:var(--red)">Law</span></div>
+  <div class="footer-meta">AI-powered consumer protection · Fight back for free</div>
+  <div class="footer-meta" style="color:var(--surface3)">© 2025 GhostLaw</div>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+
+function animateRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px';
+  ring.style.top = ry + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+// SCROLL REVEAL
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// TEMPLATE CHIPS
+const templates = {
+  medical: `ITEMIZED MEDICAL BILL — Memorial Hospital System
+Patient: [Name], DOB: [Date], Account #: 88274-X
+
+Service Date: February 14, 2025
+Provider: Memorial General Hospital
+
+CHARGES:
+- Emergency Room Visit (Level 3)...........$850.00
+- Facility Fee (undisclosed)....................$420.00
+- Blood Panel — Comprehensive (CPT 80053)...$230.00
+- IV Administration...............................$185.00
+- Physician Consultation (CPT 99213).........$145.00
+- Physician Consultation (CPT 99213).........$145.00  ← DUPLICATE
+
+SUBTOTAL: $1,975.00
+Insurance Adjustment: -$640.00
+AMOUNT DUE: $1,335.00
+
+Payment due within 30 days. Call billing at 1-800-555-0100.`,
+  lease: `RESIDENTIAL LEASE AGREEMENT
+
+Tenant agrees to pay a late fee of $150 for any payment received after the 1st of the month. Additionally, tenant waives right to 24-hour notice before landlord entry. Tenant is responsible for all repairs under $500. Lease auto-renews unless cancelled 90 days prior...`,
+  phone: `Your monthly charges include: Plan fee $65, Device payment $42, Regulatory fees $8.99, Administrative fee $3.99, Network access charge $9.99 (NEW), Premium data throttling protection $4.99 (NEW), Paper statement fee $3.50...`,
+  insurance: `EXPLANATION OF BENEFITS — Claim Denied
+Claim #: INS-2025-88421
+Service: MRI Lumbar Spine without contrast
+Denial Reason: "Not medically necessary"
+Amount billed: $2,400. Your responsibility: $2,400.
+Appeal deadline: 60 days from this notice.`,
+  subscription: `Your account has been charged $29.99/month for the past 8 months for GymFlex Premium. You may cancel at any time — however please note that cancellation requires written notice 30 days in advance and cancellation fees may apply...`
+};
+
+function setTemplate(type) {
+  document.querySelectorAll('.template-chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('docInput').value = templates[type];
+}
+
+// Set default
+document.getElementById('docInput').value = templates.medical;
+
+// SCROLL TO SCANNER
+function scrollToScanner() {
+  document.getElementById('scanner').scrollIntoView({ behavior: 'smooth' });
+}
+
+// SCAN ANIMATION
+function startScan() {
+  const text = document.getElementById('docInput').value.trim();
+  if (!text) {
+    document.getElementById('docInput').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('docInput').style.borderColor = '', 1000);
+    return;
+  }
+
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('findings').style.display = 'none';
+  const sp = document.getElementById('scanProgress');
+  sp.classList.add('active');
+
+  const bar = document.getElementById('progressBar');
+  const steps = [
+    { el: 'p1', spinner: 's1', check: null, delay: 0, barW: 20 },
+    { el: 'p2', spinner: null, check: 'c2', delay: 900, barW: 40 },
+    { el: 'p3', spinner: null, check: 'c3', delay: 1800, barW: 60 },
+    { el: 'p4', spinner: null, check: 'c4', delay: 2700, barW: 80 },
+    { el: 'p5', spinner: null, check: 'c5', delay: 3600, barW: 100 },
+  ];
+
+  steps.forEach((s, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(s.el);
+      el.classList.add(i === 0 ? 'active-line' : 'active-line');
+      bar.style.width = s.barW + '%';
+
+      if (i > 0) {
+        const prev = document.getElementById(steps[i-1].el);
+        prev.classList.remove('active-line');
+        prev.classList.add('done');
+        if (steps[i-1].check) {
+          document.getElementById(steps[i-1].check).textContent = '✓';
+          document.getElementById(steps[i-1].check).style.color = 'var(--red)';
+        }
+        if (steps[i-1].spinner) {
+          document.getElementById(steps[i-1].spinner).style.borderColor = 'var(--red)';
+        }
+      }
+    }, s.delay);
+  });
+
+  setTimeout(() => {
+    sp.classList.remove('active');
+    sp.style.display = 'none';
+    const findings = document.getElementById('findings');
+    findings.style.display = 'flex';
+
+    ['f1','f2','f3'].forEach((id, i) => {
+      setTimeout(() => {
+        document.getElementById(id).classList.add('revealed');
+      }, i * 200);
+    });
+  }, 4600);
+}
+
+// SHOW LETTER
+function showLetter() {
+  const letterEl = document.getElementById('letterPreview');
+  const placeholder = document.getElementById('letterPlaceholder');
+  placeholder.style.display = 'none';
+  letterEl.style.display = 'block';
+  letterEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  const content = document.getElementById('letterContent');
+  content.innerHTML = '';
+
+  const letter = `<span style="color:var(--muted2)">March 15, 2025</span>
+
+<span style="color:var(--muted)">Billing Department</span>
+<span style="color:var(--muted)">Memorial Hospital System</span>
+<span style="color:var(--muted)">123 Medical Center Dr.</span>
+
+<span style="color:var(--white);font-weight:600">RE: FORMAL DISPUTE — Account #88274-X</span>
+<span style="color:var(--white);font-weight:600">Disputed Amount: <span style="color:var(--red)">$835.00</span></span>
+
+To Whom It May Concern,
+
+I am writing to formally dispute charges on the above account. 
+Under the <span class="highlight">No Surprises Act (42 U.S.C. § 300gg-131)</span>, patients must 
+receive advance notice of facility fees. No such notice was 
+provided for the $420 facility fee on my bill.
+
+Additionally, CPT code 99213 appears <span class="highlight">twice on the same 
+date of service</span> — a billing error that I am disputing under 
+the <span class="highlight">Fair Debt Collection Practices Act</span>.
+
+I demand the following corrections within <span style="color:var(--red)">30 days</span>:
+1. Remove the undisclosed facility fee: $420
+2. Remove the duplicate CPT 99213 charge: $185  
+3. Remove the Medicare-covered blood panel: $230
+
+Total correction required: <span style="color:var(--red);font-weight:600">$835</span>
+
+If I do not receive written confirmation of these corrections, 
+I will file complaints with the CFPB, HHS, and my state AG.
+
+Sincerely,
+<span style="color:var(--white)">[Your Name]</span><span class="letter-cursor"></span>`;
+
+  let i = 0;
+  const words = letter.split('');
+  let html = '';
+
+  function typeNext() {
+    if (i < words.length) {
+      html += words[i];
+      content.innerHTML = html;
+      i++;
+      setTimeout(typeNext, 8);
+    }
+  }
+  typeNext();
+}
+
+// COUNTER ANIMATION
+function animateCounters() {
+  document.querySelectorAll('.stat-num').forEach(el => {
+    const text = el.innerHTML;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.5s';
+      el.style.opacity = '1';
+    }, 300);
+  });
+}
+
+const heroObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { animateCounters(); heroObserver.disconnect(); }
+  });
+}, { threshold: 0.5 });
+
+const statsEl = document.querySelector('.hero-stats');
+if (statsEl) heroObserver.observe(statsEl);
+</script>
+</body>
+</html>
