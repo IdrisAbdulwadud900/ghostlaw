@@ -6,7 +6,7 @@ GhostLaw API — AI that fights every bill, contract, and phone call for you.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
-from app.routers import auth_router, scan_router, dispute_router, call_router, dashboard_router
+from app.routers import auth_router, scan_router, dispute_router, call_router, dashboard_router, complaint_router
 
 settings = get_settings()
 
@@ -31,6 +31,7 @@ app.include_router(scan_router.router)
 app.include_router(dispute_router.router)
 app.include_router(call_router.router)
 app.include_router(dashboard_router.router)
+app.include_router(complaint_router.router)
 
 
 @app.get("/")

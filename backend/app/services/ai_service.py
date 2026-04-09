@@ -6,8 +6,11 @@ Free: 15 requests/min, 1,500 requests/day, 1M tokens/day
 import google.generativeai as genai
 import json
 import re
+import logging
 from typing import Optional, List
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -49,6 +52,24 @@ async def analyze_document(image_bytes: bytes, mime_type: str, user_context: str
     Analyze a document image with Gemini Vision.
     Returns structured analysis with issues, savings, and rights.
     """
+    try:
+        return await _analyze_document_impl(image_bytes, mime_type, user_context)
+    except Exception as e:
+        logger.error(f"Gemini analyze_document failed: {e}")
+        # Return a helpful error instead of crashing
+        return {
+            "document_type": "other",
+            "summary": "AI analysis temporarily unavailable. Please try again in a moment.",
+            "plain_english": f"We couldn't analyze your document right now. This usually means the AI service is temporarily busy. Try again in 30 seconds. (Error: {str(e)[:100]})",
+            "issues_found": [],
+            "total_potential_savings": 0,
+            "risk_level": "medium",
+            "your_rights": ["You can try scanning again — the AI service usually recovers quickly"],
+            "recommended_actions": ["Wait 30 seconds and try again", "If the problem persists, try pasting the text instead of uploading an image"],
+        }
+
+
+async def _analyze_document_impl(image_bytes: bytes, mime_type: str, user_context: str = "") -> dict:
     model = _get_model()
 
     prompt = f"""You are GhostLaw, an expert AI legal and financial analyst. 
@@ -95,6 +116,23 @@ IMPORTANT:
 
 
 async def analyze_document_text(document_text: str, user_context: str = "") -> dict:
+    try:
+        return await _analyze_document_text_impl(document_text, user_context)
+    except Exception as e:
+        logger.error(f"Gemini analyze_document_text failed: {e}")
+        return {
+            "document_type": "other",
+            "summary": "AI analysis temporarily unavailable. Please try again in a moment.",
+            "plain_english": f"We couldn't analyze your document right now. This usually means the AI service is temporarily busy. Try again in 30 seconds. (Error: {str(e)[:100]})",
+            "issues_found": [],
+            "total_potential_savings": 0,
+            "risk_level": "medium",
+            "your_rights": ["You can try scanning again — the AI service usually recovers quickly"],
+            "recommended_actions": ["Wait 30 seconds and try again", "Try pasting a shorter excerpt if the document is very long"],
+        }
+
+
+async def _analyze_document_text_impl(document_text: str, user_context: str = "") -> dict:
     """Analyze pasted document text (no image)."""
     model = _get_model()
 
@@ -219,6 +257,93 @@ Return a JSON object with this structure:
 }}
 
 Make this script so good that anyone could follow it and win the dispute."""
+
+    response = model.generate_content(prompt)
+    return _parse_json_response(response.text)
+
+
+async def generate_regulatory_complaint(
+    scan_result: Optional[dict],
+    dispute_letter: Optional[dict],
+    agency: str = "cfpb",
+    state: str = "",
+    company_name: str = "",
+    custom_context: str = "",
+) -> dict:
+    """Generate a regulatory complaint for CFPB, FCC, or State AG."""
+    try:
+        return await _generate_regulatory_complaint_impl(
+            scan_result, dispute_letter, agency, state, company_name, custom_context
+        )
+    except Exception as e:
+        logger.error(f"Gemini generate_regulatory_complaint failed: {e}")
+        return {"error": f"Failed to generate complaint: {str(e)[:100]}"}
+
+
+async def _generate_regulatory_complaint_impl(
+    scan_result: Optional[dict],
+    dispute_letter: Optional[dict],
+    agency: str,
+    state: str,
+    company_name: str,
+    custom_context: str,
+) -> dict:
+    model = _get_model()
+
+    agency_info = {
+        "cfpb": {
+            "name": "Consumer Financial Protection Bureau",
+            "url": "https://www.consumerfinance.gov/complaint/",
+            "scope": "financial products, billing, debt collection, credit reporting",
+        },
+        "fcc": {
+            "name": "Federal Communications Commission",
+            "url": "https://consumercomplaints.fcc.gov/",
+            "scope": "phone, internet, cable, wireless carrier billing",
+        },
+        "state_ag": {
+            "name": f"{state + ' ' if state else ''}State Attorney General",
+            "url": "https://www.naag.org/find-my-ag/",
+            "scope": "consumer fraud, deceptive practices, price gouging, unfair business practices",
+        },
+        "ftc": {
+            "name": "Federal Trade Commission",
+            "url": "https://reportfraud.ftc.gov/",
+            "scope": "fraud, scams, deceptive business practices",
+        },
+    }
+
+    target = agency_info.get(agency, agency_info["cfpb"])
+
+    prompt = f"""You are GhostLaw's Regulatory Complaint AI.
+Generate a formal complaint to file with a government agency.
+
+AGENCY: {target['name']}
+FILING URL: {target['url']}
+SCOPE: {target['scope']}
+
+COMPANY: {company_name or 'See document analysis'}
+STATE: {state or 'Not specified'}
+
+DOCUMENT ANALYSIS:
+{json.dumps(scan_result, indent=2) if scan_result else "No scan available"}
+
+DISPUTE LETTER ALREADY SENT:
+{json.dumps(dispute_letter, indent=2) if dispute_letter else "No dispute letter yet"}
+
+ADDITIONAL CONTEXT: {custom_context or "None"}
+
+Return a JSON object:
+{{
+    "agency": "{agency}",
+    "agency_full_name": "{target['name']}",
+    "filing_url": "{target['url']}",
+    "complaint_text": "The FULL formal complaint text, ready to paste into the filing form. Include: company name, specific issues, dollar amounts, dates, laws violated, prior attempts to resolve, desired outcome. Write it like a real legal complaint — specific, factual, compelling.",
+    "filing_steps": ["Step-by-step instructions for filing this complaint on the agency's website"],
+    "pro_tips": ["Insider tips that make the complaint more effective"]
+}}
+
+Make the complaint devastating. Government agencies prioritize well-documented, specific complaints."""
 
     response = model.generate_content(prompt)
     return _parse_json_response(response.text)

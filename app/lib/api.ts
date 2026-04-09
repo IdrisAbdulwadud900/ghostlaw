@@ -40,6 +40,87 @@ export function setUser(user: any) {
   }
 }
 
+// ── Local History (persists across Vercel cold starts) ──────
+const HISTORY_KEY = "ghostlaw_history";
+
+interface HistoryStore {
+  scans: Record<string, any>[];
+  disputes: Record<string, any>[];
+  calls: Record<string, any>[];
+  outcomes: Record<string, { status: string; actual_savings?: number; notes?: string }>;
+}
+
+function getHistory(): HistoryStore {
+  if (typeof window === "undefined") return { scans: [], disputes: [], calls: [], outcomes: {} };
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return { scans: [], disputes: [], calls: [], outcomes: {} };
+}
+
+function saveHistory(h: HistoryStore) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  }
+}
+
+export function addScanToHistory(scan: Record<string, any>) {
+  const h = getHistory();
+  // Avoid duplicates
+  h.scans = h.scans.filter(s => s.scan_id !== scan.scan_id);
+  h.scans.unshift(scan);
+  // Keep last 50
+  h.scans = h.scans.slice(0, 50);
+  saveHistory(h);
+}
+
+export function addDisputeToHistory(dispute: Record<string, any>) {
+  const h = getHistory();
+  h.disputes = h.disputes.filter(d => d.dispute_id !== dispute.dispute_id);
+  h.disputes.unshift(dispute);
+  h.disputes = h.disputes.slice(0, 50);
+  saveHistory(h);
+}
+
+export function addCallToHistory(call: Record<string, any>) {
+  const h = getHistory();
+  h.calls = h.calls.filter(c => c.call_id !== call.call_id);
+  h.calls.unshift(call);
+  h.calls = h.calls.slice(0, 50);
+  saveHistory(h);
+}
+
+export function getLocalHistory(): HistoryStore {
+  return getHistory();
+}
+
+export function saveOutcome(scanId: string, status: string, actualSavings?: number, notes?: string) {
+  const h = getHistory();
+  h.outcomes[scanId] = { status, actual_savings: actualSavings, notes };
+  saveHistory(h);
+}
+
+export function getOutcome(scanId: string) {
+  return getHistory().outcomes[scanId] || null;
+}
+
+export function getLocalStats() {
+  const h = getHistory();
+  const confirmedSavings = Object.values(h.outcomes)
+    .filter(o => o.status === "won" || o.status === "partial")
+    .reduce((sum, o) => sum + (o.actual_savings || 0), 0);
+  const estimatedSavings = h.disputes.reduce((sum, d) => sum + (d.estimated_savings || 0), 0);
+  return {
+    total_scans: h.scans.length,
+    total_disputes: h.disputes.length,
+    total_calls: h.calls.length,
+    estimated_savings: estimatedSavings,
+    confirmed_savings: confirmedSavings,
+    outcomes: h.outcomes,
+  };
+}
+
 // ── Fetch wrapper ───────────────────────────────────────────
 async function api(path: string, options: RequestInit = {}) {
   const token = getToken();
@@ -188,4 +269,26 @@ export async function getCall(callId: string) {
 // ── Dashboard ───────────────────────────────────────────────
 export async function getDashboardStats() {
   return api("/dashboard/stats");
+}
+
+// ── Regulatory Complaints ───────────────────────────────────
+export async function generateComplaint(
+  scanId: string,
+  agency: string = "cfpb",
+  disputeId: string = "",
+  companyName: string = "",
+  state: string = "",
+  customContext: string = ""
+) {
+  return api("/complaint/generate", {
+    method: "POST",
+    body: JSON.stringify({
+      scan_id: scanId,
+      agency,
+      dispute_id: disputeId || undefined,
+      company_name: companyName,
+      state,
+      custom_context: customContext,
+    }),
+  });
 }
