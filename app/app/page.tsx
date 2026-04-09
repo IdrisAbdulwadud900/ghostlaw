@@ -94,6 +94,7 @@ export default function Home() {
         <ul className="hidden md:flex gap-8 list-none" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase" as const }}>
           <li><button onClick={() => scrollTo("scanner")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>Scanner</button></li>
           <li><button onClick={() => scrollTo("features")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>Arsenal</button></li>
+          <li><button onClick={() => scrollTo("guide")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>Guide</button></li>
           <li><button onClick={() => scrollTo("how")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>How It Works</button></li>
         </ul>
 
@@ -146,10 +147,10 @@ export default function Home() {
           </h1>
 
           <p
-            className="fade-up-2 max-w-[540px] mb-10"
+            className="fade-up-2 max-w-[560px] mb-10"
             style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 18, fontWeight: 300, color: "var(--muted2)", lineHeight: 1.7 }}
           >
-            GhostLaw scans your contracts, bills, and policies for illegal clauses and hidden fees — then generates the legal firepower to fight back. No lawyer needed. No cost. Ever.
+            GhostLaw scans your contracts, bills, and policies for illegal clauses and hidden fees — then generates the legal firepower to fight back. Works for <span style={{ color: "var(--white)", fontWeight: 500 }}>US 🇺🇸</span> and <span style={{ color: "var(--white)", fontWeight: 500 }}>Nigerian 🇳🇬</span> consumers. No lawyer needed. No cost. Ever.
           </p>
 
           <div className="fade-up-3 flex flex-wrap gap-4 items-center">
@@ -182,7 +183,7 @@ export default function Home() {
         <div className="marquee-track">
           {[...Array(2)].map((_, rep) => (
             <span key={rep} className="flex">
-              {["Medical Bill Disputes", "Lease Clause Analysis", "CFPB Complaints", "Hidden Fee Detection", "Call Scripts", "FTC Filings", "Illegal Clause Flags", "Subscription Cancellations", "Insurance Disputes"].map((text) => (
+              {["Medical Bill Disputes", "Bank Reversal Claims 🇳🇬", "Lease Clause Analysis", "FCCPC Complaints 🇳🇬", "CFPB Complaints", "Hidden Fee Detection", "Loan App Harassment 🇳🇬", "Call Scripts", "NERC Light Bill Disputes 🇳🇬", "FTC Filings", "Illegal Clause Flags", "MTN/Airtel Data Refunds 🇳🇬", "Subscription Cancellations", "Insurance Disputes"].map((text) => (
                 <span key={`${rep}-${text}`} className="flex">
                   <span className="marquee-item">{text}</span>
                   <span className="marquee-item marquee-sep">{"///"}</span>
@@ -322,10 +323,10 @@ export default function Home() {
             {[
               { num: "01", icon: "📄", title: "Dispute Letters", desc: "Word-for-word legal demand letters customized to your situation, citing the exact laws that protect you." },
               { num: "02", icon: "📞", title: "Call Scripts", desc: "Exact scripts for every call — what to say, what to demand, and what to do if they push back." },
-              { num: "03", icon: "🏛️", title: "Regulatory Filings", desc: "File formal complaints to CFPB, FCC, FTC, and state AGs with step-by-step guidance." },
+              { num: "03", icon: "🏛️", title: "Regulatory Filings", desc: "File complaints to CFPB, FCC, FTC (US) or FCCPC, CBN, NCC, NERC (Nigeria) with step-by-step guidance." },
               { num: "04", icon: "⏱️", title: "Post-Dispute Guidance", desc: "Deadlines, follow-up steps, escalation paths. Know exactly what to do after you send each letter." },
               { num: "05", icon: "📊", title: "Case Tracker", desc: "Every dispute tracked. Every win logged. Monitor your cases and see how much you've recovered." },
-              { num: "06", icon: "⚡", title: "Quick Templates", desc: "Jump straight into common fights. Medical bills, leases, phone contracts — pre-loaded and ready." },
+              { num: "06", icon: "⚡", title: "Quick Templates", desc: "Jump straight into common fights. Medical bills, leases, bank reversals, light bills, loan apps — pre-loaded for 🇺🇸 and 🇳🇬." },
             ].map((f) => (
               <div key={f.num} className="feature-card group">
                 <div
@@ -491,6 +492,232 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ═══ WHO IT'S FOR — DUAL MARKET ═════════════════ */}
+      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--obsidian)] reveal" id="guide">
+        <div className="max-w-6xl mx-auto">
+          <div
+            className="flex items-center gap-3 mb-4"
+            style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
+          >
+            <span className="w-5 h-[1px] bg-[var(--red)]" />
+            Who It&apos;s For
+          </div>
+          <h2 style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(48px, 6vw, 80px)", lineHeight: 1 }}>
+            BUILT FOR<br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>REAL PEOPLE</span>
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-6 mt-10">
+            {/* Nigeria card */}
+            <div className="p-8 relative overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div className="absolute top-4 right-5" style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 100, lineHeight: 1, color: "rgba(255,255,255,0.02)" }}>🇳🇬</div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <span style={{ fontSize: 32 }}>🇳🇬</span>
+                  <div>
+                    <h3 style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 16, fontWeight: 600 }}>For Nigerians</h3>
+                    <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--muted)", letterSpacing: "0.1em", textTransform: "uppercase" as const }}>FCCPA · CBN · NCC · NERC · NDPA</p>
+                  </div>
+                </div>
+                <div className="space-y-3 mb-6">
+                  {[
+                    { icon: "🏦", title: "Bank debited you but money didn't arrive?", desc: "GhostLaw cites CBN's 24-72 hour refund mandate and writes the formal complaint." },
+                    { icon: "📱", title: "MTN/Airtel eating your data & auto-subscribing you?", desc: "We draft your NCC complaint citing the Consumer Code of Practice." },
+                    { icon: "⚡", title: "NEPA estimated billing you ₦47k for a 1-bedroom?", desc: "We reference NERC regulations on your right to metering and fair billing." },
+                    { icon: "🚨", title: "Loan app harassing your contacts?", desc: "We build your case using NDPA 2023 data privacy violations + FCCPA defamation protections." },
+                    { icon: "🏠", title: "Landlord trying to eject you illegally?", desc: "We cite Lagos Tenancy Law notice periods and self-help eviction illegality." },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span style={{ fontSize: 16, marginTop: 2 }}>{item.icon}</span>
+                      <div>
+                        <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 12, fontWeight: 600, marginBottom: 2 }}>{item.title}</p>
+                        <p style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 12, color: "var(--muted)", lineHeight: 1.6 }}>{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {["GTBank", "MTN", "IKEDC", "OKash", "Jumia", "DSTV", "Access Bank"].map((co) => (
+                    <span key={co} className="px-2.5 py-1" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--muted)", border: "1px solid var(--border)", letterSpacing: "0.05em" }}>{co}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* USA card */}
+            <div className="p-8 relative overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div className="absolute top-4 right-5" style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 100, lineHeight: 1, color: "rgba(255,255,255,0.02)" }}>🇺🇸</div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <span style={{ fontSize: 32 }}>🇺🇸</span>
+                  <div>
+                    <h3 style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 16, fontWeight: 600 }}>For Americans</h3>
+                    <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--muted)", letterSpacing: "0.1em", textTransform: "uppercase" as const }}>FDCPA · FCRA · FCBA · FTC ACT</p>
+                  </div>
+                </div>
+                <div className="space-y-3 mb-6">
+                  {[
+                    { icon: "🏥", title: "Hospital hit you with a surprise $420 facility fee?", desc: "GhostLaw cites the No Surprises Act and drafts a formal dispute letter with exact legal references." },
+                    { icon: "📞", title: "Phone company cramming fees onto your bill?", desc: "We build your FCC complaint and generate a call script to the retention department." },
+                    { icon: "🏠", title: "Lease has illegal late fees or waived-rights clauses?", desc: "We flag every unenforceable clause and draft a letter citing your state tenant protections." },
+                    { icon: "💳", title: "Credit card charging you for a cancelled subscription?", desc: "We cite FCBA and Regulation Z, draft the chargeback dispute, and guide you through CFPB filing." },
+                    { icon: "🛡️", title: "Insurance denied your claim as 'not medically necessary'?", desc: "We build your appeal referencing your policy terms and state insurance regulations." },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span style={{ fontSize: 16, marginTop: 2 }}>{item.icon}</span>
+                      <div>
+                        <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 12, fontWeight: 600, marginBottom: 2 }}>{item.title}</p>
+                        <p style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 12, color: "var(--muted)", lineHeight: 1.6 }}>{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {["CFPB", "FCC", "FTC", "State AG", "Medicare", "Comcast", "Chase"].map((co) => (
+                    <span key={co} className="px-2.5 py-1" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--muted)", border: "1px solid var(--border)", letterSpacing: "0.05em" }}>{co}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ HOW TO USE — STEP BY STEP GUIDE ═══════════════ */}
+      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--black)] reveal">
+        <div className="max-w-6xl mx-auto">
+          <div
+            className="flex items-center gap-3 mb-4"
+            style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
+          >
+            <span className="w-5 h-[1px] bg-[var(--red)]" />
+            User Guide
+          </div>
+          <h2 style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(48px, 6vw, 80px)", lineHeight: 1, marginBottom: 12 }}>
+            HOW TO<br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>USE IT</span>
+          </h2>
+          <p style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 15, color: "var(--muted2)", lineHeight: 1.7, maxWidth: 600, marginBottom: 40 }}>
+            Whether you&apos;re in Lagos or Los Angeles, the process is the same. Here&apos;s how to get your money back in minutes.
+          </p>
+
+          <div className="space-y-6">
+            {/* Step 1 */}
+            <div className="p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div className="flex items-start gap-5">
+                <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 48, lineHeight: 1, color: "rgba(232,25,44,0.15)", minWidth: 50 }}>01</div>
+                <div className="flex-1">
+                  <h3 style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+                    Sign Up Free & Pick Your Country
+                  </h3>
+                  <p style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 13, color: "var(--muted)", lineHeight: 1.7, marginBottom: 12 }}>
+                    Create a free account (email + password, takes 10 seconds). Then use the <span style={{ color: "var(--white)" }}>🇺🇸/🇳🇬 toggle</span> in the sidebar to switch between US and Nigeria mode. This tells the AI which laws and agencies apply to your situation.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--red)", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 4 }}>🇳🇬 Nigeria Mode</p>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)" }}>Cites FCCPA, CBN Framework, NCC Code, NERC Standards, NDPA 2023, Lagos Tenancy Law</p>
+                    </div>
+                    <div className="p-3" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "#4178e8", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 4 }}>🇺🇸 USA Mode</p>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)" }}>Cites FDCPA, FCRA, FCBA, No Surprises Act, FTC Act, state-level protections</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div className="flex items-start gap-5">
+                <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 48, lineHeight: 1, color: "rgba(232,25,44,0.15)", minWidth: 50 }}>02</div>
+                <div className="flex-1">
+                  <h3 style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+                    Paste Your Bill, Contract, or Describe What Happened
+                  </h3>
+                  <p style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 13, color: "var(--muted)", lineHeight: 1.7, marginBottom: 12 }}>
+                    Use a <span style={{ color: "var(--white)" }}>Quick Template</span> to get started fast, or paste your actual document/bill text, or just describe your situation in plain English. You can also upload a photo or PDF.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="template-chip">🇳🇬 Bank Reversal</span>
+                    <span className="template-chip">🇳🇬 Loan App</span>
+                    <span className="template-chip">🇳🇬 Light Bill</span>
+                    <span className="template-chip">🇺🇸 Medical Bill</span>
+                    <span className="template-chip">🇺🇸 Lease</span>
+                    <span className="template-chip">🇺🇸 Insurance</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div className="flex items-start gap-5">
+                <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 48, lineHeight: 1, color: "rgba(232,25,44,0.15)", minWidth: 50 }}>03</div>
+                <div className="flex-1">
+                  <h3 style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+                    AI Scans & Finds Every Problem
+                  </h3>
+                  <p style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>
+                    Hit <span style={{ color: "var(--red)", fontWeight: 600 }}>&ldquo;Analyze & Generate Dispute&rdquo;</span> and the AI cross-references your document against consumer protection laws specific to your country. It flags hidden fees, illegal clauses, overcharges, and tells you exactly how much you can recover.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div className="flex items-start gap-5">
+                <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 48, lineHeight: 1, color: "rgba(232,25,44,0.15)", minWidth: 50 }}>04</div>
+                <div className="flex-1">
+                  <h3 style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+                    Get Your Weapons — Dispute Letter, Call Script, Complaint
+                  </h3>
+                  <p style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 13, color: "var(--muted)", lineHeight: 1.7, marginBottom: 12 }}>
+                    GhostLaw generates three powerful tools, all customized to your specific situation:
+                  </p>
+                  <div className="grid md:grid-cols-3 gap-3">
+                    <div className="p-3" style={{ background: "var(--surface2)", borderLeft: "2px solid var(--red)" }}>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, marginBottom: 4 }}>✉ Dispute Letter</p>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--muted)" }}>Legal demand letter citing exact laws. Download as PDF, send via Email or WhatsApp.</p>
+                    </div>
+                    <div className="p-3" style={{ background: "var(--surface2)", borderLeft: "2px solid #4178e8" }}>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, marginBottom: 4 }}>☎ Call Script</p>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--muted)" }}>Word-for-word script for calling the company. Opening, key points, escalation phrases.</p>
+                    </div>
+                    <div className="p-3" style={{ background: "var(--surface2)", borderLeft: "2px solid #e8c541" }}>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, marginBottom: 4 }}>⚖ Regulatory Complaint</p>
+                      <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--muted)" }}>File with FCCPC/CBN/NCC (🇳🇬) or CFPB/FCC/FTC (🇺🇸). Includes filing steps.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 5 */}
+            <div className="p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div className="flex items-start gap-5">
+                <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 48, lineHeight: 1, color: "rgba(232,25,44,0.15)", minWidth: 50 }}>05</div>
+                <div className="flex-1">
+                  <h3 style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+                    Send, Share & Track Your Win
+                  </h3>
+                  <p style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 13, color: "var(--muted)", lineHeight: 1.7, marginBottom: 12 }}>
+                    Send your dispute via <span style={{ color: "var(--white)" }}>Email</span>, share via <span style={{ color: "#25D366" }}>WhatsApp</span>, or download as <span style={{ color: "var(--red)" }}>PDF</span>. Track all your cases in the History tab and mark outcomes as they resolve. GhostLaw shows you how much you&apos;ve saved.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <span className="pill pill-won">Won ✓</span>
+                    <span className="pill pill-pending">Pending</span>
+                    <span className="pill pill-sent">Sent</span>
+                    <span style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)" }}>← Track every case</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ═══ CTA ═══════════════════════════════════════════ */}
       <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--obsidian)] text-center relative overflow-hidden reveal">
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(232,25,44,0.08) 0%, transparent 70%)" }} />
@@ -503,8 +730,8 @@ export default function Home() {
             <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.15)", color: "transparent" }}>BACK</span><br />
             NOW
           </h2>
-          <p className="max-w-[500px] mx-auto mb-10" style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 16, fontWeight: 300, color: "var(--muted2)", lineHeight: 1.7 }}>
-            Regular people shouldn&apos;t need a lawyer to stop getting ripped off. GhostLaw levels the playing field. Free. Forever.
+          <p className="max-w-[540px] mx-auto mb-10" style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 16, fontWeight: 300, color: "var(--muted2)", lineHeight: 1.7 }}>
+            Whether it&apos;s a hospital in Houston or a bank in Lagos — regular people shouldn&apos;t need a lawyer to stop getting ripped off. GhostLaw levels the playing field. Free. Forever.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button onClick={() => openAuth("signup")} className="btn-primary" style={{ cursor: "none" }}>
@@ -532,7 +759,7 @@ export default function Home() {
           AI-powered consumer protection · Fight back for free
         </div>
         <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--surface3)" }}>
-          © 2025 GhostLaw
+          © 2026 GhostLaw
         </div>
       </footer>
 

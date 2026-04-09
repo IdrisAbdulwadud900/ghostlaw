@@ -661,17 +661,51 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
 
             {/* How it works (if no scans) */}
             {localStats.total_scans === 0 && (
-              <div className="mt-8" style={{ background: "var(--surface)", border: "1px solid var(--border)", padding: "1.5rem" }}>
-                <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--red)", marginBottom: 16 }}>
-                  How it works
+              <div className="mt-8 space-y-4">
+                {/* Welcome banner */}
+                <div className="p-6" style={{ background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.2)" }}>
+                  <div className="flex items-start gap-4">
+                    <span style={{ fontSize: 32 }}>👻</span>
+                    <div>
+                      <h3 style={{ fontFamily: display, fontSize: 24, lineHeight: 1, marginBottom: 8 }}>
+                        Welcome to Ghost<span style={{ color: "var(--red)" }}>Law</span>
+                      </h3>
+                      <p style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.7, marginBottom: 10 }}>
+                        {country === "NG"
+                          ? "GhostLaw fights for you. Paste your bank alert, electricity bill, loan app message, or any document — and the AI will find every violation of Nigerian consumer protection law and generate weapons to fight back."
+                          : "GhostLaw fights for you. Paste your medical bill, lease, phone contract, or any document — and the AI will find every violation of consumer protection law and generate weapons to fight back."
+                        }
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1.5" style={{ fontFamily: mono, fontSize: 10, color: "#41e866" }}>
+                          <span className="w-1.5 h-1.5 bg-[#41e866] rounded-full" /> 100% Free
+                        </span>
+                        <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)" }}>·</span>
+                        <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted2)" }}>
+                          {country === "NG" ? "🇳🇬 Nigeria mode active — citing FCCPA, CBN, NCC, NERC, NDPA" : "🇺🇸 USA mode active — citing FDCPA, FCRA, FCBA, No Surprises Act"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-4">
-                  {[
-                    { n: "01", t: "Paste or upload", d: "Any bill, contract, lease, or document you think might be screwing you over." },
-                    { n: "02", t: "AI finds the problems", d: "We check for overcharges, hidden fees, illegal clauses, and violations of your rights." },
-                    { n: "03", t: "Get your weapons", d: "Dispute letter, call script, and regulatory complaint — all ready to send." },
-                    { n: "04", t: "Track your wins", d: "Mark outcomes and see how much you've saved over time." },
-                  ].map((s) => (
+
+                {/* Quick steps */}
+                <div style={{ background: "var(--surface)", border: "1px solid var(--border)", padding: "1.5rem" }}>
+                  <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--red)", marginBottom: 16 }}>
+                    How it works
+                  </div>
+                  <div className="space-y-4">
+                    {(country === "NG" ? [
+                      { n: "01", t: "Pick a template or paste your document", d: "Bank alerts, NEPA bills, loan app messages, DSTV issues, landlord notices — anything you need to fight." },
+                      { n: "02", t: "AI scans against Nigerian law", d: "We check for violations of FCCPA, CBN Framework, NCC Code, NERC Standards, NDPA 2023, and more." },
+                      { n: "03", t: "Get your weapons", d: "Dispute letter, call script, and regulatory complaint to FCCPC, CBN, NCC, or NERC — ready to send." },
+                      { n: "04", t: "Send via Email or WhatsApp", d: "Share via WhatsApp, download as PDF, or send by email. Track outcomes in your History." },
+                    ] : [
+                      { n: "01", t: "Paste or upload any document", d: "Medical bills, leases, phone contracts, insurance claims — anything you think might be screwing you over." },
+                      { n: "02", t: "AI finds the problems", d: "We check for overcharges, hidden fees, illegal clauses, and violations of your consumer rights." },
+                      { n: "03", t: "Get your weapons", d: "Dispute letter, call script, and regulatory complaint to CFPB, FCC, FTC — all ready to send." },
+                      { n: "04", t: "Track your wins", d: "Mark outcomes and see how much you've saved over time." },
+                    ]).map((s) => (
                     <div key={s.n} className="flex items-start gap-4">
                       <span style={{ fontFamily: display, fontSize: 28, lineHeight: 1, color: "rgba(255,255,255,0.05)", minWidth: 32 }}>{s.n}</span>
                       <div>
@@ -680,6 +714,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                       </div>
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
             )}
