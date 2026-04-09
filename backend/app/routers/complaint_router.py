@@ -1,8 +1,11 @@
 """Complaint router — Generate regulatory complaints (CFPB, FCC, State AG)."""
 
-from fastapi import APIRouter, HTTPException, Depends
+import os
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from typing import Optional
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from app.services.auth_service import get_current_user
 from app.services.ai_service import generate_regulatory_complaint
 from app.services.db_service import get_scan, get_dispute
@@ -10,6 +13,8 @@ from app.config import get_settings
 
 router = APIRouter(prefix="/complaint", tags=["complaint"])
 settings = get_settings()
+_testing = os.environ.get("TESTING", "").lower() in ("1", "true", "yes")
+limiter = Limiter(key_func=get_remote_address, enabled=not _testing)
 
 
 class ComplaintRequest(BaseModel):
@@ -72,7 +77,9 @@ SUPPORTING DOCUMENTATION:
 
 
 @router.post("/generate")
+@limiter.limit("10/hour")
 async def generate_complaint(
+    request: Request,
     req: ComplaintRequest,
     current_user: dict = Depends(get_current_user),
 ):

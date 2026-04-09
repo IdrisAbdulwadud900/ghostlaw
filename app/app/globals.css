@@ -21,6 +21,7 @@
   --muted2: #9090a0;
 }
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme inline {
   --color-background: #060608;
   --color-foreground: #f2f2f0;

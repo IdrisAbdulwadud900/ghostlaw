@@ -1,6 +1,9 @@
 """Call Ghost router — AI phone call management."""
 
-from fastapi import APIRouter, HTTPException, Depends
+import os
+from fastapi import APIRouter, HTTPException, Depends, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from app.models.schemas import CallRequest, CallResult
 from app.services.auth_service import get_current_user
 from app.services.ai_service import generate_call_script
@@ -15,10 +18,14 @@ from app.config import get_settings
 
 router = APIRouter(prefix="/call", tags=["call"])
 settings = get_settings()
+_testing = os.environ.get("TESTING", "").lower() in ("1", "true", "yes")
+limiter = Limiter(key_func=get_remote_address, enabled=not _testing)
 
 
 @router.post("/request")
+@limiter.limit("10/hour")
 async def request_call(
+    request: Request,
     req: CallRequest,
     current_user: dict = Depends(get_current_user),
 ):

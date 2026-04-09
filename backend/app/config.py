@@ -6,7 +6,7 @@ from functools import lru_cache
 @dataclass
 class Settings:
     app_name: str = "GhostLaw"
-    version: str = "0.1.0"
+    version: str = "0.2.0"
     debug: bool = True
 
     # JWT

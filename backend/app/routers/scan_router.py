@@ -1,7 +1,10 @@
 """Scan router — upload & analyze documents."""
 
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
+import os
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Request
 from typing import Optional
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from app.services.auth_service import get_current_user
 from app.services.ai_service import (
     analyze_document,
@@ -13,10 +16,14 @@ from app.config import get_settings
 
 router = APIRouter(prefix="/scan", tags=["scan"])
 settings = get_settings()
+_testing = os.environ.get("TESTING", "").lower() in ("1", "true", "yes")
+limiter = Limiter(key_func=get_remote_address, enabled=not _testing)
 
 
 @router.post("/upload")
+@limiter.limit("10/hour")
 async def scan_document(
+    request: Request,
     file: UploadFile = File(...),
     context: Optional[str] = Form(default=""),
     current_user: dict = Depends(get_current_user),
@@ -48,7 +55,9 @@ async def scan_document(
 
 
 @router.post("/text")
+@limiter.limit("10/hour")
 async def scan_text(
+    request: Request,
     document_text: str = Form(...),
     context: Optional[str] = Form(default=""),
     current_user: dict = Depends(get_current_user),

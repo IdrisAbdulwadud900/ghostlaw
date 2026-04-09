@@ -2,6 +2,9 @@
 Shared test fixtures for GhostLaw backend tests.
 """
 
+import os
+os.environ["TESTING"] = "1"  # disable rate limiter for tests
+
 import pytest
 from fastapi.testclient import TestClient
 

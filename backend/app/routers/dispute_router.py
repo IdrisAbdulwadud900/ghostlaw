@@ -1,6 +1,9 @@
 """Dispute router — generate and manage dispute letters."""
 
-from fastapi import APIRouter, HTTPException, Depends
+import os
+from fastapi import APIRouter, HTTPException, Depends, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from app.models.schemas import DisputeRequest
 from app.services.auth_service import get_current_user
 from app.services.ai_service import generate_dispute_letter, DEMO_DISPUTE_LETTER
@@ -14,10 +17,14 @@ from app.config import get_settings
 
 router = APIRouter(prefix="/dispute", tags=["dispute"])
 settings = get_settings()
+_testing = os.environ.get("TESTING", "").lower() in ("1", "true", "yes")
+limiter = Limiter(key_func=get_remote_address, enabled=not _testing)
 
 
 @router.post("/generate")
+@limiter.limit("10/hour")
 async def create_dispute(
+    request: Request,
     req: DisputeRequest,
     current_user: dict = Depends(get_current_user),
 ):
