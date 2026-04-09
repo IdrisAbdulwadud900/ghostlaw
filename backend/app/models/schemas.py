@@ -67,6 +67,7 @@ class DisputeRequest(BaseModel):
     issues_to_dispute: List[int] = Field(default_factory=list)  # indices
     tone: str = "firm_but_polite"  # firm_but_polite, aggressive, friendly
     custom_context: str = ""
+    country: str = "US"  # US or NG
 
 
 class DisputeLetter(BaseModel):
@@ -94,6 +95,7 @@ class CallRequest(BaseModel):
     phone_number: str = ""
     objective: str  # what you want the AI to achieve
     max_wait_minutes: int = 30
+    country: str = "US"  # US or NG
 
 
 class CallResult(BaseModel):

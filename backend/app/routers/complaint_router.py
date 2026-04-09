@@ -20,10 +20,11 @@ limiter = Limiter(key_func=get_remote_address, enabled=not _testing)
 class ComplaintRequest(BaseModel):
     scan_id: str
     dispute_id: Optional[str] = None
-    agency: str = "cfpb"  # cfpb, fcc, state_ag
+    agency: str = "cfpb"  # cfpb, fcc, state_ag, ftc | NG: fccpc, cbn, ncc, nerc, ndpc, efcc
     state: str = ""
     company_name: str = ""
     custom_context: str = ""
+    country: str = "US"  # US or NG
 
 
 DEMO_COMPLAINT = {
@@ -102,6 +103,7 @@ async def generate_complaint(
             state=req.state,
             company_name=req.company_name,
             custom_context=req.custom_context,
+            country=req.country,
         )
     else:
         result = DEMO_COMPLAINT.copy()

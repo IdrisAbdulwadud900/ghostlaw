@@ -60,6 +60,7 @@ async def scan_text(
     request: Request,
     document_text: str = Form(...),
     context: Optional[str] = Form(default=""),
+    country: Optional[str] = Form(default="US"),
     current_user: dict = Depends(get_current_user),
 ):
     """Analyze pasted document text."""
@@ -67,7 +68,7 @@ async def scan_text(
         raise HTTPException(status_code=400, detail="Please provide more document text.")
 
     if settings.gemini_api_key:
-        result = await analyze_document_text(document_text, context or "")
+        result = await analyze_document_text(document_text, context or "", country or "US")
     else:
         result = DEMO_SCAN_RESULT.copy()
 

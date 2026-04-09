@@ -201,10 +201,11 @@ export async function scanDocument(file: File, context: string = "") {
   });
 }
 
-export async function scanText(documentText: string, context: string = "") {
+export async function scanText(documentText: string, context: string = "", country: string = "US") {
   const form = new FormData();
   form.append("document_text", documentText);
   if (context) form.append("context", context);
+  form.append("country", country);
 
   return api("/scan/text", {
     method: "POST",
@@ -225,7 +226,8 @@ export async function generateDispute(
   scanId: string,
   issuesToDispute: number[] = [],
   tone: string = "firm_but_polite",
-  customContext: string = ""
+  customContext: string = "",
+  country: string = "US"
 ) {
   return api("/dispute/generate", {
     method: "POST",
@@ -234,6 +236,7 @@ export async function generateDispute(
       issues_to_dispute: issuesToDispute,
       tone,
       custom_context: customContext,
+      country,
     }),
   });
 }
@@ -252,7 +255,8 @@ export async function requestCall(
   companyName: string,
   objective: string,
   disputeId: string = "",
-  phoneNumber: string = ""
+  phoneNumber: string = "",
+  country: string = "US"
 ) {
   return api("/call/request", {
     method: "POST",
@@ -262,6 +266,7 @@ export async function requestCall(
       company_name: companyName,
       phone_number: phoneNumber,
       objective,
+      country,
     }),
   });
 }
@@ -286,7 +291,8 @@ export async function generateComplaint(
   disputeId: string = "",
   companyName: string = "",
   state: string = "",
-  customContext: string = ""
+  customContext: string = "",
+  country: string = "US"
 ) {
   return api("/complaint/generate", {
     method: "POST",
@@ -297,6 +303,7 @@ export async function generateComplaint(
       company_name: companyName,
       state,
       custom_context: customContext,
+      country,
     }),
   });
 }

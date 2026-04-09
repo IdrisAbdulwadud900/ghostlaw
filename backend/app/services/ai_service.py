@@ -115,9 +115,9 @@ IMPORTANT:
     return _parse_json_response(response.text)
 
 
-async def analyze_document_text(document_text: str, user_context: str = "") -> dict:
+async def analyze_document_text(document_text: str, user_context: str = "", country: str = "US") -> dict:
     try:
-        return await _analyze_document_text_impl(document_text, user_context)
+        return await _analyze_document_text_impl(document_text, user_context, country)
     except Exception as e:
         logger.error(f"Gemini analyze_document_text failed: {e}")
         return {
@@ -132,12 +132,42 @@ async def analyze_document_text(document_text: str, user_context: str = "") -> d
         }
 
 
-async def _analyze_document_text_impl(document_text: str, user_context: str = "") -> dict:
+# ── Country-specific legal context ────────────────────────────
+NIGERIA_LEGAL_CONTEXT = """IMPORTANT — This user is in NIGERIA. You MUST cite Nigerian laws and agencies:
+- FCCPA 2018 (Federal Competition and Consumer Protection Act) — S.114-127 for consumer rights, S.131 for unfair practices
+- CBN Consumer Protection Framework 2019 — banks must refund failed transfers within 24-72 hours
+- NCC Consumer Code of Practice — telecom data transparency, billing accuracy
+- NERC Customer Complaints Handling Standards — estimated billing disputes, meter provision
+- Nigeria Data Protection Act 2023 (NDPA) — S.24-28 lawful processing, S.34-38 data subject rights
+- Lagos Tenancy Law 2011 — S.13 (6-month notice for yearly tenants), S.18 (recovery of premises)
+- Currency is Nigerian Naira (₦). Use ₦ not $.
+- Nigerian companies: banks (GTBank, Access Bank, UBA, Zenith, First Bank, Kuda, OPay), telecoms (MTN, Airtel, Glo, 9mobile), DisCos (EKEDC, IKEDC, AEDC, BEDC), loan apps (FairMoney, Carbon, Branch, PalmCredit, OKash)
+- Regulatory agencies: FCCPC, CBN, NCC, NERC, NDPC, EFCC
+- Reference Nigerian case law and CBN circulars where relevant."""
+
+US_LEGAL_CONTEXT = """This user is in the UNITED STATES. Cite US federal and state laws:
+- FDCPA, FCRA, FCBA, Fair Credit Billing Act, No Surprises Act
+- State consumer protection acts, FTC Act Section 5
+- Regulatory agencies: CFPB, FCC, FTC, State AG
+- Currency is USD ($)."""
+
+
+def _get_country_context(country: str) -> str:
+    """Return the legal context string for the given country code."""
+    if country.upper() == "NG":
+        return NIGERIA_LEGAL_CONTEXT
+    return US_LEGAL_CONTEXT
+
+
+async def _analyze_document_text_impl(document_text: str, user_context: str = "", country: str = "US") -> dict:
     """Analyze pasted document text (no image)."""
     model = _get_model()
+    country_ctx = _get_country_context(country)
 
     prompt = f"""You are GhostLaw, an expert AI legal and financial analyst.
 Analyze this document text thoroughly.
+
+{country_ctx}
 
 DOCUMENT TEXT:
 {document_text}
@@ -146,7 +176,7 @@ User's additional context: {user_context or "None provided"}
 
 Return a JSON object with EXACTLY this structure:
 {{
-    "document_type": "medical_bill|lease|contract|insurance|phone_bill|utility_bill|credit_card|fine_ticket|tax_document|subscription|other",
+    "document_type": "medical_bill|lease|contract|insurance|phone_bill|utility_bill|credit_card|fine_ticket|tax_document|subscription|bank_charge|electricity_bill|telecom_charge|loan_app|other",
     "summary": "Brief 1-2 sentence summary of what this document is",
     "plain_english": "Full explanation of the document in simple, plain English that anyone can understand.",
     "issues_found": [
@@ -159,7 +189,7 @@ Return a JSON object with EXACTLY this structure:
     ],
     "total_potential_savings": 0.00,
     "risk_level": "low|medium|high|critical",
-    "your_rights": ["List of specific legal rights the person has"],
+    "your_rights": ["List of specific legal rights the person has — cite the EXACT law sections"],
     "recommended_actions": ["Step-by-step actions to take"]
 }}
 
@@ -174,6 +204,7 @@ async def generate_dispute_letter(
     issues_to_dispute: List[int],
     tone: str = "firm_but_polite",
     custom_context: str = "",
+    country: str = "US",
 ) -> dict:
     """Generate a professional dispute letter based on scan results."""
     model = _get_model()
@@ -190,9 +221,12 @@ async def generate_dispute_letter(
         "aggressive": "Assertive and demanding. Mention regulatory complaints and legal action as next steps.",
         "friendly": "Warm and cooperative, but clear about the issues and expected resolution.",
     }
+    country_ctx = _get_country_context(country)
 
     prompt = f"""You are GhostLaw, an expert consumer advocate AI.
 Generate a professional dispute letter based on this analysis.
+
+{country_ctx}
 
 DOCUMENT SUMMARY: {scan_result.get('summary', '')}
 DOCUMENT TYPE: {scan_result.get('document_type', 'other')}
@@ -226,11 +260,15 @@ async def generate_call_script(
     dispute_letter: Optional[dict],
     company_name: str,
     objective: str,
+    country: str = "US",
 ) -> dict:
     """Generate an AI call script/strategy for the ghost call."""
     model = _get_model()
+    country_ctx = _get_country_context(country)
 
     prompt = f"""You are GhostLaw's Call Strategy AI. Generate a complete phone call script and strategy.
+
+{country_ctx}
 
 COMPANY TO CALL: {company_name}
 OBJECTIVE: {objective}
@@ -269,11 +307,12 @@ async def generate_regulatory_complaint(
     state: str = "",
     company_name: str = "",
     custom_context: str = "",
+    country: str = "US",
 ) -> dict:
-    """Generate a regulatory complaint for CFPB, FCC, or State AG."""
+    """Generate a regulatory complaint for US or Nigerian agencies."""
     try:
         return await _generate_regulatory_complaint_impl(
-            scan_result, dispute_letter, agency, state, company_name, custom_context
+            scan_result, dispute_letter, agency, state, company_name, custom_context, country
         )
     except Exception as e:
         logger.error(f"Gemini generate_regulatory_complaint failed: {e}")
@@ -287,10 +326,47 @@ async def _generate_regulatory_complaint_impl(
     state: str,
     company_name: str,
     custom_context: str,
+    country: str = "US",
 ) -> dict:
     model = _get_model()
+    country_ctx = _get_country_context(country)
 
-    agency_info = {
+    # ── Nigerian agencies ─────────────────────────────────────
+    ng_agency_info = {
+        "fccpc": {
+            "name": "Federal Competition and Consumer Protection Commission",
+            "url": "https://fccpc.gov.ng/consumers/complaint-handling/",
+            "scope": "all consumer complaints — product safety, unfair practices, vendor fraud, e-commerce, billing disputes. Cite FCCPA 2018 S.114-127, S.131",
+        },
+        "cbn": {
+            "name": "Central Bank of Nigeria — Consumer Protection Department",
+            "url": "https://www.cbn.gov.ng/",
+            "scope": "banking complaints — failed transfers, unauthorized debits, excess charges, ATM issues, fintech disputes. Banks have 72 hours to resolve per CBN Consumer Protection Framework. Email: cpd@cbn.gov.ng",
+        },
+        "ncc": {
+            "name": "Nigerian Communications Commission",
+            "url": "https://consumer.ncc.gov.ng/",
+            "scope": "telecom complaints — MTN, Airtel, Glo, 9mobile: data depletion, unauthorized subscriptions, network quality, billing errors. Toll-free: 622. Cite NCC Consumer Code of Practice",
+        },
+        "nerc": {
+            "name": "Nigerian Electricity Regulatory Commission",
+            "url": "https://nerc.gov.ng/contact-nerc/",
+            "scope": "electricity complaints — estimated billing, meter issues, outages, DisCo disputes. 3-tier escalation: 1) DisCo CCU → 2) NERC Forum → 3) NERC HQ. Cite NERC Customer Complaints Handling Standards",
+        },
+        "ndpc": {
+            "name": "Nigeria Data Protection Commission",
+            "url": "https://services.ndpc.gov.ng/breach/",
+            "scope": "data privacy — loan app contact harvesting, unauthorized data sharing, defamatory messages, privacy breaches. Cite NDPA 2023 S.24-28, S.34-38. Email: info@ndpc.gov.ng",
+        },
+        "efcc": {
+            "name": "Economic and Financial Crimes Commission",
+            "url": "https://www.efcc.gov.ng/",
+            "scope": "fraud, scams, cybercrime, financial crimes. Email: efaborresearch@efccnigeria.org",
+        },
+    }
+
+    # ── US agencies ───────────────────────────────────────────
+    us_agency_info = {
         "cfpb": {
             "name": "Consumer Financial Protection Bureau",
             "url": "https://www.consumerfinance.gov/complaint/",
@@ -313,10 +389,13 @@ async def _generate_regulatory_complaint_impl(
         },
     }
 
-    target = agency_info.get(agency, agency_info["cfpb"])
+    agency_info = ng_agency_info if country.upper() == "NG" else us_agency_info
+    target = agency_info.get(agency, list(agency_info.values())[0])
 
     prompt = f"""You are GhostLaw's Regulatory Complaint AI.
 Generate a formal complaint to file with a government agency.
+
+{country_ctx}
 
 AGENCY: {target['name']}
 FILING URL: {target['url']}

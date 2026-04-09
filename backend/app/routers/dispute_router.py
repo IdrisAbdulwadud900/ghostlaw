@@ -41,6 +41,7 @@ async def create_dispute(
             issues_to_dispute=req.issues_to_dispute,
             tone=req.tone,
             custom_context=req.custom_context,
+            country=req.country,
         )
     else:
         result = DEMO_DISPUTE_LETTER.copy()

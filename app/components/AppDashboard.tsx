@@ -61,6 +61,45 @@ const TEMPLATES: QuickTemplate[] = [
   },
 ];
 
+// ── Nigerian Templates ─────────────────────────────────────────
+const NG_TEMPLATES: QuickTemplate[] = [
+  {
+    label: "🏦 Bank Reversal",
+    prompt: `TRANSACTION ALERT \u2014 GTBank\nAcct: 0123456789\nDate: March 15, 2025, 2:47 PM\n\nDebit: \u20a685,000.00\nRef: NIP/250315/GTB/087234\nRemarks: Transfer to 2087654321/Access Bank\n\nBUT: The recipient NEVER received the money. I've waited 5 days. Bank says "it's being investigated" but no reversal. This was my rent money.`,
+    context: "Failed bank transfer — debited but not credited to recipient. Look for CBN Consumer Protection Framework violations, 24-72hr resolution mandate",
+  },
+  {
+    label: "🚨 Loan App",
+    prompt: `I borrowed \u20a630,000 from OKash loan app 3 months ago. I repaid \u20a645,000 (the full amount with interest). Now they say I still owe \u20a622,000 in "processing fees" and "late penalties". They have:\n- Sent threatening SMS to all my phone contacts\n- Called my employer saying I'm a debtor\n- Posted my photo on a WhatsApp group calling me a thief\n- They accessed my contacts without permission when I installed the app`,
+    context: "Predatory loan app harassment — look for NDPA 2023 violations (unauthorized data access), FCCPA defamation, and CBN lending regulations",
+  },
+  {
+    label: "⚡ Light Bill",
+    prompt: `ELECTRICITY BILL \u2014 Ikeja Electric (IKEDC)\nAccount: 04/12/01/0456-01\nMonth: February 2025\n\nEstimated Consumption: 890 kWh\nAmount Due: \u20a647,500.00\nBilling Type: ESTIMATED (no meter installed)\n\nBut: I've applied for a prepaid meter 8 months ago. My apartment is a 1-bedroom, usually empty during the day. There's no way I'm using 890 kWh. My neighbor with same apartment size and a meter pays \u20a68,000-12,000/month.`,
+    context: "Estimated electricity billing — look for NERC regulation violations, right to metering, estimated billing complaints handling standards",
+  },
+  {
+    label: "📱 Data/Airtime",
+    prompt: `MTN NIGERIA — Line: 0803 XXX XXXX\n\nMy 10GB monthly data plan (\u20a63,500) activated on March 1st was completely depleted by March 8th. I barely use data — no streaming, no downloads. Also:\n- Auto-subscribed to "MTN Caller Tunez" at \u20a6100/week (never requested)\n- Auto-subscribed to "Daily News Alert" at \u20a650/day (never requested)  \n- \u20a62,400 deducted in the last month from these "services"\n\nI've called 180 three times. Each time they say "it has been escalated" but nothing happens.`,
+    context: "Telecom data depletion and unauthorized VAS subscriptions — look for NCC Consumer Code violations, right to opt-in only services",
+  },
+  {
+    label: "📺 DSTV/GoTV",
+    prompt: `DSTV SUBSCRIPTION \u2014 MultiChoice\nSmartcard: 7032XXXXXX\nPackage: DStv Compact (\u20a615,700/month)\n\nIssues:\n- Service was down for 12 days in February (decoder showed "No Signal")\n- Called 08039003788 multiple times, told it was "area maintenance"\n- Was auto-renewed on March 1 for full \u20a615,700 despite 12 days downtime\n- Requested pro-rata credit/refund — denied\n- Channels keep getting removed from my package but price keeps going UP`,
+    context: "Pay TV subscription dispute — look for FCCPA consumer rights, right to service paid for, pro-rata refund for downtime",
+  },
+  {
+    label: "🏠 Rent/Landlord",
+    prompt: `My landlord at [Address], Lagos, gave me a 1-week "quit notice" to vacate my apartment. I paid \u20a61,200,000 for a 1-year rent starting June 2024. The lease expires June 2025. He says he wants to renovate and has already showed the apartment to new tenants. He also:\n- Changed the gate lock last week\n- Cut off my water supply\n- Threatened to remove my belongings if I don't leave by Friday`,
+    context: "Illegal ejection — look for Lagos Tenancy Law 2011 violations, required notice periods, tenant rights, self-help eviction illegality",
+  },
+  {
+    label: "🛒 Online Order",
+    prompt: `JUMIA ORDER #JUM-NG-885721\nOrdered: Samsung Galaxy A54 (\u20a6189,000)\nPaid via: Paystack — Card ending 4521\nOrder Date: Feb 20, 2025\nDelivery Date: "Feb 25-28"\n\nWhat arrived on March 5:\n- A clearly used/refurbished phone (scratches on screen, old software)\n- IMEI doesn't match what's on the box\n- Requested return/refund on March 5\n- Jumia says "return window expired" (it was only 5 days late!)\n- \u20a6189,000 gone.`,
+    context: "E-commerce fraud/defective product — look for FCCPA consumer protection, right to refund for non-conforming goods, Jumia marketplace liability",
+  },
+];
+
 // ── Component ────────────────────────────────────────────────
 interface AppDashboardProps {
   onLogout: () => void;
@@ -72,6 +111,21 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("Analyzing your document...");
   const [mobileNav, setMobileNav] = useState(false);
+
+  // Country state (persisted)
+  const [country, setCountry] = useState<"US" | "NG">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("ghostlaw_country") as "US" | "NG") || "US";
+    }
+    return "US";
+  });
+  const switchCountry = (c: "US" | "NG") => {
+    setCountry(c);
+    if (typeof window !== "undefined") localStorage.setItem("ghostlaw_country", c);
+    // Reset complaint agency to first of new country
+    setComplaintAgency(c === "NG" ? "fccpc" : "cfpb");
+  };
+  const currencySymbol = country === "NG" ? "₦" : "$";
 
   // Scan state
   const [scanResult, setScanResult] = useState<ApiResult | null>(null);
@@ -131,7 +185,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     setLoading(true);
     setLoadingMsg("Analyzing your document...");
     try {
-      const result = await scanText(textInput, scanContext);
+      const result = await scanText(textInput, scanContext, country);
       setScanResult(result);
       addScanToHistory(result);
       refreshLocal();
@@ -139,14 +193,14 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Scan failed");
     } finally { setLoading(false); }
-  }, [textInput, scanContext, refreshLocal]);
+  }, [textInput, scanContext, refreshLocal, country]);
 
   const handleGenerateDispute = useCallback(async () => {
     if (!scanResult?.scan_id) return;
     setLoading(true);
     setLoadingMsg("Writing your dispute letter...");
     try {
-      const result = await generateDispute(scanResult.scan_id as string, [], disputeTone);
+      const result = await generateDispute(scanResult.scan_id as string, [], disputeTone, "", country);
       setDisputeResult(result);
       addDisputeToHistory(result);
       refreshLocal();
@@ -154,7 +208,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Failed to generate dispute");
     } finally { setLoading(false); }
-  }, [scanResult, disputeTone, refreshLocal]);
+  }, [scanResult, disputeTone, refreshLocal, country]);
 
   const handleRequestCall = useCallback(async () => {
     if (!scanResult?.scan_id || !companyName) return;
@@ -164,7 +218,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       const result = await requestCall(
         scanResult.scan_id as string, companyName,
         callObjective || "Dispute overcharges and negotiate a reduction",
-        (disputeResult?.dispute_id as string) || ""
+        (disputeResult?.dispute_id as string) || "", "", country
       );
       setCallResult(result);
       addCallToHistory(result);
@@ -173,7 +227,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Failed to generate call script");
     } finally { setLoading(false); }
-  }, [scanResult, companyName, callObjective, disputeResult, refreshLocal]);
+  }, [scanResult, companyName, callObjective, disputeResult, refreshLocal, country]);
 
   const handleGenerateComplaint = useCallback(async () => {
     if (!scanResult?.scan_id) return;
@@ -182,14 +236,14 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     try {
       const result = await generateComplaint(
         scanResult.scan_id as string, complaintAgency,
-        (disputeResult?.dispute_id as string) || "", companyName,
+        (disputeResult?.dispute_id as string) || "", companyName, "", "", country
       );
       setComplaintResult(result);
       setActiveTab("complaint");
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Failed to generate complaint");
     } finally { setLoading(false); }
-  }, [scanResult, complaintAgency, disputeResult, companyName]);
+  }, [scanResult, complaintAgency, disputeResult, companyName, country]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -301,6 +355,31 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
           </div>
         </div>
 
+        {/* Country toggle */}
+        <div className="px-3 py-2.5" style={{ borderBottom: "1px solid var(--border)" }}>
+          <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 6 }}>Region</div>
+          <div className="flex gap-1">
+            {([["US", "🇺🇸", "USA"], ["NG", "🇳🇬", "Nigeria"]] as const).map(([code, flag, label]) => (
+              <button
+                key={code}
+                onClick={() => switchCountry(code)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 transition-all"
+                style={{
+                  fontFamily: mono,
+                  fontSize: 11,
+                  fontWeight: country === code ? 600 : 400,
+                  color: country === code ? "var(--white)" : "var(--muted)",
+                  background: country === code ? "var(--red-dim)" : "transparent",
+                  border: `1px solid ${country === code ? "rgba(232,25,44,0.3)" : "var(--border)"}`,
+                }}
+              >
+                <span style={{ fontSize: 14 }}>{flag}</span>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Nav */}
         <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-auto">
           {navItems.map((item) => (
@@ -335,7 +414,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 <p style={{ fontFamily: mono, fontSize: 9, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>scans</p>
               </div>
               <div className="text-center p-2" style={{ background: "var(--surface)" }}>
-                <p style={{ fontFamily: display, fontSize: 22, color: "var(--red)" }}>${localStats.confirmed_savings || localStats.estimated_savings}</p>
+                <p style={{ fontFamily: display, fontSize: 22, color: "var(--red)" }}>{currencySymbol}{localStats.confirmed_savings || localStats.estimated_savings}</p>
                 <p style={{ fontFamily: mono, fontSize: 9, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{localStats.confirmed_savings > 0 ? "saved" : "potential"}</p>
               </div>
             </div>
@@ -375,6 +454,27 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
         </div>
         {mobileNav && (
           <div className="px-3 pb-3 space-y-0.5" style={{ background: "var(--obsidian)", borderBottom: "1px solid var(--border)" }}>
+            {/* Mobile country toggle */}
+            <div className="flex gap-1 mb-2">
+              {([["US", "🇺🇸", "USA"], ["NG", "🇳🇬", "Nigeria"]] as const).map(([code, flag, label]) => (
+                <button
+                  key={code}
+                  onClick={() => switchCountry(code)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2"
+                  style={{
+                    fontFamily: mono,
+                    fontSize: 11,
+                    fontWeight: country === code ? 600 : 400,
+                    color: country === code ? "var(--white)" : "var(--muted)",
+                    background: country === code ? "var(--red-dim)" : "transparent",
+                    border: `1px solid ${country === code ? "rgba(232,25,44,0.3)" : "var(--border)"}`,
+                  }}
+                >
+                  <span style={{ fontSize: 14 }}>{flag}</span>
+                  {label}
+                </button>
+              ))}
+            </div>
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -474,11 +574,19 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               <div className="p-6 space-y-5">
                 {/* Templates */}
                 <div>
-                  <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>
-                    Quick Start
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
+                      Quick Start {country === "NG" ? "🇳🇬" : "🇺🇸"}
+                    </div>
+                    <button
+                      onClick={() => switchCountry(country === "US" ? "NG" : "US")}
+                      style={{ fontFamily: mono, fontSize: 10, color: "var(--red)", cursor: "pointer", background: "none", border: "none" }}
+                    >
+                      Switch to {country === "US" ? "Nigeria 🇳🇬" : "USA 🇺🇸"}
+                    </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {TEMPLATES.map((t) => (
+                    {(country === "NG" ? NG_TEMPLATES : TEMPLATES).map((t) => (
                       <button
                         key={t.label}
                         onClick={() => applyTemplate(t)}
@@ -494,7 +602,9 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 <textarea
                   value={textInput}
                   onChange={(e) => { setTextInput(e.target.value); setActiveTemplate(null); }}
-                  placeholder={`Paste your document, bill, or contract here...\n\nOr describe the situation:\n'My medical bill has a $450 charge for a blood test \nthat Medicare covers. The hospital is saying I owe it.'\n\nGhostLaw will scan for:\n• Hidden fees & overcharges\n• Illegal or unenforceable clauses\n• Violations of consumer protection law\n• Your rights and dispute options`}
+                  placeholder={country === "NG" 
+                    ? `Paste your document, bill, or message here...\n\nOr describe the situation:\n'GTBank debited me ₦85,000 for a transfer that \nnever reached the recipient. It's been 5 days.'\n\nGhostLaw will scan for:\n• Hidden fees & overcharges\n• Illegal or unenforceable clauses\n• Violations of Nigerian consumer protection law\n• Your rights and dispute options`
+                    : `Paste your document, bill, or contract here...\n\nOr describe the situation:\n'My medical bill has a $450 charge for a blood test \nthat Medicare covers. The hospital is saying I owe it.'\n\nGhostLaw will scan for:\n• Hidden fees & overcharges\n• Illegal or unenforceable clauses\n• Violations of consumer protection law\n• Your rights and dispute options`}
                   className="input-ghost resize-none w-full"
                   style={{ minHeight: 260 }}
                 />
@@ -508,7 +618,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                     type="text"
                     value={scanContext}
                     onChange={(e) => setScanContext(e.target.value)}
-                    placeholder="e.g., 'I only stayed 2 hours' or 'I already paid $500'"
+                    placeholder={country === "NG" ? "e.g., 'I already complained to the bank' or 'No meter installed'" : "e.g., 'I only stayed 2 hours' or 'I already paid $500'"}
                     className="input-ghost"
                     style={{ padding: "0.75rem 1rem" }}
                   />
@@ -858,6 +968,13 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                       >
                         ✉ Email
                       </button>
+                      <button
+                        onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`*Dispute Letter — ${disputeResult.subject_line}*\n\n${disputeResult.letter_body}`)}`, "_blank")}
+                        className="btn-sm"
+                        style={{ color: "#25D366", borderColor: "rgba(37,211,102,0.3)" }}
+                      >
+                        📱 WhatsApp
+                      </button>
                     </div>
                   </div>
                   <div className="p-6">
@@ -875,10 +992,21 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 <div className="card-surface p-5" style={{ background: "rgba(65,120,232,0.03)", borderColor: "rgba(65,120,232,0.15)" }}>
                   <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4178e8", marginBottom: 10 }}>After you send this</div>
                   <ol className="space-y-1.5" style={{ fontFamily: mono, fontSize: 11, color: "var(--muted2)" }}>
-                    <li><span style={{ color: "#4178e8", fontWeight: 600 }}>1.</span> Send by email AND certified mail if the amount is over $500</li>
-                    <li><span style={{ color: "#4178e8", fontWeight: 600 }}>2.</span> They have 30 days to respond (federal requirement)</li>
-                    <li><span style={{ color: "#4178e8", fontWeight: 600 }}>3.</span> If no response, file a complaint with CFPB or your State AG</li>
-                    <li><span style={{ color: "#4178e8", fontWeight: 600 }}>4.</span> Come back and mark the outcome to track your wins</li>
+                    {country === "NG" ? (
+                      <>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>1.</span> Send by email AND keep a screenshot of the delivery confirmation</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>2.</span> Banks must respond within 24-72 hours (CBN mandate)</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>3.</span> If no response, file with FCCPC or the relevant regulator (CBN, NCC, NERC)</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>4.</span> Come back and mark the outcome to track your wins</li>
+                      </>
+                    ) : (
+                      <>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>1.</span> Send by email AND certified mail if the amount is over $500</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>2.</span> They have 30 days to respond (federal requirement)</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>3.</span> If no response, file a complaint with CFPB or your State AG</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>4.</span> Come back and mark the outcome to track your wins</li>
+                      </>
+                    )}
                   </ol>
                 </div>
 
@@ -930,7 +1058,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   <label style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", display: "block", marginBottom: 6 }}>
                     Who are you calling?
                   </label>
-                  <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="input-ghost" style={{ padding: "0.75rem 1rem" }} placeholder="e.g., Metro General Hospital, Comcast, AT&T" />
+                  <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="input-ghost" style={{ padding: "0.75rem 1rem" }} placeholder={country === "NG" ? "e.g., GTBank, MTN, Ikeja Electric, OKash" : "e.g., Metro General Hospital, Comcast, AT&T"} />
                 </div>
                 <div>
                   <label style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", display: "block", marginBottom: 6 }}>
@@ -1059,6 +1187,13 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                         >
                           ↓ PDF
                         </button>
+                        <button
+                          onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildFullScript())}`, "_blank")}
+                          className="py-3 px-5 transition-colors"
+                          style={{ fontFamily: mono, fontSize: 12, color: "#25D366", background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.2)" }}
+                        >
+                          📱 WhatsApp
+                        </button>
                       </div>
                     </>
                   );
@@ -1084,14 +1219,21 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             {!complaintResult ? (
               <div className="space-y-4">
                 <div className="card-surface p-5">
-                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Pick an agency</div>
+                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Pick an agency {country === "NG" ? "🇳🇬" : "🇺🇸"}</div>
                   <div className="space-y-2">
-                    {[
+                    {(country === "NG" ? [
+                      { id: "fccpc", name: "FCCPC", full: "Federal Competition & Consumer Protection Commission", desc: "General consumer complaints — products, services, unfair practices", stat: "Primary consumer body" },
+                      { id: "cbn", name: "CBN", full: "Central Bank of Nigeria", desc: "Bank charges, failed transfers, loan issues, unauthorized debits", stat: "24-72hr resolution mandate" },
+                      { id: "ncc", name: "NCC", full: "Nigerian Communications Commission", desc: "MTN, Airtel, Glo, 9mobile — data, airtime, billing, service quality", stat: "Enforces Consumer Code" },
+                      { id: "nerc", name: "NERC", full: "Nigerian Electricity Regulatory Commission", desc: "EKEDC, IKEDC, AEDC — estimated billing, metering, outages", stat: "Metering is your right" },
+                      { id: "ndpc", name: "NDPC", full: "Nigeria Data Protection Commission", desc: "Data privacy violations, unauthorized contact access, spam", stat: "NDPA 2023 enforcement" },
+                      { id: "efcc", name: "EFCC", full: "Economic & Financial Crimes Commission", desc: "Fraud, scams, financial crimes, online fraud", stat: "Criminal investigations" },
+                    ] : [
                       { id: "cfpb", name: "CFPB", full: "Consumer Financial Protection Bureau", desc: "Medical bills, debt collection, banking fees, credit card disputes", stat: "97% response rate" },
                       { id: "fcc", name: "FCC", full: "Federal Communications Commission", desc: "Phone bills, internet, cable, wireless carrier issues", stat: "Companies respond within days" },
                       { id: "state_ag", name: "State AG", full: "State Attorney General", desc: "Local businesses, price gouging, fraud, deceptive practices", stat: "Can investigate and sue" },
                       { id: "ftc", name: "FTC", full: "Federal Trade Commission", desc: "Scams, fraud, deceptive advertising, subscription traps", stat: "Builds cases from complaints" },
-                    ].map((a) => (
+                    ]).map((a) => (
                       <button
                         key={a.id}
                         onClick={() => setComplaintAgency(a.id)}
@@ -1178,6 +1320,13 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                         >
                           ✉ Email
                         </button>
+                        <button
+                          onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`*${(complaintResult.agency_full_name as string) || complaintAgency.toUpperCase()} Complaint*\n\n${complaintResult.complaint_text}`)}`, "_blank")}
+                          className="btn-sm"
+                          style={{ color: "#25D366", borderColor: "rgba(37,211,102,0.3)" }}
+                        >
+                          📱 WhatsApp
+                        </button>
                       </div>
                     </div>
                     <pre className="p-6 max-h-96 overflow-auto" style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
@@ -1246,7 +1395,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 { label: "Scanned", value: localStats.total_scans, color: "var(--red)" },
                 { label: "Disputes", value: localStats.total_disputes, color: "#4178e8" },
                 { label: "Call Scripts", value: localStats.total_calls, color: "#e8c541" },
-                { label: localStats.confirmed_savings > 0 ? "Confirmed Saved" : "Potential Savings", value: `$${(localStats.confirmed_savings || localStats.estimated_savings).toLocaleString()}`, color: "#41e866" },
+                { label: localStats.confirmed_savings > 0 ? "Confirmed Saved" : "Potential Savings", value: `${currencySymbol}${(localStats.confirmed_savings || localStats.estimated_savings).toLocaleString()}`, color: "#41e866" },
               ].map((s, i) => (
                 <div key={i} className="card-surface p-4">
                   <div style={{ fontFamily: display, fontSize: 28, color: s.color, lineHeight: 1 }}>{s.value}</div>
@@ -1284,7 +1433,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                         </p>
                       </div>
                       <div className="px-5 py-3.5 border-r border-[var(--border)] flex items-center" style={{ fontFamily: display, fontSize: 16, color: "var(--red)" }}>
-                        {(scan.total_potential_savings as number) > 0 ? `$${(scan.total_potential_savings as number).toLocaleString()}` : "—"}
+                        {(scan.total_potential_savings as number) > 0 ? `${currencySymbol}${(scan.total_potential_savings as number).toLocaleString()}` : "—"}
                       </div>
                       <div className="px-5 py-3.5 flex items-center">
                         {outcome ? (

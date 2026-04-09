@@ -46,6 +46,7 @@ async def request_call(
             dispute_letter=dispute,
             company_name=req.company_name,
             objective=req.objective,
+            country=req.country,
         )
     else:
         script = {
