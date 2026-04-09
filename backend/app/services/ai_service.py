@@ -1,12 +1,14 @@
 """
-GhostLaw AI Service — Powered by Google Gemini 2.0 Flash (FREE tier)
-Free: 15 requests/min, 1,500 requests/day, 1M tokens/day
+GhostLaw AI Service — Powered by Google Gemini (FREE tier)
+Primary: Gemini 2.5 Flash  |  Fallback: Gemini 2.0 Flash Lite
+Automatic model rotation on 429 quota errors.
 """
 
 import google.generativeai as genai
 import json
 import re
 import logging
+import asyncio
 from typing import Optional, List
 from app.config import get_settings
 
@@ -18,12 +20,47 @@ settings = get_settings()
 if settings.gemini_api_key:
     genai.configure(api_key=settings.gemini_api_key)
 
-# Use Gemini 2.0 Flash — free, fast, multimodal (reads images!)
-MODEL_NAME = "gemini-2.0-flash"
+# Model cascade — if primary hits quota, try the next one.
+# Each model has its own per-model free-tier quota.
+MODEL_CASCADE = [
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+]
+MODEL_NAME = MODEL_CASCADE[0]  # primary
 
 
-def _get_model():
-    return genai.GenerativeModel(MODEL_NAME)
+def _get_model(model_name: Optional[str] = None):
+    return genai.GenerativeModel(model_name or MODEL_NAME)
+
+
+async def _generate_with_fallback(generate_fn, *, retries: int = 2):
+    """
+    Try generate_fn(model) across the model cascade.
+    On 429 / ResourceExhausted, wait briefly then try the next model.
+    """
+    last_exc = None
+    for model_name in MODEL_CASCADE:
+        model = _get_model(model_name)
+        for attempt in range(retries):
+            try:
+                return generate_fn(model)
+            except Exception as e:
+                last_exc = e
+                err = str(e).lower()
+                if "429" in err or "resource" in err or "quota" in err:
+                    wait = 2 ** attempt
+                    logger.warning(
+                        f"Gemini {model_name} quota hit (attempt {attempt+1}), "
+                        f"waiting {wait}s before next try…"
+                    )
+                    await asyncio.sleep(wait)
+                    continue  # retry same model
+                raise  # non-quota error → bubble up immediately
+        # exhausted retries for this model → move to next in cascade
+        logger.warning(f"Gemini {model_name} exhausted retries, trying next model…")
+    # all models exhausted
+    raise last_exc  # type: ignore[misc]
 
 
 def _parse_json_response(text: str) -> dict:
@@ -70,8 +107,6 @@ async def analyze_document(image_bytes: bytes, mime_type: str, user_context: str
 
 
 async def _analyze_document_impl(image_bytes: bytes, mime_type: str, user_context: str = "") -> dict:
-    model = _get_model()
-
     prompt = f"""You are GhostLaw, an expert AI legal and financial analyst. 
 Analyze this document image thoroughly.
 
@@ -105,11 +140,10 @@ IMPORTANT:
 - Always side with the consumer. Be their advocate.
 """
 
-    response = model.generate_content(
-        [
-            prompt,
-            {"mime_type": mime_type, "data": image_bytes},
-        ]
+    response = await _generate_with_fallback(
+        lambda model: model.generate_content(
+            [prompt, {"mime_type": mime_type, "data": image_bytes}]
+        )
     )
 
     return _parse_json_response(response.text)
@@ -161,7 +195,6 @@ def _get_country_context(country: str) -> str:
 
 async def _analyze_document_text_impl(document_text: str, user_context: str = "", country: str = "US") -> dict:
     """Analyze pasted document text (no image)."""
-    model = _get_model()
     country_ctx = _get_country_context(country)
 
     prompt = f"""You are GhostLaw, an expert AI legal and financial analyst.
@@ -195,7 +228,9 @@ Return a JSON object with EXACTLY this structure:
 
 Be aggressive in finding issues. Always side with the consumer."""
 
-    response = model.generate_content(prompt)
+    response = await _generate_with_fallback(
+        lambda model: model.generate_content(prompt)
+    )
     return _parse_json_response(response.text)
 
 
@@ -207,7 +242,6 @@ async def generate_dispute_letter(
     country: str = "US",
 ) -> dict:
     """Generate a professional dispute letter based on scan results."""
-    model = _get_model()
 
     # Select specific issues or all
     all_issues = scan_result.get("issues_found", [])
@@ -251,7 +285,9 @@ Return a JSON object with EXACTLY this structure:
 
 Make the letter POWERFUL. This should make the company want to resolve it immediately."""
 
-    response = model.generate_content(prompt)
+    response = await _generate_with_fallback(
+        lambda model: model.generate_content(prompt)
+    )
     return _parse_json_response(response.text)
 
 
@@ -263,7 +299,6 @@ async def generate_call_script(
     country: str = "US",
 ) -> dict:
     """Generate an AI call script/strategy for the ghost call."""
-    model = _get_model()
     country_ctx = _get_country_context(country)
 
     prompt = f"""You are GhostLaw's Call Strategy AI. Generate a complete phone call script and strategy.
@@ -296,7 +331,9 @@ Return a JSON object with this structure:
 
 Make this script so good that anyone could follow it and win the dispute."""
 
-    response = model.generate_content(prompt)
+    response = await _generate_with_fallback(
+        lambda model: model.generate_content(prompt)
+    )
     return _parse_json_response(response.text)
 
 
@@ -328,7 +365,6 @@ async def _generate_regulatory_complaint_impl(
     custom_context: str,
     country: str = "US",
 ) -> dict:
-    model = _get_model()
     country_ctx = _get_country_context(country)
 
     # ── Nigerian agencies ─────────────────────────────────────
@@ -424,7 +460,9 @@ Return a JSON object:
 
 Make the complaint devastating. Government agencies prioritize well-documented, specific complaints."""
 
-    response = model.generate_content(prompt)
+    response = await _generate_with_fallback(
+        lambda model: model.generate_content(prompt)
+    )
     return _parse_json_response(response.text)
 
 
