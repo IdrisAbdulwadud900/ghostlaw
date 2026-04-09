@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Ghost, X, Loader2 } from "lucide-react";
+import { Ghost, X, Loader2, Mail, Lock, User } from "lucide-react";
+import { motion } from "framer-motion";
 import { signup, login } from "@/lib/api";
 
 interface AuthModalProps {
@@ -38,55 +39,70 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative glass-card p-8 w-full max-w-md">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-          <X className="w-5 h-5" />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
+      
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="relative glass-card p-7 w-full max-w-sm"
+      >
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
+        >
+          <X className="w-4 h-4" />
         </button>
 
-        <div className="text-center mb-6">
-          <Ghost className="w-12 h-12 text-purple-400 mx-auto mb-3" />
-          <h2 className="text-2xl font-bold">
-            {mode === "signup" ? "Create Your Account" : "Welcome Back"}
+        <div className="text-center mb-7">
+          <Ghost className="w-10 h-10 text-purple-400 mx-auto mb-3" />
+          <h2 className="text-xl font-bold">
+            {mode === "signup" ? "Create your account" : "Welcome back"}
           </h2>
-          <p className="text-gray-400 text-sm mt-1">
-            {mode === "signup" ? "Start fighting bills in 30 seconds" : "Continue saving money"}
+          <p className="text-gray-500 text-sm mt-1">
+            {mode === "signup" ? "Start scanning bills in 30 seconds" : "Pick up where you left off"}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           {mode === "signup" && (
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">Name</label>
+            <div className="relative">
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-[#1a1a2e] border border-[#2a2a3e] focus:border-purple-500 focus:outline-none text-white"
+                className="w-full pl-10 pr-4 py-3 input-base text-sm"
                 placeholder="Your name"
                 required
               />
             </div>
           )}
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Email</label>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-[#1a1a2e] border border-[#2a2a3e] focus:border-purple-500 focus:outline-none text-white"
+              className="w-full pl-10 pr-4 py-3 input-base text-sm"
               placeholder="you@email.com"
               required
             />
           </div>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Password</label>
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-[#1a1a2e] border border-[#2a2a3e] focus:border-purple-500 focus:outline-none text-white"
+              className="w-full pl-10 pr-4 py-3 input-base text-sm"
               placeholder="••••••••"
               required
               minLength={6}
@@ -94,26 +110,28 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm text-center">{error}</p>
+            <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/15">
+              <p className="text-red-400 text-sm text-center">{error}</p>
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 btn-primary rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-            {mode === "signup" ? "Create Account" : "Sign In"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            {mode === "signup" ? "Create account" : "Sign in"}
           </button>
         </form>
 
-        <p className="text-center text-gray-400 text-sm mt-4">
+        <p className="text-center text-gray-500 text-xs mt-5">
           {mode === "signup" ? "Already have an account?" : "Don't have an account?"}{" "}
-          <button onClick={onSwitchMode} className="text-purple-400 hover:underline">
+          <button onClick={onSwitchMode} className="text-purple-400 hover:text-purple-300 transition-colors">
             {mode === "signup" ? "Sign in" : "Sign up"}
           </button>
         </p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

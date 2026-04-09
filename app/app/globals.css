@@ -8,8 +8,8 @@
   --ghost-orange: #f59e0b;
   --ghost-dark: #0f0f1a;
   --ghost-darker: #080810;
-  --ghost-card: #1a1a2e;
-  --ghost-border: #2a2a3e;
+  --ghost-card: #12121e;
+  --ghost-border: #1e1e30;
 }
 
 @theme inline {
@@ -19,58 +19,158 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* ── Base ─────────────────────────────────── */
 body {
   background: #080810;
   color: #e2e8f0;
 }
 
-/* Glow effects */
-.glow-purple { box-shadow: 0 0 20px rgba(124,58,237,0.3), 0 0 60px rgba(124,58,237,0.1); }
-.glow-green { box-shadow: 0 0 20px rgba(16,185,129,0.3), 0 0 60px rgba(16,185,129,0.1); }
-.glow-blue { box-shadow: 0 0 20px rgba(59,130,246,0.3), 0 0 60px rgba(59,130,246,0.1); }
+::selection {
+  background: rgba(124,58,237,0.35);
+  color: #fff;
+}
 
+/* ── Typography ───────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #7c3aed, #3b82f6, #10b981);
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 40%, #3b82f6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-text-fire {
-  background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.glass-card {
-  background: rgba(26,26,46,0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(124,58,237,0.15);
-  border-radius: 16px;
+.gradient-text-green {
+  background: linear-gradient(135deg, #34d399, #10b981, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
+/* ── Cards ────────────────────────────────── */
+.glass-card {
+  background: rgba(18,18,30,0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(124,58,237,0.1);
+  border-radius: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(124,58,237,0.2);
+}
+
+.glass-card-interactive {
+  background: rgba(18,18,30,0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(124,58,237,0.1);
+  border-radius: 16px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.glass-card-interactive:hover {
+  border-color: rgba(124,58,237,0.3);
+  box-shadow: 0 4px 24px rgba(124,58,237,0.08);
+  transform: translateY(-1px);
+}
+
+/* ── Buttons ──────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.25);
+}
+.btn-primary:hover {
+  box-shadow: 0 4px 24px rgba(124,58,237,0.4);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 8px rgba(124,58,237,0.2);
+}
+
+/* ── Inputs ───────────────────────────────── */
+.input-base {
+  background: rgba(15,15,26,0.8);
+  border: 1px solid rgba(30,30,48,0.8);
+  border-radius: 12px;
+  color: #e2e8f0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-base:focus {
+  border-color: rgba(124,58,237,0.5);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+  outline: none;
+}
+.input-base::placeholder {
+  color: #4a4a6a;
+}
+
+/* ── Subtle pulse on CTA ─────────────────── */
 .pulse-glow {
-  animation: pulseGlow 2s ease-in-out infinite;
+  animation: pulseGlow 3s ease-in-out infinite;
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(124,58,237,0.4); }
-  50% { box-shadow: 0 0 40px rgba(124,58,237,0.8), 0 0 80px rgba(124,58,237,0.3); }
+  0%, 100% { box-shadow: 0 2px 12px rgba(124,58,237,0.3); }
+  50% { box-shadow: 0 4px 32px rgba(124,58,237,0.5), 0 0 60px rgba(124,58,237,0.15); }
 }
 
 .float { animation: float 6s ease-in-out infinite; }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
 }
 
-.severity-critical { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-.severity-high { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
-.severity-medium { background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
-.severity-low { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+/* ── Severity badges ──────────────────────── */
+.severity-critical { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 2px 10px; }
+.severity-high { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); border-radius: 8px; padding: 2px 10px; }
+.severity-medium { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); border-radius: 8px; padding: 2px 10px; }
+.severity-low { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 2px 10px; }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #080810; }
-::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 3px; }
+/* ── Scrollbar ────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e1e30; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
+
+/* ── Loading skeleton ─────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #12121e 25%, #1a1a2e 50%, #12121e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ── Fade in ──────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
+/* ── Tab indicator slide ──────────────────── */
+.tab-active {
+  position: relative;
+}
+.tab-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #7c3aed;
+  border-radius: 0 3px 3px 0;
+}
