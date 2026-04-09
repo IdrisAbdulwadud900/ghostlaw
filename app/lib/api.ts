@@ -190,10 +190,11 @@ export async function getProfile() {
 }
 
 // ── Scan ────────────────────────────────────────────────────
-export async function scanDocument(file: File, context: string = "") {
+export async function scanDocument(file: File, context: string = "", country: string = "US") {
   const form = new FormData();
   form.append("file", file);
   if (context) form.append("context", context);
+  form.append("country", country);
 
   return api("/scan/upload", {
     method: "POST",

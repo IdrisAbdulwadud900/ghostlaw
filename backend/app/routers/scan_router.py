@@ -26,6 +26,7 @@ async def scan_document(
     request: Request,
     file: UploadFile = File(...),
     context: Optional[str] = Form(default=""),
+    country: Optional[str] = Form(default="US"),
     current_user: dict = Depends(get_current_user),
 ):
     """Upload a document image for AI analysis."""
@@ -44,7 +45,7 @@ async def scan_document(
 
     # Analyze with AI
     if settings.gemini_api_key:
-        result = await analyze_document(image_bytes, file.content_type, context or "")
+        result = await analyze_document(image_bytes, file.content_type, context or "", country or "US")
     else:
         # Demo mode — return realistic sample data
         result = DEMO_SCAN_RESULT.copy()

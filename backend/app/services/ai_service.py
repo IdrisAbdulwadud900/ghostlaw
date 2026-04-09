@@ -84,13 +84,13 @@ def _parse_json_response(text: str) -> dict:
     return {"error": "Failed to parse AI response", "raw": text[:500]}
 
 
-async def analyze_document(image_bytes: bytes, mime_type: str, user_context: str = "") -> dict:
+async def analyze_document(image_bytes: bytes, mime_type: str, user_context: str = "", country: str = "US") -> dict:
     """
     Analyze a document image with Gemini Vision.
     Returns structured analysis with issues, savings, and rights.
     """
     try:
-        return await _analyze_document_impl(image_bytes, mime_type, user_context)
+        return await _analyze_document_impl(image_bytes, mime_type, user_context, country)
     except Exception as e:
         logger.error(f"Gemini analyze_document failed: {e}")
         # Return a helpful error instead of crashing
@@ -106,15 +106,25 @@ async def analyze_document(image_bytes: bytes, mime_type: str, user_context: str
         }
 
 
-async def _analyze_document_impl(image_bytes: bytes, mime_type: str, user_context: str = "") -> dict:
+async def _analyze_document_impl(image_bytes: bytes, mime_type: str, user_context: str = "", country: str = "US") -> dict:
+    country_ctx = _get_country_context(country)
+
     prompt = f"""You are GhostLaw, an expert AI legal and financial analyst. 
 Analyze this document image thoroughly.
+
+{country_ctx}
+
+CURRENCY RECOGNITION:
+- Recognise ₦ (Naira sign, Unicode U+20A6) as Nigerian Naira.
+- Recognise $ as US Dollar (unless context is Nigerian, then check if it means Naira).
+- Recognise ₹, €, £ and other currency symbols correctly.
+- ALWAYS use the correct currency symbol in your response text — never replace ₦ with $ or vice-versa.
 
 User's additional context: {user_context or "None provided"}
 
 Return a JSON object with EXACTLY this structure:
 {{
-    "document_type": "medical_bill|lease|contract|insurance|phone_bill|utility_bill|credit_card|fine_ticket|tax_document|subscription|other",
+    "document_type": "medical_bill|lease|contract|insurance|phone_bill|utility_bill|credit_card|fine_ticket|tax_document|subscription|bank_charge|electricity_bill|telecom_charge|loan_app|other",
     "summary": "Brief 1-2 sentence summary of what this document is",
     "plain_english": "Full explanation of the document in simple, plain English that anyone can understand. Explain every important part, every charge, every term. Be thorough.",
     "issues_found": [
@@ -127,16 +137,17 @@ Return a JSON object with EXACTLY this structure:
     ],
     "total_potential_savings": 0.00,
     "risk_level": "low|medium|high|critical",
-    "your_rights": ["List of specific legal rights the person has in this situation"],
+    "your_rights": ["List of specific legal rights the person has — cite the EXACT law sections"],
     "recommended_actions": ["Step-by-step actions the person should take"]
 }}
 
 IMPORTANT: 
 - Be aggressive in finding issues. Look for overcharges, hidden fees, unfair terms, errors, things that violate consumer protection laws.
 - Calculate realistic potential savings for each issue.
-- List specific laws and regulations that protect the user (FDCPA, FCRA, state consumer protection acts, etc.)
+- List specific laws and regulations that protect the user.
 - If it's a medical bill, look for upcoding, unbundling, balance billing, surprise billing violations.
 - If it's a lease, look for illegal clauses, excessive fees, habitability issues.
+- If it's a Nigerian bank debit/charge, look for undisclosed fees, VAT overcharges, failed transfer refund delays, unauthorized debits.
 - Always side with the consumer. Be their advocate.
 """
 
@@ -201,6 +212,11 @@ async def _analyze_document_text_impl(document_text: str, user_context: str = ""
 Analyze this document text thoroughly.
 
 {country_ctx}
+
+CURRENCY RECOGNITION:
+- Recognise \u20a6 (Naira sign) as Nigerian Naira. Recognise $ as US Dollar.
+- ALWAYS use the correct currency symbol in your response — never swap \u20a6 for $ or vice-versa.
+- For Nigerian documents, all monetary amounts MUST use \u20a6 not $.
 
 DOCUMENT TEXT:
 {document_text}

@@ -167,7 +167,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     setLoading(true);
     setLoadingMsg("Reading your document...");
     try {
-      const result = await scanDocument(file, scanContext);
+      const result = await scanDocument(file, scanContext, country);
       setScanResult(result);
       addScanToHistory(result);
       refreshLocal();
@@ -175,7 +175,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Scan failed");
     } finally { setLoading(false); }
-  }, [scanContext, refreshLocal]);
+  }, [scanContext, country, refreshLocal]);
 
   const handleTextScan = useCallback(async () => {
     if (textInput.length < 20) {
@@ -791,7 +791,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                         </div>
                         {(issue.potential_savings as number) > 0 && (
                           <div style={{ fontFamily: display, fontSize: 24, color: "var(--red)", whiteSpace: "nowrap" }}>
-                            −${(issue.potential_savings as number).toLocaleString()}
+                            −{currencySymbol}{(issue.potential_savings as number).toLocaleString()}
                           </div>
                         )}
                       </div>
@@ -806,7 +806,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               <div className="card-surface p-5 flex items-center gap-4" style={{ background: "rgba(65,232,102,0.03)", borderColor: "rgba(65,232,102,0.15)" }}>
                 <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>You could save</div>
                 <div style={{ fontFamily: display, fontSize: 36, color: "#41e866" }}>
-                  ${(scanResult.total_potential_savings as number).toLocaleString()}
+                  {currencySymbol}{(scanResult.total_potential_savings as number).toLocaleString()}
                 </div>
               </div>
             )}
@@ -857,7 +857,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                               {existing.status === "won" ? "Won! 🎉" : existing.status === "partial" ? "Partial win" : existing.status === "lost" ? "Denied" : "Pending..."}
                             </span>
                           </p>
-                          {existing.actual_savings ? <p style={{ fontFamily: mono, fontSize: 11, color: "#41e866" }}>Saved ${existing.actual_savings.toLocaleString()}</p> : null}
+                          {existing.actual_savings ? <p style={{ fontFamily: mono, fontSize: 11, color: "#41e866" }}>Saved {currencySymbol}{existing.actual_savings.toLocaleString()}</p> : null}
                         </div>
                       </div>
                     );
