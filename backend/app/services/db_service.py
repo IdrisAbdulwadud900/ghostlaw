@@ -447,6 +447,65 @@ def get_dashboard_stats(user_id: str) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
+#  PRIVACY / DATA RIGHTS
+# ═══════════════════════════════════════════════════════════════
+
+def export_user_bundle(user_id: str) -> dict:
+    """Return full user-owned dataset for data portability requests."""
+    user = get_user(user_id)
+    if not user:
+        return {}
+    safe_user = {
+        "user_id": user.get("user_id"),
+        "email": user.get("email"),
+        "name": user.get("name"),
+        "provider": user.get("provider", ""),
+        "created_at": user.get("created_at"),
+        "scans_count": user.get("scans_count", 0),
+        "disputes_count": user.get("disputes_count", 0),
+        "total_saved": user.get("total_saved", 0.0),
+    }
+    return {
+        "exported_at": _now(),
+        "user": safe_user,
+        "scans": get_user_scans(user_id),
+        "disputes": get_user_disputes(user_id),
+        "calls": get_user_calls(user_id),
+    }
+
+
+def delete_user_data(user_id: str) -> bool:
+    """Delete user and all user-owned records."""
+    sb = _get_supabase()
+    if sb:
+        try:
+            sb.table("scans").delete().eq("user_id", user_id).execute()
+            sb.table("disputes").delete().eq("user_id", user_id).execute()
+            sb.table("calls").delete().eq("user_id", user_id).execute()
+            sb.table("users").delete().eq("user_id", user_id).execute()
+            return True
+        except Exception as e:
+            logger.error(f"Supabase delete_user_data failed: {e}")
+            return False
+
+    # In-memory fallback
+    scan_ids = [k for k, v in _scans.items() if v.get("user_id") == user_id]
+    for sid in scan_ids:
+        _scans.pop(sid, None)
+
+    dispute_ids = [k for k, v in _disputes.items() if v.get("user_id") == user_id]
+    for did in dispute_ids:
+        _disputes.pop(did, None)
+
+    call_ids = [k for k, v in _calls.items() if v.get("user_id") == user_id]
+    for cid in call_ids:
+        _calls.pop(cid, None)
+
+    _users.pop(user_id, None)
+    return True
+
+
+# ═══════════════════════════════════════════════════════════════
 #  INTERNAL HELPERS
 # ═══════════════════════════════════════════════════════════════
 

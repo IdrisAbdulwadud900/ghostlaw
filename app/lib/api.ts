@@ -1,4 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_API_TIMEOUT_MS || 25000);
 
 // ── Auth state ──────────────────────────────────────────────
 let authToken: string | null = null;
@@ -142,13 +143,35 @@ async function api(path: string, options: RequestInit = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  let res: Response;
-  try {
-    res = await fetch(`${API_URL}${path}`, {
-      ...options,
-      headers,
-    });
-  } catch {
+  const method = (options.method || "GET").toUpperCase();
+  const maxAttempts = method === "GET" ? 2 : 1;
+
+  let res: Response | null = null;
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    try {
+      res = await fetch(`${API_URL}${path}`, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      break;
+    } catch (err) {
+      clearTimeout(timeout);
+      lastError = err instanceof Error ? err : new Error("Request failed");
+      if (attempt >= maxAttempts) break;
+      await new Promise((resolve) => setTimeout(resolve, 350 * attempt));
+    }
+  }
+
+  if (!res) {
+    if (lastError?.name === "AbortError") {
+      throw new Error("Request timed out — check your connection and try again");
+    }
     // Network error, timeout, or CORS failure ("Load failed" on mobile Safari)
     throw new Error("Connection failed — check your internet and try again");
   }

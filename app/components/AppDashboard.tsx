@@ -1909,6 +1909,47 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   </div>
                 )}
 
+                <div className="card-surface p-5" style={{ borderLeft: "3px solid #4178e8" }}>
+                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#4178e8", marginBottom: 10 }}>Evidence checklist (improves approval odds)</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      "Transaction receipt / bill screenshot",
+                      "Company name + account/reference number",
+                      "Dates and exact amounts",
+                      "Screenshot of your demand letter",
+                      "Any response (or proof of no response)",
+                      country === "NG" ? "Complaint ID from bank/operator DisCo (if any)" : "Customer support ticket number (if any)",
+                    ].map((item) => (
+                      <div key={item} className="flex items-start gap-2 p-2" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
+                        <span style={{ color: "#4178e8", fontSize: 11, marginTop: 1 }}>□</span>
+                        <span style={{ fontFamily: sans, fontSize: 11, color: "var(--muted2)", lineHeight: 1.4 }}>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", marginTop: 8 }}>
+                    Tip: specific dates + amounts + screenshots get faster regulator action.
+                  </p>
+                </div>
+
+                <div className="card-surface p-4" style={{ background: "rgba(232,197,65,0.04)", borderColor: "rgba(232,197,65,0.2)" }}>
+                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8c541", marginBottom: 8 }}>Timeline reminders</div>
+                  <ul style={{ fontFamily: sans, fontSize: 11, color: "var(--muted2)", lineHeight: 1.7 }}>
+                    {country === "NG" ? (
+                      <>
+                        <li>• Day 0: File complaint + keep submission confirmation screenshot</li>
+                        <li>• Day 7: No response? send reminder referencing complaint ID</li>
+                        <li>• Day 14: Escalate to higher regulator channel (e.g. NCC 622 / CBN CPD / NERC Forum)</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>• Day 0: File complaint + save confirmation number</li>
+                        <li>• Day 7: Follow up with company and regulator portal</li>
+                        <li>• Day 15: Escalate with additional evidence if unresolved</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+
                 <button onClick={handleGenerateComplaint} disabled={!scanResult} className="btn-primary w-full py-4 flex items-center justify-center gap-2">⚡ Generate & File Complaint</button>
 
                 {/* Escalation warning */}

@@ -1,61 +1,69 @@
-# 👻 GhostLaw
+# GhostLaw
 
-**AI that fights every bill, contract, and phone call for you.**
+GhostLaw helps people recover money from unfair charges and abusive business practices.
 
-Scan any document → AI finds overcharges & hidden traps → Generates dispute letters → Creates phone call scripts to win your money back.
+## Core flow
 
-## Features
+1. Scan or paste a bill/message/contract.
+2. Get a legal analysis with rights + action plan.
+3. Generate dispute letter and call script.
+4. Escalate to regulator complaint flow.
 
-- 📄 **Smart Scan** — Upload or paste any bill, contract, lease, or fine. AI identifies every issue, overcharge, and your legal rights.
-- ⚖️ **Dispute Generator** — One-click dispute letters in firm, aggressive, or friendly tones. Ready to send.
-- 📞 **Ghost Call** — AI-generated phone scripts with negotiation tactics, escalation phrases, and what to say word-for-word.
-- 📊 **Dashboard** — Track your scans, disputes, and total savings.
+## Tech stack
 
-## Stack
+- Frontend: Next.js 16 + TypeScript
+- Backend: FastAPI + Python
+- AI: Google Gemini (with model fallback)
+- Data: Supabase (with in-memory fallback for dev)
 
-| Layer | Tech |
-|-------|------|
-| Frontend | Next.js 16, TypeScript, Tailwind CSS, Framer Motion |
-| Backend | Python, FastAPI, Uvicorn |
-| AI | Google Gemini 2.0 Flash (free tier) |
-| Auth | JWT (python-jose) |
-| Deploy | Vercel (both frontend + backend) |
+## Local setup
 
-## Quick Start
+Backend:
 
 ```bash
-# Backend
 cd backend
+python -m venv ../.venv
+source ../.venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --port 8000 --reload
+```
 
-# Frontend
+Frontend:
+
+```bash
 cd app
 npm install
 npm run dev
 ```
 
-## API Endpoints
+## Required environment variables
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/auth/signup` | Create account |
-| POST | `/auth/login` | Login |
-| GET | `/auth/me` | Get profile |
-| POST | `/scan/upload` | Scan document image |
-| POST | `/scan/text` | Scan pasted text |
-| GET | `/scan/history` | Scan history |
-| POST | `/dispute/generate` | Generate dispute letter |
-| POST | `/call/request` | Generate call script |
-| GET | `/dashboard/stats` | Dashboard stats |
+Backend:
 
-## Environment Variables
+- `GEMINI_API_KEY`
+- `JWT_SECRET`
+- `GOOGLE_CLIENT_ID` (required for strict Google token verification)
+- `APPLE_CLIENT_ID` (required for strict Apple token verification)
+- `SUPABASE_URL` / `SUPABASE_KEY` (optional but recommended)
+- `CORS_ORIGINS` (comma-separated allowed origins)
 
-```
-GEMINI_API_KEY=     # Google AI Studio (free)
-JWT_SECRET=         # Any random string
-```
+Frontend:
 
-## License
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_API_TIMEOUT_MS` (optional, default 25000)
 
-MIT
+## API highlights
+
+- Auth: `/auth/signup`, `/auth/login`, `/auth/social`, `/auth/me`
+- Scan: `/scan/upload`, `/scan/text`, `/scan/history`
+- Dispute: `/dispute/generate`
+- Call: `/call/request`
+- Complaints: `/complaint/generate`
+- Privacy: `/privacy/export`, `/privacy/delete`
+
+## Security notes
+
+- Social login ID tokens are verified against provider JWKS.
+- Production requires strong `JWT_SECRET`.
+- CORS is allowlist-based.
+- Responses include `X-Request-ID` for tracing errors.
