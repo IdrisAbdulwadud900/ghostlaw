@@ -44,21 +44,30 @@ def _new_id() -> str:
     return uuid.uuid4().hex[:16]
 
 
-# ── Supabase Init ─────────────────────────────────────────────
+# ── Supabase Init (lazy — avoid module-level import crash on Vercel) ───
 _supabase = None
-_SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-_SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+_supabase_checked = False
 
-if _SUPABASE_URL and _SUPABASE_KEY:
-    try:
-        from supabase import create_client
-        _supabase = create_client(_SUPABASE_URL, _SUPABASE_KEY)
-        logger.info("Supabase connected — data will persist across deploys")
-    except Exception as e:
-        logger.warning(f"Supabase init failed, using in-memory fallback: {e}")
-        _supabase = None
-else:
-    logger.info("No SUPABASE_URL/SUPABASE_KEY — using in-memory store")
+
+def _get_supabase():
+    """Lazy init: create Supabase client on first use, not on module import."""
+    global _supabase, _supabase_checked
+    if _supabase_checked:
+        return _supabase
+    _supabase_checked = True
+    url = os.environ.get("SUPABASE_URL", "")
+    key = os.environ.get("SUPABASE_KEY", "")
+    if url and key:
+        try:
+            from supabase import create_client
+            _supabase = create_client(url, key)
+            logger.info("Supabase connected — data will persist across deploys")
+        except Exception as e:
+            logger.warning(f"Supabase init failed, using in-memory fallback: {e}")
+            _supabase = None
+    else:
+        logger.info("No SUPABASE_URL/SUPABASE_KEY — using in-memory store")
+    return _supabase
 
 
 # ── In-Memory Fallback ────────────────────────────────────────
@@ -74,9 +83,9 @@ _calls: dict[str, dict] = {}
 
 def create_user(email: str, password: str, name: str) -> dict:
     """Create a new user. Raises ValueError if email already exists."""
-    if _supabase:
+    if _get_supabase():
         try:
-            existing = _supabase.table("users").select("user_id").eq("email", email).execute()
+            existing = _get_supabase().table("users").select("user_id").eq("email", email).execute()
             if existing.data:
                 raise ValueError("This email is already registered — try signing in instead")
             user_id = _new_id()
@@ -91,7 +100,7 @@ def create_user(email: str, password: str, name: str) -> dict:
                 "disputes_count": 0,
                 "total_saved": 0.0,
             }
-            _supabase.table("users").insert(user).execute()
+            _get_supabase().table("users").insert(user).execute()
             return user
         except ValueError:
             raise
@@ -119,9 +128,9 @@ def create_user(email: str, password: str, name: str) -> dict:
 
 def find_or_create_social_user(email: str, name: str, provider: str) -> dict:
     """Find existing user by email or create a new social-auth user."""
-    if _supabase:
+    if _get_supabase():
         try:
-            existing = _supabase.table("users").select("*").eq("email", email).execute()
+            existing = _get_supabase().table("users").select("*").eq("email", email).execute()
             if existing.data:
                 return existing.data[0]
             user_id = _new_id()
@@ -136,7 +145,7 @@ def find_or_create_social_user(email: str, name: str, provider: str) -> dict:
                 "disputes_count": 0,
                 "total_saved": 0.0,
             }
-            _supabase.table("users").insert(user).execute()
+            _get_supabase().table("users").insert(user).execute()
             return user
         except Exception as e:
             logger.error(f"Supabase find_or_create_social_user failed: {e}")
@@ -164,9 +173,9 @@ def find_or_create_social_user(email: str, name: str, provider: str) -> dict:
 
 def verify_user(email: str, password: str) -> Union[dict, None, bool]:
     """Return user dict on success, None if wrong password, False if email not found."""
-    if _supabase:
+    if _get_supabase():
         try:
-            result = _supabase.table("users").select("*").eq("email", email).execute()
+            result = _get_supabase().table("users").select("*").eq("email", email).execute()
             if not result.data:
                 return False  # email not found
             user = result.data[0]
@@ -191,9 +200,9 @@ def verify_user(email: str, password: str) -> Union[dict, None, bool]:
 
 
 def get_user(user_id: str) -> Optional[dict]:
-    if _supabase:
+    if _get_supabase():
         try:
-            result = _supabase.table("users").select("*").eq("user_id", user_id).execute()
+            result = _get_supabase().table("users").select("*").eq("user_id", user_id).execute()
             return result.data[0] if result.data else None
         except Exception as e:
             logger.error(f"Supabase get_user failed: {e}")
@@ -213,9 +222,9 @@ def save_scan(user_id: str, scan_result: dict) -> dict:
         **scan_result,
         "created_at": _now(),
     }
-    if _supabase:
+    if _get_supabase():
         try:
-            _supabase.table("scans").insert({
+            _get_supabase().table("scans").insert({
                 "scan_id": scan_id,
                 "user_id": user_id,
                 "data": scan,
@@ -233,9 +242,9 @@ def save_scan(user_id: str, scan_result: dict) -> dict:
 
 
 def get_scan(scan_id: str, user_id: str) -> Optional[dict]:
-    if _supabase:
+    if _get_supabase():
         try:
-            result = _supabase.table("scans").select("data").eq("scan_id", scan_id).eq("user_id", user_id).execute()
+            result = _get_supabase().table("scans").select("data").eq("scan_id", scan_id).eq("user_id", user_id).execute()
             return result.data[0]["data"] if result.data else None
         except Exception as e:
             logger.error(f"Supabase get_scan failed: {e}")
@@ -247,9 +256,9 @@ def get_scan(scan_id: str, user_id: str) -> Optional[dict]:
 
 
 def get_user_scans(user_id: str) -> list:
-    if _supabase:
+    if _get_supabase():
         try:
-            result = _supabase.table("scans").select("data").eq("user_id", user_id).order("created_at", desc=True).execute()
+            result = _get_supabase().table("scans").select("data").eq("user_id", user_id).order("created_at", desc=True).execute()
             return [r["data"] for r in result.data]
         except Exception as e:
             logger.error(f"Supabase get_user_scans failed: {e}")
@@ -275,9 +284,9 @@ def save_dispute(user_id: str, scan_id: str, dispute_data: dict) -> dict:
         "status": "draft",
         "created_at": _now(),
     }
-    if _supabase:
+    if _get_supabase():
         try:
-            _supabase.table("disputes").insert({
+            _get_supabase().table("disputes").insert({
                 "dispute_id": dispute_id,
                 "scan_id": scan_id,
                 "user_id": user_id,
@@ -297,9 +306,9 @@ def save_dispute(user_id: str, scan_id: str, dispute_data: dict) -> dict:
 
 
 def get_dispute(dispute_id: str, user_id: str) -> Optional[dict]:
-    if _supabase:
+    if _get_supabase():
         try:
-            result = _supabase.table("disputes").select("data").eq("dispute_id", dispute_id).eq("user_id", user_id).execute()
+            result = _get_supabase().table("disputes").select("data").eq("dispute_id", dispute_id).eq("user_id", user_id).execute()
             return result.data[0]["data"] if result.data else None
         except Exception as e:
             logger.error(f"Supabase get_dispute failed: {e}")
@@ -311,9 +320,9 @@ def get_dispute(dispute_id: str, user_id: str) -> Optional[dict]:
 
 
 def get_user_disputes(user_id: str) -> list:
-    if _supabase:
+    if _get_supabase():
         try:
-            result = _supabase.table("disputes").select("data").eq("user_id", user_id).order("created_at", desc=True).execute()
+            result = _get_supabase().table("disputes").select("data").eq("user_id", user_id).order("created_at", desc=True).execute()
             return [r["data"] for r in result.data]
         except Exception as e:
             logger.error(f"Supabase get_user_disputes failed: {e}")
@@ -338,9 +347,9 @@ def save_call(user_id: str, call_data: dict) -> dict:
         "status": "queued",
         "created_at": _now(),
     }
-    if _supabase:
+    if _get_supabase():
         try:
-            _supabase.table("calls").insert({
+            _get_supabase().table("calls").insert({
                 "call_id": call_id,
                 "user_id": user_id,
                 "data": call,
@@ -356,9 +365,9 @@ def save_call(user_id: str, call_data: dict) -> dict:
 
 
 def get_call(call_id: str, user_id: str) -> Optional[dict]:
-    if _supabase:
+    if _get_supabase():
         try:
-            result = _supabase.table("calls").select("data").eq("call_id", call_id).eq("user_id", user_id).execute()
+            result = _get_supabase().table("calls").select("data").eq("call_id", call_id).eq("user_id", user_id).execute()
             return result.data[0]["data"] if result.data else None
         except Exception as e:
             logger.error(f"Supabase get_call failed: {e}")
@@ -370,9 +379,9 @@ def get_call(call_id: str, user_id: str) -> Optional[dict]:
 
 
 def get_user_calls(user_id: str) -> list:
-    if _supabase:
+    if _get_supabase():
         try:
-            result = _supabase.table("calls").select("data").eq("user_id", user_id).order("created_at", desc=True).execute()
+            result = _get_supabase().table("calls").select("data").eq("user_id", user_id).order("created_at", desc=True).execute()
             return [r["data"] for r in result.data]
         except Exception as e:
             logger.error(f"Supabase get_user_calls failed: {e}")
@@ -430,12 +439,12 @@ def get_dashboard_stats(user_id: str) -> dict:
 
 def _increment_user_field(user_id: str, field: str):
     """Best-effort increment of a user counter field in Supabase."""
-    if not _supabase:
+    if not _get_supabase():
         return
     try:
-        result = _supabase.table("users").select(field).eq("user_id", user_id).execute()
+        result = _get_supabase().table("users").select(field).eq("user_id", user_id).execute()
         if result.data:
             current = result.data[0].get(field) or 0
-            _supabase.table("users").update({field: current + 1}).eq("user_id", user_id).execute()
+            _get_supabase().table("users").update({field: current + 1}).eq("user_id", user_id).execute()
     except Exception as e:
         logger.warning(f"Failed to increment {field} for {user_id}: {e}")
