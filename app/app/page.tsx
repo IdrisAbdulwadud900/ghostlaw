@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import AuthModal from "@/components/AuthModal";
-import AppDashboard from "@/components/AppDashboard";
+import AppDashboard from "../components/AppDashboard";
 import { getToken } from "@/lib/api";
 
 /* ═══════════════════════════════════════════════════════════

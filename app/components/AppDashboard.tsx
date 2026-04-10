@@ -106,6 +106,58 @@ const NG_ISSUES: QuickIssue[] = [
       { field: "amount", label: "How much did you pay?", placeholder: "e.g. ₦189,000" },
     ],
   },
+  {
+    id: "airline_ng",
+    icon: "✈️",
+    label: "Airline Overcharge",
+    desc: "Ticket hike, no refund, cancelled flight",
+    prompt: "Airline: {airline}. {what}. Amount: {amount}.",
+    context: "Nigerian airline dispute — NCAA passenger rights charter, FCCPC sanctioning airlines for festive fare hikes, right to refund for cancelled/delayed flights, NCAA Passenger Bill of Rights",
+    placeholders: [
+      { field: "airline", label: "Which airline?", placeholder: "e.g. Air Peace, Dana Air, Arik Air, Max Air" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Flight cancelled but no refund after 3 months" },
+      { field: "amount", label: "How much?", placeholder: "e.g. ₦85,000" },
+    ],
+  },
+  {
+    id: "dstv_charge",
+    icon: "📺",
+    label: "DSTV / Cable Issue",
+    desc: "Tariff hike, no signal, forced upgrade",
+    prompt: "Provider: {provider}. {what}. Amount: {amount}.",
+    context: "Cable TV dispute — FCCPC vs Multichoice tariff orders, NBC Broadcasting Code, consumer right to value for money, FCCPA S.114-127",
+    placeholders: [
+      { field: "provider", label: "Which service?", placeholder: "e.g. DSTV, GOtv, StarTimes, Showmax" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Subscription increased by 40% with no notice" },
+      { field: "amount", label: "How much?", placeholder: "e.g. ₦24,500/month" },
+    ],
+  },
+  {
+    id: "pos_agent",
+    icon: "💸",
+    label: "POS / Transfer Scam",
+    desc: "POS agent fraud, double debit, failed POS",
+    prompt: "What happened: {what}. Agent/Location: {agent}. Amount: {amount}.",
+    context: "POS agent dispute — CBN guidelines on mobile money agents, unauthorized charges, double debit resolution, CBN Consumer Protection Framework",
+    placeholders: [
+      { field: "agent", label: "Which agent or location?", placeholder: "e.g. POS agent at Ikeja, OPay agent" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Money debited but POS agent says it didn't come" },
+      { field: "amount", label: "How much?", placeholder: "e.g. ₦20,000" },
+    ],
+  },
+  {
+    id: "insurance_hmo",
+    icon: "🏥",
+    label: "HMO / Insurance Denied",
+    desc: "Treatment denied, HMO not covering, delays",
+    prompt: "HMO/Insurer: {hmo}. {what}. Amount: {amount}.",
+    context: "Nigerian HMO/Insurance dispute — NHIA Act, NHIS operational guidelines, right to treatment coverage, FCCPA unfair practices",
+    placeholders: [
+      { field: "hmo", label: "Which HMO / insurer?", placeholder: "e.g. Leadway, AXA Mansard, Hygeia, AIICO" },
+      { field: "what", label: "What happened?", placeholder: "e.g. HMO refused to cover my surgery" },
+      { field: "amount", label: "How much?", placeholder: "e.g. ₦350,000" },
+    ],
+  },
 ];
 
 // ── Quick Issue Flows (US) ───────────────────────────────────
@@ -186,6 +238,58 @@ const US_ISSUES: QuickIssue[] = [
       { field: "collector", label: "Who's calling?", placeholder: "e.g. Midland Credit, Portfolio Recovery" },
       { field: "what", label: "What are they doing?", placeholder: "e.g. Calling 5 times a day about a debt I already paid" },
       { field: "amount", label: "How much do they claim?", placeholder: "e.g. $3,200" },
+    ],
+  },
+  {
+    id: "car_repair",
+    icon: "🚗",
+    label: "Car Repair Scam",
+    desc: "Overcharged, unauthorized work, bait & switch",
+    prompt: "Shop: {shop}. {what}. Amount: {amount}.",
+    context: "Auto repair dispute — state consumer protection acts, Magnuson-Moss Warranty Act, right to written estimate, unauthorized repair statutes",
+    placeholders: [
+      { field: "shop", label: "Which shop?", placeholder: "e.g. Meineke, local shop, dealership" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Quoted $300 for brakes but charged $1,200 for extra work I didn't approve" },
+      { field: "amount", label: "How much?", placeholder: "e.g. $1,200" },
+    ],
+  },
+  {
+    id: "gym_membership",
+    icon: "🏋️",
+    label: "Gym / Membership Trap",
+    desc: "Can't cancel, hidden fees, keeps billing",
+    prompt: "Gym/Company: {gym}. {what}. Monthly charge: {amount}.",
+    context: "Gym membership cancellation — state health club act, FTC click-to-cancel rules, ROSCA violations, auto-renewal protections",
+    placeholders: [
+      { field: "gym", label: "Which gym / service?", placeholder: "e.g. Planet Fitness, LA Fitness, CrossFit" },
+      { field: "what", label: "What happened?", placeholder: "e.g. I cancelled 3 months ago but they keep charging me" },
+      { field: "amount", label: "How much per month?", placeholder: "e.g. $49.99/month" },
+    ],
+  },
+  {
+    id: "airline_us",
+    icon: "✈️",
+    label: "Airline Issue",
+    desc: "Cancelled flight, lost luggage, no refund",
+    prompt: "Airline: {airline}. {what}. Amount: {amount}.",
+    context: "Airline dispute — DOT airline passenger rights, automatic refund rule (2024), compensation for delays/cancellations, lost luggage liability limits",
+    placeholders: [
+      { field: "airline", label: "Which airline?", placeholder: "e.g. United, Delta, American, Spirit, Southwest" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Flight cancelled, refused refund, only offered credit" },
+      { field: "amount", label: "How much?", placeholder: "e.g. $450" },
+    ],
+  },
+  {
+    id: "student_loan",
+    icon: "🎓",
+    label: "Student Loan Issue",
+    desc: "Wrong balance, servicer error, forgiveness denied",
+    prompt: "Servicer: {servicer}. {what}. Amount: {amount}.",
+    context: "Student loan dispute — CFPB oversight, income-driven repayment rights, PSLF program rules, servicer error correction obligations, Higher Education Act",
+    placeholders: [
+      { field: "servicer", label: "Which servicer?", placeholder: "e.g. Mohela, Nelnet, Great Lakes, Navient" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Payments not counted toward forgiveness" },
+      { field: "amount", label: "How much is at stake?", placeholder: "e.g. $45,000" },
     ],
   },
 ];
@@ -348,7 +452,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       return;
     }
     setLoading(true);
-    setLoadingMsg("Finding violations & calculating what you're owed...");
+    setLoadingMsg("Analyzing your document — checking if there's a real issue...");
     try {
       const result = await scanText(t, ctx || scanContext, country);
       setScanResult(result);
@@ -640,8 +744,8 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               </h1>
               <p style={{ fontFamily: sans, fontSize: 14, color: "var(--muted2)", maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>
                 {country === "NG"
-                  ? "Tap your issue below. Answer 2-3 quick questions. We'll find every violation of Nigerian law and tell you exactly what you're owed."
-                  : "Tap your issue below. Answer 2-3 quick questions. We'll find every violation and tell you exactly what you're owed."
+                  ? "Tap your issue below. Answer 2-3 quick questions. We'll honestly analyze it — if there's a real violation we'll help you fight it, if it's legit we'll explain why."
+                  : "Tap your issue below. Answer 2-3 quick questions. We'll give you an honest analysis — real violations get fought, legitimate charges get explained."
                 }
               </p>
             </div>
@@ -823,7 +927,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
 
                 <button onClick={() => handleTextScan()} disabled={textInput.length < 20} className="btn-primary w-full flex items-center justify-center gap-2.5 py-4">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-                  Find What I&apos;m Owed
+                  Analyze This
                 </button>
               </div>
             </div>
@@ -833,13 +937,43 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
         {/* ═══ RESULTS TAB ═════════════════════════════════ */}
         {activeTab === "results" && scanResult && (
           <div className="max-w-4xl mx-auto space-y-4">
-            {/* Hero savings banner */}
-            {(scanResult.total_potential_savings as number) > 0 ? (
-              <div className="text-center py-6 px-4" style={{ background: "linear-gradient(135deg, rgba(65,232,102,0.06), rgba(65,232,102,0.02))", border: "1px solid rgba(65,232,102,0.15)" }}>
-                <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#41e866", marginBottom: 4 }}>
-                  {country === "NG" ? "You may be owed" : "You could save"}
+
+            {/* ── VERDICT BANNER ─────────────────────────── */}
+            {scanResult.verdict === "legitimate" ? (
+              <div className="text-center py-6 px-4" style={{ background: "linear-gradient(135deg, rgba(65,232,102,0.08), rgba(65,232,102,0.02))", border: "1px solid rgba(65,232,102,0.2)" }}>
+                <div style={{ fontSize: 48, marginBottom: 8 }}>✅</div>
+                <div style={{ fontFamily: display, fontSize: "clamp(32px, 5vw, 48px)", color: "#41e866", lineHeight: 1 }}>
+                  ALL GOOD
                 </div>
-                <div style={{ fontFamily: display, fontSize: "clamp(48px, 8vw, 80px)", color: "#41e866", lineHeight: 1 }}>
+                <p style={{ fontFamily: sans, fontSize: 13, color: "#41e866", marginTop: 8, opacity: 0.85 }}>
+                  {(scanResult.verdict_note as string) || "This looks like a standard, legitimate charge. No action needed."}
+                </p>
+                <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginTop: 12 }}>
+                  {(scanResult.document_type as string)?.replace(/_/g, " ")} · No issues detected
+                </p>
+              </div>
+            ) : scanResult.verdict === "questionable" ? (
+              <div className="text-center py-6 px-4" style={{ background: "linear-gradient(135deg, rgba(232,197,65,0.08), rgba(232,197,65,0.02))", border: "1px solid rgba(232,197,65,0.2)" }}>
+                <div style={{ fontSize: 48, marginBottom: 8 }}>🤔</div>
+                <div style={{ fontFamily: display, fontSize: "clamp(32px, 5vw, 48px)", color: "#e8c541", lineHeight: 1 }}>
+                  WORTH INVESTIGATING
+                </div>
+                <p style={{ fontFamily: sans, fontSize: 13, color: "#e8c541", marginTop: 8, opacity: 0.85 }}>
+                  {(scanResult.verdict_note as string) || "Some things look off, but we need more information to be sure."}
+                </p>
+                {(scanResult.total_potential_savings as number) > 0 && (
+                  <div style={{ fontFamily: display, fontSize: "clamp(28px, 5vw, 44px)", color: "#e8c541", marginTop: 8 }}>
+                    {currencySymbol}{(scanResult.total_potential_savings as number).toLocaleString()}
+                    <span style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", display: "block", marginTop: 4 }}>potential savings if confirmed</span>
+                  </div>
+                )}
+              </div>
+            ) : /* violation or legacy (no verdict field) */ (scanResult.total_potential_savings as number) > 0 ? (
+              <div className="text-center py-6 px-4" style={{ background: "linear-gradient(135deg, rgba(232,25,44,0.06), rgba(232,25,44,0.02))", border: "1px solid rgba(232,25,44,0.15)" }}>
+                <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--red)", marginBottom: 4 }}>
+                  ⚠️ {country === "NG" ? "You may be owed" : "You could save"}
+                </div>
+                <div style={{ fontFamily: display, fontSize: "clamp(48px, 8vw, 80px)", color: "var(--red)", lineHeight: 1 }}>
                   {currencySymbol}{(scanResult.total_potential_savings as number).toLocaleString()}
                 </div>
                 <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 8 }}>
@@ -861,8 +995,25 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               </div>
             )}
 
+            {/* Clarifying questions (for questionable verdicts) */}
+            {scanResult.verdict === "questionable" && (scanResult.clarifying_questions as string[])?.length > 0 && (
+              <div className="card-surface p-5" style={{ borderLeft: "3px solid #e8c541" }}>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#e8c541", marginBottom: 10 }}>Help us understand better</div>
+                <ul className="space-y-2">
+                  {(scanResult.clarifying_questions as string[]).map((q: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
+                      <span style={{ color: "#e8c541" }}>?</span> {q}
+                    </li>
+                  ))}
+                </ul>
+                <p style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)", marginTop: 10 }}>
+                  💡 Tip: Re-scan with more details in the &quot;Extra context&quot; field to get a more accurate analysis
+                </p>
+              </div>
+            )}
+
             {/* Risk badge */}
-            {scanResult.risk_level && (
+            {scanResult.verdict !== "legitimate" && scanResult.risk_level && (
               <div className="flex items-center gap-3">
                 <span className={`badge ${
                   scanResult.risk_level === "critical" ? "badge-critical"
@@ -879,7 +1030,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             )}
 
             {/* ── Case Strength Meter ───────────────────── */}
-            {(scanResult.case_strength as number) > 0 && (
+            {scanResult.verdict !== "legitimate" && (scanResult.case_strength as number) > 0 && (
               <div className="card-surface p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>Case Strength</div>
@@ -899,13 +1050,14 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   {(scanResult.case_strength as number) >= 80 ? "🔥 Extremely strong case — you should absolutely fight this"
                     : (scanResult.case_strength as number) >= 60 ? "💪 Strong case — good chance of winning if you take action"
                     : (scanResult.case_strength as number) >= 40 ? "📋 Moderate case — worth pursuing, especially with a dispute letter"
-                    : "📝 This may be harder to win, but a formal complaint still puts pressure on them"}
+                    : (scanResult.case_strength as number) >= 20 ? "🤔 Needs more investigation — add context and re-scan for a better assessment"
+                    : "📝 Weak case, but a formal inquiry can still get answers"}
                 </p>
               </div>
             )}
 
             {/* ── Urgency / Deadline Badge ──────────────── */}
-            {(scanResult.deadline_days || scanResult.urgency) && (
+            {scanResult.verdict !== "legitimate" && (scanResult.deadline_days || scanResult.urgency) && (
               <div className="flex flex-wrap gap-2">
                 {scanResult.urgency === "immediate" && (
                   <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "rgba(232,25,44,0.08)", border: "1px solid rgba(232,25,44,0.2)" }}>
@@ -970,7 +1122,9 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             {/* Rights */}
             {(scanResult.your_rights as string[])?.length > 0 && (
               <div className="card-surface p-5">
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>Laws that protect you</div>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>
+                  {scanResult.verdict === "legitimate" ? "Good to know — your rights" : "Laws that protect you"}
+                </div>
                 <ul className="space-y-2">
                   {(scanResult.your_rights as string[]).map((right: string, i: number) => (
                     <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
@@ -1085,43 +1239,61 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               </div>
             )}
 
-            {/* Next steps — big clear CTAs */}
-            <div className="pt-2">
-              <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>
-                Fight back — pick your weapon
+            {/* Next steps — depends on verdict */}
+            {scanResult.verdict === "legitimate" ? (
+              <div className="pt-2">
+                <div className="card-surface p-5 text-center">
+                  <p style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.7, marginBottom: 16 }}>
+                    💡 GhostLaw found no issues with this document. If you think something&apos;s still off, try scanning again with more details in the extra context field.
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    <button onClick={() => { setScanResult(null); setTextInput(""); setActiveTab("home"); }} className="btn-primary py-3 px-6">
+                      ← Scan Something Else
+                    </button>
+                    <button onClick={() => { setScanResult(null); setTextInput(""); setActiveTab("scan"); }} className="py-3 px-6 transition-all" style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4178e8", background: "rgba(65,120,232,0.08)", border: "1px solid rgba(65,120,232,0.2)" }}>
+                      Re-scan with Context
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <button onClick={handleGenerateDispute} className="btn-primary flex items-center justify-center gap-2 py-4">
-                  <span style={{ fontSize: 16 }}>✉</span>
-                  <div className="text-left">
-                    <div>Write Dispute Letter</div>
-                    <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>AI writes a letter citing specific laws</div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab("call")}
-                  className="py-4 flex items-center justify-center gap-2 transition-all"
-                  style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4178e8", background: "rgba(65,120,232,0.08)", border: "1px solid rgba(65,120,232,0.2)" }}
-                >
-                  <span style={{ fontSize: 16 }}>☎</span>
-                  <div className="text-left">
-                    <div>Get Call Script</div>
-                    <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Exactly what to say on the phone</div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab("complaint")}
-                  className="py-4 flex items-center justify-center gap-2 transition-all"
-                  style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8c541", background: "rgba(232,197,65,0.08)", border: "1px solid rgba(232,197,65,0.2)" }}
-                >
-                  <span style={{ fontSize: 16 }}>⚖</span>
-                  <div className="text-left">
-                    <div>File Complaint</div>
-                    <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Report to {country === "NG" ? "CBN/FCCPC/NCC" : "CFPB/FCC/FTC"}</div>
-                  </div>
-                </button>
+            ) : (
+              <div className="pt-2">
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>
+                  Fight back — pick your weapon
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <button onClick={handleGenerateDispute} className="btn-primary flex items-center justify-center gap-2 py-4">
+                    <span style={{ fontSize: 16 }}>✉</span>
+                    <div className="text-left">
+                      <div>Write Dispute Letter</div>
+                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>AI writes a letter citing specific laws</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("call")}
+                    className="py-4 flex items-center justify-center gap-2 transition-all"
+                    style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4178e8", background: "rgba(65,120,232,0.08)", border: "1px solid rgba(65,120,232,0.2)" }}
+                  >
+                    <span style={{ fontSize: 16 }}>☎</span>
+                    <div className="text-left">
+                      <div>Get Call Script</div>
+                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Exactly what to say on the phone</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("complaint")}
+                    className="py-4 flex items-center justify-center gap-2 transition-all"
+                    style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8c541", background: "rgba(232,197,65,0.08)", border: "1px solid rgba(232,197,65,0.2)" }}
+                  >
+                    <span style={{ fontSize: 16 }}>⚖</span>
+                    <div className="text-left">
+                      <div>File Complaint</div>
+                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Report to {country === "NG" ? "CBN/FCCPC/NCC" : "CFPB/FCC/FTC"}</div>
+                    </div>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
