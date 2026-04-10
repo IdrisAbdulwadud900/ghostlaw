@@ -432,8 +432,13 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
 
   // ── Handlers ─────────────────────────────────────────────
   const handleFileUpload = useCallback(async (file: File) => {
+    // Validate file size before uploading (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File too large — max 10MB. Try a smaller file or paste the text instead.");
+      return;
+    }
     setLoading(true);
-    setLoadingMsg("Reading your document...");
+    setLoadingMsg("Uploading and analyzing your document — this may take up to 30 seconds...");
     try {
       const result = await scanDocument(file, scanContext, country);
       setScanResult(result);
@@ -441,7 +446,12 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       refreshLocal();
       setActiveTab("results");
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Scan failed");
+      const msg = err instanceof Error ? err.message : "Scan failed";
+      if (msg.includes("Connection failed")) {
+        alert("Upload failed — slow connection. Try a smaller file or paste the text instead.");
+      } else {
+        alert(msg);
+      }
     } finally { setLoading(false); }
   }, [scanContext, country, refreshLocal]);
 

@@ -1,4 +1,9 @@
-"""
+"""Helper script to write db_service.py — run once then delete."""
+import pathlib
+
+TARGET = pathlib.Path(__file__).resolve().parent.parent / "backend" / "app" / "services" / "db_service.py"
+
+CONTENT = r'''"""
 GhostLaw Database Service — Supabase for production, in-memory fallback for dev/testing.
 When SUPABASE_URL + SUPABASE_KEY are set, all data persists across deploys.
 Otherwise, falls back to in-memory dicts (data lost on restart).
@@ -439,3 +444,7 @@ def _increment_user_field(user_id: str, field: str):
             _supabase.table("users").update({field: current + 1}).eq("user_id", user_id).execute()
     except Exception as e:
         logger.warning(f"Failed to increment {field} for {user_id}: {e}")
+'''
+
+TARGET.write_text(CONTENT)
+print(f"Wrote {len(CONTENT)} chars to {TARGET}")

@@ -142,20 +142,31 @@ async function api(path: string, options: RequestInit = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch {
+    // Network error, timeout, or CORS failure ("Load failed" on mobile Safari)
+    throw new Error("Connection failed — check your internet and try again");
+  }
 
   if (res.status === 401) {
     clearToken();
     if (typeof window !== "undefined") {
       window.location.href = "/";
     }
-    throw new Error("Unauthorized");
+    throw new Error("Session expired — please sign in again");
   }
 
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error("Server error — please try again in a moment");
+  }
 
   if (!res.ok) {
     throw new Error(data.detail || "Something went wrong");

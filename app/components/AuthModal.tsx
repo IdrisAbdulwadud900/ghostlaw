@@ -34,12 +34,13 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
   const [showPassword, setShowPassword] = useState(false);
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
+  const [googleReady, setGoogleReady] = useState(false);
+
   // ── Load Google Identity Services SDK ──────────────────────
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
     const existing = document.getElementById("google-gsi-script");
     if (existing) {
-      // Script already loaded — re-init
       initGoogle();
       return;
     }
@@ -70,17 +71,31 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
         }
       },
     });
+    // Render the native Google button (works reliably on mobile Safari)
+    if (googleBtnRef.current) {
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        type: "standard",
+        theme: "filled_black",
+        size: "large",
+        width: 340,
+        text: mode === "signup" ? "signup_with" : "signin_with",
+      });
+      setGoogleReady(true);
+    }
   }
 
-  // ── Google Sign-In click handler ───────────────────────────
-  function handleGoogleClick() {
-    if (!window.google || !GOOGLE_CLIENT_ID) {
-      setError("Google Sign-In is not configured yet. Use email signup.");
-      return;
+  // Re-render the button when mode changes
+  useEffect(() => {
+    if (window.google && GOOGLE_CLIENT_ID && googleBtnRef.current) {
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        type: "standard",
+        theme: "filled_black",
+        size: "large",
+        width: 340,
+        text: mode === "signup" ? "signup_with" : "signin_with",
+      });
     }
-    // Trigger the One Tap / popup flow
-    window.google.accounts.id.prompt();
-  }
+  }, [mode]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -166,31 +181,26 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
           </div>
 
           {/* ── Social Login Buttons ───────────────────── */}
-          <div className="space-y-2.5 mb-5">
-            {/* Google */}
-            <button
-              onClick={handleGoogleClick}
-              disabled={!!socialLoading}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 transition-all hover:brightness-110 disabled:opacity-50"
-              style={{ background: "#ffffff", border: "1px solid #dadce0", borderRadius: 0, cursor: socialLoading === "google" ? "wait" : "pointer" }}
-            >
-              {socialLoading === "google" ? (
-                <span className="spinner-sm" style={{ width: 18, height: 18, borderColor: "#4285f4 transparent transparent transparent" }} />
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 48 48">
-                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                </svg>
-              )}
-              <span style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: 14, fontWeight: 500, color: "#3c4043" }}>
-                {mode === "signup" ? "Sign up with Google" : "Sign in with Google"}
-              </span>
-            </button>
-
-            {/* Hidden Google One-Tap anchor */}
-            <div ref={googleBtnRef} style={{ display: "none" }} />
+          <div className="mb-5">
+            {/* Google SDK-rendered button (reliable on mobile Safari) */}
+            <div
+              ref={googleBtnRef}
+              className="flex justify-center w-full"
+              style={{ minHeight: 44, display: GOOGLE_CLIENT_ID ? "flex" : "none" }}
+            />
+            {/* Fallback if Google SDK hasn't loaded yet */}
+            {GOOGLE_CLIENT_ID && !googleReady && (
+              <div
+                className="w-full flex items-center justify-center gap-3 py-3 px-4"
+                style={{ background: "#131314", border: "1px solid #333", minHeight: 44, opacity: 0.6 }}
+              >
+                <span className="spinner-sm" style={{ width: 16, height: 16, borderColor: "#fff transparent transparent transparent" }} />
+                <span style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: 14, color: "#aaa" }}>Loading Google Sign-In…</span>
+              </div>
+            )}
+            {!GOOGLE_CLIENT_ID && (
+              <p className="text-center" style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)" }}>Google Sign-In not configured</p>
+            )}
           </div>
 
           {/* ── Divider ────────────────────────────────── */}
