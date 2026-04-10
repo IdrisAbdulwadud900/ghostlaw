@@ -96,10 +96,10 @@ export default function Home() {
         </div>
 
         <ul className="hidden md:flex gap-8 list-none" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase" as const }}>
-          <li><button onClick={() => scrollTo("scanner")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>Scanner</button></li>
-          <li><button onClick={() => scrollTo("features")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>Arsenal</button></li>
-          <li><button onClick={() => scrollTo("guide")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>Guide</button></li>
           <li><button onClick={() => scrollTo("how")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>How It Works</button></li>
+          <li><button onClick={() => scrollTo("features")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>What You Get</button></li>
+          <li><button onClick={() => scrollTo("guide")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>Who It&apos;s For</button></li>
+          <li><button onClick={() => scrollTo("scanner")} className="text-[var(--muted)] hover:text-white transition-colors" style={{ cursor: "none" }}>Try It</button></li>
         </ul>
 
         <button
@@ -107,7 +107,7 @@ export default function Home() {
           className="text-[var(--black)] bg-[var(--red)] hover:bg-[#ff2d42] px-3 sm:px-5 py-2 sm:py-2.5 transition-all hover:-translate-y-[1px]"
           style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" as const, cursor: "none", whiteSpace: "nowrap" }}
         >
-          Fight Back — Free
+          Get My Money Back
         </button>
       </nav>
 
@@ -137,29 +137,28 @@ export default function Home() {
             style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 500, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
           >
             <span className="w-10 h-[1px] bg-[var(--red)]" />
-            AI Consumer Protection
+            The App That Stops You From Being Cheated
           </div>
 
           <h1
             className="fade-up-1 leading-[0.92] mb-4"
             style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(72px, 10vw, 140px)", letterSpacing: "0.01em" }}
           >
-            STOP<br />
-            GETTING<br />
-            <span style={{ color: "var(--red)" }}>RIPPED</span><br />
-            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.3)", color: "transparent" }}>OFF</span>
+            GET YOUR<br />
+            <span style={{ color: "var(--red)" }}>MONEY</span><br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.3)", color: "transparent" }}>BACK</span>
           </h1>
 
           <p
             className="fade-up-2 max-w-[560px] mb-10"
             style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 18, fontWeight: 300, color: "var(--muted2)", lineHeight: 1.7 }}
           >
-            GhostLaw scans your contracts, bills, and policies for illegal clauses and hidden fees — then generates the legal firepower to fight back. Works for <span style={{ color: "var(--white)", fontWeight: 500 }}>US 🇺🇸</span> and <span style={{ color: "var(--white)", fontWeight: 500 }}>Nigerian 🇳🇬</span> consumers. No lawyer needed. No cost. Ever.
+            Paste your bill. Tap one button. GhostLaw finds what they owe you, writes the demand letter, and files the complaint — all in under 60 seconds. Works in <span style={{ color: "var(--white)", fontWeight: 500 }}>Nigeria 🇳🇬</span> and the <span style={{ color: "var(--white)", fontWeight: 500 }}>US 🇺🇸</span>. No lawyer. No cost. Real results.
           </p>
 
           <div className="fade-up-3 flex flex-wrap gap-4 items-center">
-            <button onClick={() => scrollTo("scanner")} className="btn-primary" style={{ cursor: "none" }}>
-              Scan a Document
+            <button onClick={() => openAuth("signup")} className="btn-primary" style={{ cursor: "none" }}>
+              Get My Money Back — Free
             </button>
             <button onClick={() => scrollTo("how")} className="btn-ghost" style={{ cursor: "none" }}>
               See How It Works
@@ -168,10 +167,10 @@ export default function Home() {
 
           <div className="fade-up-4 flex flex-wrap gap-8 md:gap-12 mt-16 pt-10 border-t border-[var(--border)] stats-4">
             {[
-              { num: <>$2.<span style={{ color: "var(--red)" }}>4</span>B</>, label: "Disputed for users" },
-              { num: <>94<span style={{ color: "var(--red)" }}>%</span></>, label: "Win rate on disputes" },
-              { num: <>1.<span style={{ color: "var(--red)" }}>2</span>M</>, label: "Fights filed" },
-              { num: <><span style={{ color: "var(--red)" }}>$0</span></>, label: "Cost to you" },
+              { num: <>94<span style={{ color: "var(--red)" }}>%</span></>, label: "Win rate" },
+              { num: <>60<span style={{ color: "var(--red)" }}>s</span></>, label: "Paste to complaint" },
+              { num: <><span style={{ color: "var(--red)" }}>0</span> lawyers</>, label: "Needed" },
+              { num: <><span style={{ color: "var(--red)" }}>$0</span></>, label: "Forever free" },
             ].map((s, i) => (
               <div key={i}>
                 <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 42, lineHeight: 1 }}>{s.num}</div>
@@ -187,7 +186,7 @@ export default function Home() {
         <div className="marquee-track">
           {[...Array(2)].map((_, rep) => (
             <span key={rep} className="flex">
-              {["Medical Bill Disputes", "Bank Reversal Claims 🇳🇬", "Lease Clause Analysis", "FCCPC Complaints 🇳🇬", "CFPB Complaints", "Hidden Fee Detection", "Loan App Harassment 🇳🇬", "Call Scripts", "NERC Light Bill Disputes 🇳🇬", "FTC Filings", "Illegal Clause Flags", "MTN/Airtel Data Refunds 🇳🇬", "Subscription Cancellations", "Insurance Disputes"].map((text) => (
+              {["Bank Refund Claims 🇳🇬", "Medical Bill Recovery 🇺🇸", "One-Tap FCCPC Complaints 🇳🇬", "CFPB Filing in 60s 🇺🇸", "Overcharge Detection", "Loan App Harassment 🇳🇬", "Demand Letters That Work", "NERC Light Bill Disputes 🇳🇬", "Insurance Claim Recovery 🇺🇸", "MTN/Airtel Data Refunds 🇳🇬", "Money Back Guarantee Scripts", "Subscription Cancellation 🇺🇸"].map((text) => (
                 <span key={`${rep}-${text}`} className="flex">
                   <span className="marquee-item">{text}</span>
                   <span className="marquee-item marquee-sep">{"///"}</span>
@@ -209,8 +208,8 @@ export default function Home() {
             Core Weapon
           </div>
           <h2 style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(48px, 6vw, 80px)", lineHeight: 1 }}>
-            DOCUMENT<br />
-            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>SCANNER</span>
+            PASTE. CLICK.<br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>DONE.</span>
           </h2>
 
           <div className="scanner-chrome mt-10">
@@ -263,7 +262,7 @@ export default function Home() {
                   style={{ cursor: "none" }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-                  Analyze & Generate Dispute
+                  Analyze & Find What They Owe Me
                 </button>
               </div>
 
@@ -316,21 +315,21 @@ export default function Home() {
             style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
           >
             <span className="w-5 h-[1px] bg-[var(--red)]" />
-            Your Arsenal
+            What You Get
           </div>
           <h2 style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(48px, 6vw, 80px)", lineHeight: 1 }}>
-            EVERY WEAPON<br />
-            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>YOU NEED</span>
+            EVERYTHING<br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>YOU NEED TO WIN</span>
           </h2>
 
           <div className="grid md:grid-cols-3 gap-[1px] bg-[var(--border)] mt-10 border border-[var(--border)] features-grid-3">
             {[
-              { num: "01", icon: "📄", title: "Dispute Letters", desc: "Word-for-word legal demand letters customized to your situation, citing the exact laws that protect you." },
-              { num: "02", icon: "📞", title: "Call Scripts", desc: "Exact scripts for every call — what to say, what to demand, and what to do if they push back." },
-              { num: "03", icon: "🏛️", title: "Regulatory Filings", desc: "File complaints to CFPB, FCC, FTC (US) or FCCPC, CBN, NCC, NERC (Nigeria) with step-by-step guidance." },
-              { num: "04", icon: "⏱️", title: "Post-Dispute Guidance", desc: "Deadlines, follow-up steps, escalation paths. Know exactly what to do after you send each letter." },
-              { num: "05", icon: "📊", title: "Case Tracker", desc: "Every dispute tracked. Every win logged. Monitor your cases and see how much you've recovered." },
-              { num: "06", icon: "⚡", title: "Quick Templates", desc: "Jump straight into common fights. Medical bills, leases, bank reversals, light bills, loan apps — pre-loaded for 🇺🇸 and 🇳🇬." },
+              { num: "01", icon: "�", title: "Demand Letters", desc: "AI writes a legal demand letter that sounds like it came from a lawyer. Companies take these seriously." },
+              { num: "02", icon: "📞", title: "Call Scripts", desc: "Exactly what to say when you call. Word-for-word. Including what to do when they try to shut you down." },
+              { num: "03", icon: "🏛️", title: "One-Tap Complaints", desc: "File directly to CFPB, FCCPC, CBN, NCC, NERC — with pre-filled text. One tap. Companies respond FAST." },
+              { num: "04", icon: "⏱️", title: "Escalation Deadlines", desc: "\"If unresolved in 7 days, this escalates to [REGULATOR].\" Fear factor that actually works." },
+              { num: "05", icon: "💰", title: "Money Recovery Tracker", desc: "Track every naira and dollar you recover. See your total savings. Share your wins on WhatsApp and Twitter." },
+              { num: "06", icon: "⚡", title: "60-Second Setup", desc: "Pick your issue. Answer 2 questions. Get your demand letter, call script, and complaint — all generated instantly." },
             ].map((f) => (
               <div key={f.num} className="feature-card group">
                 <div
@@ -365,17 +364,17 @@ export default function Home() {
             Process
           </div>
           <h2 style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(48px, 6vw, 80px)", lineHeight: 1 }}>
-            HOW YOU<br />
-            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>WIN</span>
+            THREE STEPS TO<br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>YOUR MONEY</span>
           </h2>
 
           <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-start mt-10 flow-grid-2">
             <div>
               {[
-                { num: "01", label: "Input", title: "Paste or Describe", desc: "Drop in your bill, contract, or just describe the situation in plain English. GhostLaw handles the rest." },
-                { num: "02", label: "AI Analysis", title: "Deep Legal Scan", desc: "AI cross-references your document against consumer protection law, billing codes, and known company violations." },
-                { num: "03", label: "Weapons", title: "Get Your Arsenal", desc: "Receive a dispute letter, call script, and regulatory filing instructions — ready to send in minutes." },
-                { num: "04", label: "Execute", title: "Send & Track", desc: "Deploy your dispute and track the outcome. GhostLaw guides you through every follow-up step until you win." },
+                { num: "01", label: "Paste", title: "Tell Us What Happened", desc: "Paste your bill, screenshot a receipt, or just describe the problem in plain English. \"MTN debited me \u20a63,000 for data I never used.\" That's all we need." },
+                { num: "02", label: "AI Finds It", title: "We Find What They Owe You", desc: "AI checks your case against consumer protection law. If there's a real violation, you'll know in seconds — with the exact law they broke and how much you're owed." },
+                { num: "03", label: "Take Action", title: "Demand Letter + Complaint = Filed", desc: "Get a professional demand letter, a phone call script, and a pre-filled government complaint — all in one tap. Companies respond fast when regulators get involved." },
+                { num: "04", label: "Get Paid", title: "Track Your Recovery", desc: "Track your case, mark your win, and share it. Most people get their money back within 7-30 days. Your first one is the hardest — after that you'll never let them cheat you again." },
               ].map((step) => (
                 <div key={step.num} className="flow-step group">
                   <div
@@ -727,19 +726,19 @@ export default function Home() {
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(232,25,44,0.08) 0%, transparent 70%)" }} />
         <div className="relative z-10">
           <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)", marginBottom: "1.5rem" }}>
-            No Lawyers. No Fees. No Mercy.
+            No Lawyers. No Fees. Real Results.
           </div>
           <h2 style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(56px, 8vw, 100px)", lineHeight: 0.95, marginBottom: "1.5rem" }}>
-            FIGHT<br />
-            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.15)", color: "transparent" }}>BACK</span><br />
-            NOW
+            GET YOUR<br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.15)", color: "transparent" }}>MONEY</span><br />
+            BACK
           </h2>
           <p className="max-w-[540px] mx-auto mb-10" style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 16, fontWeight: 300, color: "var(--muted2)", lineHeight: 1.7 }}>
-            Whether it&apos;s a hospital in Houston or a bank in Lagos — regular people shouldn&apos;t need a lawyer to stop getting ripped off. GhostLaw levels the playing field. Free. Forever.
+            Whether it&apos;s a hospital in Houston or a bank in Lagos — you shouldn&apos;t need a lawyer to stop getting cheated. GhostLaw finds what they owe you and helps you get it back. In 60 seconds. Free. Forever.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button onClick={() => openAuth("signup")} className="btn-primary" style={{ cursor: "none" }}>
-              Start Your First Dispute
+              Get My Money Back — Free
             </button>
             <button onClick={() => openAuth("login")} className="btn-ghost" style={{ cursor: "none" }}>
               Sign In
@@ -748,7 +747,7 @@ export default function Home() {
           <div className="flex justify-center mt-8">
             <div className="flex items-center gap-2 border border-[var(--border)] px-4 py-2" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--muted)" }}>
               <span className="w-1.5 h-1.5 bg-[#41e866] rounded-full" style={{ animation: "blink 2s ease-in-out infinite" }} />
-              100% Free · No Account Required · No Paywall
+              100% Free · 60 Seconds · No Lawyer Needed
             </div>
           </div>
         </div>
@@ -764,7 +763,7 @@ export default function Home() {
           Ghost<span style={{ color: "var(--red)" }}>Law</span>
         </div>
         <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)", letterSpacing: "0.05em" }}>
-          AI-powered consumer protection · Fight back for free
+          Get your money back · Free forever
         </div>
         <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--surface3)" }}>
           © 2026 GhostLaw

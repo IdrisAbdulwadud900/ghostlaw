@@ -617,10 +617,10 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   // ── Flow step labels ───────────────────────────────────────
   const flowSteps = [
     { id: "home" as Tab, label: "Report", icon: "⌕", desc: "Tell us what happened" },
-    { id: "results" as Tab, label: "Analysis", icon: "◉", desc: "See what you're owed" },
-    { id: "dispute" as Tab, label: "Letter", icon: "✉", desc: "Send a dispute letter" },
-    { id: "call" as Tab, label: "Call", icon: "☎", desc: "Get a call script" },
-    { id: "complaint" as Tab, label: "Escalate", icon: "⚖", desc: "File with government" },
+    { id: "results" as Tab, label: "What You're Owed", icon: "◉", desc: "See what they owe you" },
+    { id: "dispute" as Tab, label: "Demand Letter", icon: "✉", desc: "Send a demand letter" },
+    { id: "call" as Tab, label: "Call Script", icon: "☎", desc: "Call and demand refund" },
+    { id: "complaint" as Tab, label: "Report Them", icon: "⚖", desc: "File with government" },
   ];
 
   return (
@@ -670,7 +670,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             className="hidden md:flex items-center gap-1.5 px-3 py-1.5 transition-colors hover:bg-[var(--surface)]"
             style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", border: "1px solid var(--border)" }}
           >
-            ▤ History
+            ▤ My Money
           </button>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 flex items-center justify-center" style={{ background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.3)", fontFamily: mono, fontSize: 11, color: "var(--red)", fontWeight: 600 }}>
@@ -693,7 +693,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             { id: "home" as Tab, icon: "⌕", label: "Report Issue" },
             { id: "scan" as Tab, icon: "📋", label: "Paste Document" },
             { id: "results" as Tab, icon: "◉", label: "Results" },
-            { id: "history" as Tab, icon: "▤", label: "History" },
+            { id: "history" as Tab, icon: "▤", label: "My Money" },
           ].map(item => (
             <button key={item.id} onClick={() => navigate(item.id)} className="w-full flex items-center gap-2.5 px-3 py-2.5" style={{ fontFamily: mono, fontSize: 12, color: activeTab === item.id ? "var(--red)" : "var(--muted)", background: activeTab === item.id ? "var(--red-dim)" : "transparent" }}>
               <span style={{ fontSize: 14, width: 18, textAlign: "center" }}>{item.icon}</span>
@@ -765,12 +765,12 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             {/* Hero */}
             <div className="text-center mb-8 pt-4">
               <h1 style={{ fontFamily: display, fontSize: "clamp(40px, 6vw, 64px)", lineHeight: 0.95, marginBottom: 12 }}>
-                WHAT <span style={{ color: "var(--red)" }}>HAPPENED</span>?
+                GET YOUR <span style={{ color: "var(--red)" }}>MONEY BACK</span>
               </h1>
               <p style={{ fontFamily: sans, fontSize: 14, color: "var(--muted2)", maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>
                 {country === "NG"
-                  ? "Tap your issue below. Answer 2-3 quick questions. We'll honestly analyze it — if there's a real violation we'll help you fight it, if it's legit we'll explain why."
-                  : "Tap your issue below. Answer 2-3 quick questions. We'll give you an honest analysis — real violations get fought, legitimate charges get explained."
+                  ? "Tap your issue. Answer 2 quick questions. We'll find what they owe you and help you get it back — demand letter, call script, and government complaint. All in 60 seconds."
+                  : "Tap your issue. Answer 2 quick questions. We'll find what they owe you and help you recover it — demand letter, call script, and regulator complaint. All in 60 seconds."
                 }
               </p>
             </div>
@@ -1004,7 +1004,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
 
                 <button onClick={() => handleTextScan()} disabled={textInput.length < 20} className="btn-primary w-full flex items-center justify-center gap-2.5 py-4">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-                  Analyze This
+                  Find What They Owe Me
                 </button>
               </div>
             </div>
@@ -1382,14 +1382,14 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             ) : (
               <div className="pt-2">
                 <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>
-                  Fight back — pick your weapon
+                  Get your money — pick your next move
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <button onClick={handleGenerateDispute} className="btn-primary flex items-center justify-center gap-2 py-4">
                     <span style={{ fontSize: 16 }}>✉</span>
                     <div className="text-left">
-                      <div>Write Dispute Letter</div>
-                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>AI writes a letter citing specific laws</div>
+                      <div>Send Demand Letter</div>
+                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>AI writes a legal demand citing specific laws</div>
                     </div>
                   </button>
                   <button
@@ -1399,8 +1399,8 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   >
                     <span style={{ fontSize: 16 }}>☎</span>
                     <div className="text-left">
-                      <div>Get Call Script</div>
-                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Exactly what to say on the phone</div>
+                      <div>Call & Demand Refund</div>
+                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Word-for-word script for the phone call</div>
                     </div>
                   </button>
                   <button
@@ -1410,8 +1410,8 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   >
                     <span style={{ fontSize: 16 }}>⚖</span>
                     <div className="text-left">
-                      <div>File Complaint</div>
-                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Report to {country === "NG" ? "CBN/FCCPC/NCC" : "CFPB/FCC/FTC"}</div>
+                      <div>Report to Government</div>
+                      <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>One-tap complaint to {country === "NG" ? "CBN/FCCPC/NCC" : "CFPB/FCC/FTC"}</div>
                     </div>
                   </button>
                 </div>
@@ -1429,10 +1429,10 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 Step 2 of 4
               </div>
               <h1 style={{ fontFamily: display, fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1 }}>
-                DISPUTE<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>LETTER</span>
+                DEMAND<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>LETTER</span>
               </h1>
               <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 8 }}>
-                AI writes a professional dispute letter citing the exact laws they violated. Send it by email or WhatsApp.
+                AI writes a professional demand letter citing the exact laws they violated. Send it and watch them scramble.
               </p>
             </div>
 
@@ -1463,7 +1463,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   ))}
                 </div>
                 <button onClick={handleGenerateDispute} disabled={!scanResult} className="btn-primary w-full py-4 flex items-center justify-center gap-2">
-                  ⚡ Generate Letter
+                  ⚡ Write My Demand Letter
                 </button>
               </div>
             ) : (
@@ -1504,6 +1504,31 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                       </>
                     )}
                   </ol>
+                </div>
+
+                {/* ── Fear Factor Escalation Warning ────── */}
+                <div className="p-4" style={{ background: "rgba(232,25,44,0.04)", border: "1px solid rgba(232,25,44,0.15)" }}>
+                  <div className="flex items-start gap-3">
+                    <span style={{ fontSize: 20, flexShrink: 0 }}>🔥</span>
+                    <div>
+                      <p style={{ fontFamily: mono, fontSize: 11, fontWeight: 600, color: "var(--red)", marginBottom: 4 }}>
+                        {country === "NG" ? "No response? Escalate to government." : "No response? Report to federal agency."}
+                      </p>
+                      <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6, marginBottom: 8 }}>
+                        {country === "NG"
+                          ? "Under Nigerian law, companies must respond to formal complaints within specific timeframes. If they ignore your demand letter, filing with FCCPC, CBN, or NCC forces an official investigation."
+                          : "Companies are legally required to respond to disputes. If they ignore you, a CFPB complaint creates a federal record they can't ignore — 97% of companies respond."
+                        }
+                      </p>
+                      <button
+                        onClick={() => setActiveTab("complaint")}
+                        className="flex items-center gap-2 px-4 py-2 transition-all hover:scale-[1.02]"
+                        style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--red)", background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.2)", cursor: "pointer" }}
+                      >
+                        ⚖ Skip to Government Complaint →
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* ── Fight Timeline / Progress Tracker ─── */}
@@ -1681,12 +1706,12 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 Step 4 of 4 — Nuclear Option
               </div>
               <h1 style={{ fontFamily: display, fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1 }}>
-                FILE A<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>COMPLAINT</span>
+                REPORT<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>TO GOVERNMENT</span>
               </h1>
               <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 8 }}>
                 {country === "NG"
-                  ? "Report them to the Nigerian government. Companies respond FAST when regulators get involved."
-                  : "File with a government agency. Companies respond FAST when regulators get involved."
+                  ? "Report them directly to the Nigerian government. One tap. Companies respond FAST when regulators come knocking."
+                  : "File with a federal agency in one tap. Companies settle FAST when regulators get involved."
                 }
               </p>
             </div>
@@ -1697,17 +1722,17 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Which agency? {country === "NG" ? "🇳🇬" : "🇺🇸"}</div>
                   <div className="space-y-2">
                     {(country === "NG" ? [
-                      { id: "fccpc", name: "FCCPC", full: "Consumer Protection Commission", desc: "General consumer complaints — products, services, unfair practices", stat: "Primary consumer body" },
-                      { id: "cbn", name: "CBN", full: "Central Bank of Nigeria", desc: "Bank charges, failed transfers, loan issues, unauthorized debits", stat: "24-72hr resolution mandate" },
-                      { id: "ncc", name: "NCC", full: "Communications Commission", desc: "MTN, Airtel, Glo, 9mobile — data, airtime, billing", stat: "Enforces Consumer Code" },
-                      { id: "nerc", name: "NERC", full: "Electricity Regulatory Commission", desc: "Estimated billing, metering, outages, DisCo disputes", stat: "Metering is your right" },
-                      { id: "ndpc", name: "NDPC", full: "Data Protection Commission", desc: "Data privacy violations, unauthorized contact access", stat: "NDPA 2023 enforcement" },
-                      { id: "efcc", name: "EFCC", full: "Financial Crimes Commission", desc: "Fraud, scams, financial crimes", stat: "Criminal investigations" },
+                      { id: "fccpc", name: "FCCPC", full: "Consumer Protection Commission", desc: "General consumer complaints — products, services, unfair practices", stat: "Primary consumer body", url: "https://fccpc.gov.ng/make-a-complaint/" },
+                      { id: "cbn", name: "CBN", full: "Central Bank of Nigeria", desc: "Bank charges, failed transfers, loan issues, unauthorized debits", stat: "24-72hr resolution mandate", url: "https://www.cbn.gov.ng/Complaints/" },
+                      { id: "ncc", name: "NCC", full: "Communications Commission", desc: "MTN, Airtel, Glo, 9mobile — data, airtime, billing", stat: "Enforces Consumer Code", url: "https://www.ncc.gov.ng/consumer/complaints" },
+                      { id: "nerc", name: "NERC", full: "Electricity Regulatory Commission", desc: "Estimated billing, metering, outages, DisCo disputes", stat: "Metering is your right", url: "https://nerc.gov.ng/index.php/home/consumers" },
+                      { id: "ndpc", name: "NDPC", full: "Data Protection Commission", desc: "Data privacy violations, unauthorized contact access", stat: "NDPA 2023 enforcement", url: "https://ndpc.gov.ng/complaints" },
+                      { id: "efcc", name: "EFCC", full: "Financial Crimes Commission", desc: "Fraud, scams, financial crimes", stat: "Criminal investigations", url: "https://efcc.gov.ng/report" },
                     ] : [
-                      { id: "cfpb", name: "CFPB", full: "Consumer Financial Protection Bureau", desc: "Medical bills, debt collection, banking fees", stat: "97% response rate" },
-                      { id: "fcc", name: "FCC", full: "Federal Communications Commission", desc: "Phone bills, internet, cable, wireless carrier", stat: "Companies respond within days" },
-                      { id: "state_ag", name: "State AG", full: "State Attorney General", desc: "Local businesses, fraud, deceptive practices", stat: "Can investigate and sue" },
-                      { id: "ftc", name: "FTC", full: "Federal Trade Commission", desc: "Scams, fraud, deceptive advertising", stat: "Builds cases from complaints" },
+                      { id: "cfpb", name: "CFPB", full: "Consumer Financial Protection Bureau", desc: "Medical bills, debt collection, banking fees", stat: "97% response rate", url: "https://www.consumerfinance.gov/complaint/" },
+                      { id: "fcc", name: "FCC", full: "Federal Communications Commission", desc: "Phone bills, internet, cable, wireless carrier", stat: "Companies respond within days", url: "https://consumercomplaints.fcc.gov/hc/en-us" },
+                      { id: "state_ag", name: "State AG", full: "State Attorney General", desc: "Local businesses, fraud, deceptive practices", stat: "Can investigate and sue", url: "https://www.usa.gov/state-attorney-general" },
+                      { id: "ftc", name: "FTC", full: "Federal Trade Commission", desc: "Scams, fraud, deceptive advertising", stat: "Builds cases from complaints", url: "https://reportfraud.ftc.gov/" },
                     ]).map((a) => (
                       <button key={a.id} onClick={() => setComplaintAgency(a.id)} className="w-full text-left p-4 transition-all" style={{ background: complaintAgency === a.id ? "rgba(232,197,65,0.05)" : "var(--surface2)", border: `1px solid ${complaintAgency === a.id ? "rgba(232,197,65,0.2)" : "var(--border)"}` }}>
                         <div className="flex items-center gap-2 mb-1">
@@ -1718,7 +1743,18 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                           )}
                         </div>
                         <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)" }}>{a.desc}</p>
-                        <p style={{ fontFamily: mono, fontSize: 10, color: "#41e866", marginTop: 4, opacity: 0.7 }}>{a.stat}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <p style={{ fontFamily: mono, fontSize: 10, color: "#41e866", opacity: 0.7 }}>{a.stat}</p>
+                          {complaintAgency === a.id && (
+                            <span
+                              onClick={(e) => { e.stopPropagation(); window.open(a.url, "_blank"); }}
+                              className="flex items-center gap-1 px-2.5 py-1 transition-colors hover:bg-[rgba(232,197,65,0.15)]"
+                              style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8c541", background: "rgba(232,197,65,0.08)", border: "1px solid rgba(232,197,65,0.2)", cursor: "pointer" }}
+                            >
+                              ↗ File Directly on {a.name}
+                            </span>
+                          )}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -1731,10 +1767,84 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   </div>
                 )}
 
-                <button onClick={handleGenerateComplaint} disabled={!scanResult} className="btn-primary w-full py-4 flex items-center justify-center gap-2">⚡ Generate Complaint</button>
+                <button onClick={handleGenerateComplaint} disabled={!scanResult} className="btn-primary w-full py-4 flex items-center justify-center gap-2">⚡ Generate & File Complaint</button>
+
+                {/* Escalation warning */}
+                <div className="p-4" style={{ background: "rgba(232,25,44,0.04)", border: "1px solid rgba(232,25,44,0.15)" }}>
+                  <div className="flex items-start gap-3">
+                    <span style={{ fontSize: 18 }}>⚠️</span>
+                    <div>
+                      <p style={{ fontFamily: mono, fontSize: 11, fontWeight: 600, color: "var(--red)", marginBottom: 4 }}>
+                        Companies hate this step
+                      </p>
+                      <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
+                        {country === "NG"
+                          ? "When you file with FCCPC or CBN, the company is legally required to respond within 7-14 days. Most companies settle immediately to avoid regulatory action. This is the step that gets your money back."
+                          : "CFPB complaints have a 97% response rate. Companies are legally required to respond within 15 days. Most settle before the deadline to keep their regulatory record clean."
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-3">
+                {/* ── ONE-TAP FILE NOW BANNER ─────────────── */}
+                {(() => {
+                  const filingUrls: Record<string, string> = {
+                    fccpc: "https://fccpc.gov.ng/make-a-complaint/",
+                    cbn: "https://www.cbn.gov.ng/Complaints/",
+                    ncc: "https://www.ncc.gov.ng/consumer/complaints",
+                    nerc: "https://nerc.gov.ng/index.php/home/consumers",
+                    ndpc: "https://ndpc.gov.ng/complaints",
+                    efcc: "https://efcc.gov.ng/report",
+                    cfpb: "https://www.consumerfinance.gov/complaint/",
+                    fcc: "https://consumercomplaints.fcc.gov/hc/en-us",
+                    state_ag: "https://www.usa.gov/state-attorney-general",
+                    ftc: "https://reportfraud.ftc.gov/",
+                  };
+                  const url = (complaintResult.filing_url as string) || filingUrls[complaintAgency] || "";
+                  return (
+                    <div className="p-5 text-center" style={{ background: "linear-gradient(135deg, rgba(232,197,65,0.08), rgba(232,25,44,0.04))", border: "2px solid rgba(232,197,65,0.25)" }}>
+                      <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#e8c541", marginBottom: 8 }}>
+                        ✅ Complaint ready — now file it
+                      </div>
+                      <p style={{ fontFamily: display, fontSize: "clamp(24px, 4vw, 36px)", color: "var(--white)", lineHeight: 1, marginBottom: 8 }}>
+                        {(complaintResult.agency_full_name as string) || complaintAgency.toUpperCase()}
+                      </p>
+                      <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", marginBottom: 16 }}>
+                        Your complaint text has been generated. Copy it, then tap the button below to open the {complaintAgency.toUpperCase()} filing page.
+                      </p>
+                      <div className="flex flex-col sm:flex-row justify-center gap-3">
+                        <button
+                          onClick={() => { copyToClipboard(complaintResult.complaint_text as string); toast("Complaint copied — now paste it on the filing page!", "success"); }}
+                          className="px-6 py-3.5 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                          style={{ fontFamily: mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--white)", background: "var(--surface2)", border: "1px solid var(--border)" }}
+                        >
+                          📋 {copied ? "✓ Copied!" : "Step 1: Copy Complaint"}
+                        </button>
+                        {url && (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-6 py-3.5 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                            style={{ fontFamily: mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--black)", background: "#e8c541", textDecoration: "none" }}
+                          >
+                            ↗ Step 2: File on {complaintAgency.toUpperCase()} Now
+                          </a>
+                        )}
+                      </div>
+                      <p style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", marginTop: 12 }}>
+                        {country === "NG"
+                          ? "⏰ Companies must respond within 7-14 days once you file"
+                          : "⏰ Companies must respond within 15 days of CFPB filing"
+                        }
+                      </p>
+                    </div>
+                  );
+                })()}
+
                 <div className="card-surface p-4 flex items-center justify-between flex-wrap gap-3" style={{ background: "rgba(232,197,65,0.03)", borderColor: "rgba(232,197,65,0.15)" }}>
                   <div>
                     <p style={{ fontFamily: mono, fontSize: 13, fontWeight: 600 }}>{(complaintResult.agency_full_name as string) || complaintAgency.toUpperCase()}</p>
@@ -1780,7 +1890,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 Your Record
               </div>
               <h1 style={{ fontFamily: display, fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1 }}>
-                CASE<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>HISTORY</span>
+                MONEY<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>RECOVERED</span>
               </h1>
             </div>
 
@@ -1956,7 +2066,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
         {[
           { id: "home" as Tab, icon: "⌕", label: "Report" },
           { id: "results" as Tab, icon: "◉", label: "Results" },
-          { id: "history" as Tab, icon: "▤", label: "History" },
+          { id: "history" as Tab, icon: "▤", label: "My Money" },
         ].map(item => (
           <button
             key={item.id}
