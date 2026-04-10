@@ -131,6 +131,54 @@ export default function Home() {
           }}
         />
 
+        {/* ── Floating decorative shapes ── */}
+        {/* Shield icon — top right */}
+        <div className="float-shape hidden md:block" style={{ top: "12%", right: "8%", width: 120, height: 140, opacity: 0.06, animation: "float-slow 8s ease-in-out infinite" }}>
+          <svg viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 5L90 25V60C90 85 70 105 50 115C30 105 10 85 10 60V25L50 5Z" stroke="currentColor" strokeWidth="2" fill="rgba(232,25,44,0.15)" />
+            <path d="M35 58L45 68L65 48" stroke="var(--red)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        {/* Document icon — left */}
+        <div className="float-shape hidden md:block" style={{ top: "30%", left: "5%", width: 90, height: 110, opacity: 0.05, animation: "float-reverse 10s ease-in-out infinite" }}>
+          <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="5" width="60" height="90" rx="3" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M50 5V25H70" stroke="currentColor" strokeWidth="1.5" />
+            <line x1="15" y1="40" x2="55" y2="40" stroke="var(--red)" strokeWidth="1" opacity="0.5" />
+            <line x1="15" y1="50" x2="50" y2="50" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+            <line x1="15" y1="60" x2="45" y2="60" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+            <line x1="15" y1="70" x2="52" y2="70" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+          </svg>
+        </div>
+        {/* Scales of justice — center right */}
+        <div className="float-shape hidden lg:block" style={{ bottom: "20%", right: "15%", width: 100, height: 100, opacity: 0.04, animation: "float-drift 12s ease-in-out infinite" }}>
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="50" y1="10" x2="50" y2="80" stroke="currentColor" strokeWidth="1.5" />
+            <line x1="20" y1="30" x2="80" y2="30" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M20 30L10 55H30L20 30Z" stroke="var(--red)" strokeWidth="1" fill="rgba(232,25,44,0.1)" />
+            <path d="M80 30L70 55H90L80 30Z" stroke="var(--red)" strokeWidth="1" fill="rgba(232,25,44,0.1)" />
+            <rect x="40" y="80" width="20" height="5" rx="1" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+        {/* Floating red orbs */}
+        <div className="glow-orb hidden md:block" style={{ width: 200, height: 200, top: "60%", left: "10%", background: "rgba(232,25,44,0.12)", animation: "glow-pulse 6s ease-in-out infinite" }} />
+        <div className="glow-orb hidden lg:block" style={{ width: 300, height: 300, top: "10%", right: "20%", background: "rgba(232,25,44,0.06)", animation: "glow-pulse 8s ease-in-out 2s infinite" }} />
+        {/* Small orbiting dots */}
+        <div className="float-shape hidden md:block" style={{ top: "45%", right: "25%", width: 6, height: 6, animation: "orbit 15s linear infinite" }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--red)", opacity: 0.4 }} />
+        </div>
+        <div className="float-shape hidden md:block" style={{ top: "25%", left: "18%", width: 4, height: 4, animation: "orbit 20s linear reverse infinite" }}>
+          <div style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--red)", opacity: 0.3 }} />
+        </div>
+        {/* Dashed circuit line */}
+        <div className="float-shape hidden lg:block" style={{ top: "65%", left: "25%", width: 200, height: 60, opacity: 0.06 }}>
+          <svg viewBox="0 0 200 60" fill="none">
+            <path d="M0 30 H60 L80 10 H140 L160 30 H200" stroke="var(--red)" strokeWidth="1" strokeDasharray="8 6" style={{ animation: "dash-flow 4s linear infinite" }} />
+            <circle cx="80" cy="10" r="3" fill="var(--red)" opacity="0.5" />
+            <circle cx="160" cy="30" r="3" fill="var(--red)" opacity="0.5" />
+          </svg>
+        </div>
+
         <div className="relative z-10">
           <div
             className="fade-up flex items-center gap-3 mb-6"
@@ -198,8 +246,17 @@ export default function Home() {
       </div>
 
       {/* ═══ SCANNER DEMO ══════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal" id="scanner">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal relative overflow-hidden" id="scanner">
+        {/* Magnifying glass decoration */}
+        <div className="float-shape hidden lg:block" style={{ top: "5%", right: "4%", width: 80, height: 80, opacity: 0.05, animation: "float-slow 10s ease-in-out infinite" }}>
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="35" cy="35" r="22" stroke="var(--red)" strokeWidth="1.5" />
+            <line x1="50" y1="50" x2="70" y2="70" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="35" cy="35" r="12" stroke="currentColor" strokeWidth="0.5" strokeDasharray="3 3" />
+          </svg>
+        </div>
+        <div className="glow-orb hidden md:block" style={{ width: 280, height: 280, top: "30%", left: "-5%", background: "rgba(232,25,44,0.04)", animation: "glow-pulse 8s ease-in-out 1s infinite" }} />
+        <div className="max-w-6xl mx-auto relative z-10">
           <div
             className="flex items-center gap-3 mb-4"
             style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
@@ -308,8 +365,16 @@ export default function Home() {
       </section>
 
       {/* ═══ FEATURES ══════════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal" id="features">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal relative overflow-hidden" id="features">
+        {/* Decorative background elements */}
+        <div className="glow-orb hidden md:block" style={{ width: 400, height: 400, top: "-10%", right: "-5%", background: "rgba(232,25,44,0.04)", animation: "glow-pulse 10s ease-in-out infinite" }} />
+        <div className="float-shape hidden lg:block" style={{ top: "15%", right: "5%", width: 80, height: 80, opacity: 0.04, animation: "float-slow 9s ease-in-out infinite" }}>
+          <svg viewBox="0 0 80 80" fill="none"><rect x="5" y="5" width="70" height="70" rx="2" stroke="var(--red)" strokeWidth="1" strokeDasharray="6 4" /><rect x="20" y="20" width="40" height="40" rx="1" stroke="currentColor" strokeWidth="0.5" /></svg>
+        </div>
+        <div className="float-shape hidden md:block" style={{ bottom: "10%", left: "3%", width: 60, height: 60, opacity: 0.05, animation: "float-reverse 11s ease-in-out infinite" }}>
+          <svg viewBox="0 0 60 60" fill="none"><polygon points="30,5 55,50 5,50" stroke="var(--red)" strokeWidth="1" fill="rgba(232,25,44,0.05)" /></svg>
+        </div>
+        <div className="max-w-6xl mx-auto relative z-10">
           <div
             className="flex items-center gap-3 mb-4"
             style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
@@ -354,8 +419,23 @@ export default function Home() {
       </section>
 
       {/* ═══ HOW IT WORKS ══════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal" id="how">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal relative overflow-hidden" id="how">
+        {/* Floating gavel icon */}
+        <div className="float-shape hidden lg:block" style={{ top: "8%", right: "6%", width: 100, height: 100, opacity: 0.05, animation: "float-drift 14s ease-in-out infinite" }}>
+          <svg viewBox="0 0 100 100" fill="none">
+            <rect x="35" y="10" width="30" height="14" rx="3" stroke="var(--red)" strokeWidth="1.5" transform="rotate(-30 50 17)" fill="rgba(232,25,44,0.08)" />
+            <line x1="50" y1="24" x2="50" y2="65" stroke="currentColor" strokeWidth="1.5" />
+            <ellipse cx="50" cy="70" rx="20" ry="5" stroke="currentColor" strokeWidth="1" fill="rgba(232,25,44,0.05)" />
+          </svg>
+        </div>
+        {/* Animated connector line */}
+        <div className="float-shape hidden md:block" style={{ top: "50%", left: "2%", width: 150, height: 100, opacity: 0.04 }}>
+          <svg viewBox="0 0 150 100" fill="none">
+            <path d="M10 10 Q75 50 140 10 Q75 -30 10 10" stroke="var(--red)" strokeWidth="0.8" strokeDasharray="4 4" style={{ animation: "dash-flow 6s linear infinite" }} />
+          </svg>
+        </div>
+        <div className="glow-orb hidden md:block" style={{ width: 250, height: 250, bottom: "5%", left: "15%", background: "rgba(232,25,44,0.05)", animation: "glow-pulse 9s ease-in-out 1s infinite" }} />
+        <div className="max-w-6xl mx-auto relative z-10">
           <div
             className="flex items-center gap-3 mb-4"
             style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
@@ -431,8 +511,15 @@ export default function Home() {
       </section>
 
       {/* ═══ HISTORY TABLE ═════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal relative overflow-hidden">
+        {/* Dollar sign watermark */}
+        <div className="float-shape hidden lg:block" style={{ top: "8%", left: "3%", width: 100, height: 120, opacity: 0.03, animation: "float-reverse 13s ease-in-out infinite" }}>
+          <svg viewBox="0 0 100 120" fill="none">
+            <text x="50" y="90" textAnchor="middle" fill="var(--red)" fontFamily="var(--font-bebas-neue)" fontSize="100" opacity="0.4">$</text>
+          </svg>
+        </div>
+        <div className="glow-orb hidden md:block" style={{ width: 300, height: 300, bottom: "-10%", right: "10%", background: "rgba(232,25,44,0.03)", animation: "glow-pulse 7s ease-in-out 2s infinite" }} />
+        <div className="max-w-6xl mx-auto relative z-10">
           <div
             className="flex items-center gap-3 mb-4"
             style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
@@ -496,8 +583,22 @@ export default function Home() {
       </section>
 
       {/* ═══ WHO IT'S FOR — DUAL MARKET ═════════════════ */}
-      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal" id="guide">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal relative overflow-hidden" id="guide">
+        {/* Globe-like decoration */}
+        <div className="float-shape hidden lg:block" style={{ top: "10%", left: "4%", width: 140, height: 140, opacity: 0.04, animation: "float-slow 12s ease-in-out infinite" }}>
+          <svg viewBox="0 0 140 140" fill="none">
+            <circle cx="70" cy="70" r="60" stroke="currentColor" strokeWidth="1" />
+            <ellipse cx="70" cy="70" rx="35" ry="60" stroke="var(--red)" strokeWidth="0.8" />
+            <ellipse cx="70" cy="70" rx="60" ry="25" stroke="currentColor" strokeWidth="0.5" />
+            <line x1="70" y1="10" x2="70" y2="130" stroke="currentColor" strokeWidth="0.5" />
+            <line x1="10" y1="70" x2="130" y2="70" stroke="currentColor" strokeWidth="0.5" />
+          </svg>
+        </div>
+        <div className="glow-orb hidden md:block" style={{ width: 350, height: 350, top: "20%", right: "-5%", background: "rgba(232,25,44,0.04)", animation: "glow-pulse 11s ease-in-out 3s infinite" }} />
+        <div className="float-shape hidden md:block" style={{ bottom: "8%", right: "8%", width: 5, height: 5, animation: "orbit 18s linear infinite" }}>
+          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--red)", opacity: 0.35 }} />
+        </div>
+        <div className="max-w-6xl mx-auto relative z-10">
           <div
             className="flex items-center gap-3 mb-4"
             style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
@@ -724,6 +825,30 @@ export default function Home() {
       {/* ═══ CTA ═══════════════════════════════════════════ */}
       <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] text-center relative overflow-hidden reveal">
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(232,25,44,0.08) 0%, transparent 70%)" }} />
+        {/* Converging arrows / energy lines */}
+        <div className="float-shape hidden md:block" style={{ top: "15%", left: "8%", width: 160, height: 80, opacity: 0.06, animation: "float-slow 7s ease-in-out infinite" }}>
+          <svg viewBox="0 0 160 80" fill="none">
+            <path d="M0 40 H50 L70 20 H120" stroke="var(--red)" strokeWidth="1.5" strokeDasharray="6 4" style={{ animation: "dash-flow 3s linear infinite" }} />
+            <path d="M0 60 H40 L60 40 H110" stroke="currentColor" strokeWidth="0.8" strokeDasharray="4 4" style={{ animation: "dash-flow 4s linear infinite" }} />
+            <polygon points="120,20 130,17 130,23" fill="var(--red)" opacity="0.6" />
+          </svg>
+        </div>
+        <div className="float-shape hidden md:block" style={{ top: "15%", right: "8%", width: 160, height: 80, opacity: 0.06, animation: "float-reverse 7s ease-in-out infinite", transform: "scaleX(-1)" }}>
+          <svg viewBox="0 0 160 80" fill="none">
+            <path d="M0 40 H50 L70 20 H120" stroke="var(--red)" strokeWidth="1.5" strokeDasharray="6 4" style={{ animation: "dash-flow 3s linear infinite" }} />
+            <path d="M0 60 H40 L60 40 H110" stroke="currentColor" strokeWidth="0.8" strokeDasharray="4 4" style={{ animation: "dash-flow 4s linear infinite" }} />
+            <polygon points="120,20 130,17 130,23" fill="var(--red)" opacity="0.6" />
+          </svg>
+        </div>
+        {/* Large bottom glow */}
+        <div className="glow-orb" style={{ width: 500, height: 300, bottom: "-10%", left: "50%", transform: "translateX(-50%)", background: "rgba(232,25,44,0.08)", animation: "glow-pulse 5s ease-in-out infinite" }} />
+        {/* Floating corner diamonds */}
+        <div className="float-shape hidden md:block" style={{ bottom: "20%", left: "5%", width: 30, height: 30, opacity: 0.08, animation: "float-drift 9s ease-in-out infinite" }}>
+          <svg viewBox="0 0 30 30" fill="none"><rect x="5" y="5" width="20" height="20" stroke="var(--red)" strokeWidth="1" transform="rotate(45 15 15)" /></svg>
+        </div>
+        <div className="float-shape hidden md:block" style={{ bottom: "25%", right: "5%", width: 24, height: 24, opacity: 0.08, animation: "float-drift 11s ease-in-out 2s infinite" }}>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" stroke="var(--red)" strokeWidth="1" transform="rotate(45 12 12)" /></svg>
+        </div>
         <div className="relative z-10">
           <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)", marginBottom: "1.5rem" }}>
             No Lawyers. No Fees. Real Results.
