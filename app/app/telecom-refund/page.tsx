@@ -38,7 +38,7 @@ export default function TelecomRefundPage() {
     <NigeriaLanding
       pageId="telecom-refund"
       structuredData={[faqData]}
-      hero={
+      heroRender={(openAuth) => (
         <section className="min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-12 pt-24 sm:pt-32 pb-12 sm:pb-16 relative overflow-hidden">
           <div
             className="photo-backdrop"
@@ -65,7 +65,7 @@ export default function TelecomRefundPage() {
             </p>
 
             <div className="fade-up-3 flex flex-wrap gap-4 items-center">
-              <button onClick={() => document.dispatchEvent(new CustomEvent("ghostlaw:auth", { detail: "signup" }))} className="btn-primary" style={{ cursor: "none" }}>
+              <button onClick={() => openAuth("signup")} className="btn-primary" style={{ cursor: "none" }}>
                 Get My Data Refund — Free
               </button>
             </div>
@@ -85,7 +85,7 @@ export default function TelecomRefundPage() {
             </div>
           </div>
         </section>
-      }
+      )}
     >
       {/* ═══ SCENARIOS ════════════════════════════════════ */}
       <section className="py-20 md:py-28 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal">

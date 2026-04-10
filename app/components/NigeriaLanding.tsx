@@ -16,15 +16,15 @@ import { trackEvent } from "@/lib/analytics";
 interface NigeriaLandingProps {
   /** page identifier for analytics */
   pageId: string;
-  /** hero section */
-  hero: ReactNode;
+  /** hero section — receives openAuth so CTA buttons work */
+  heroRender: (openAuth: (mode: "login" | "signup") => void) => ReactNode;
   /** main content sections */
   children: ReactNode;
   /** structured data JSON-LD objects */
   structuredData?: object[];
 }
 
-export default function NigeriaLanding({ pageId, hero, children, structuredData }: NigeriaLandingProps) {
+export default function NigeriaLanding({ pageId, heroRender, children, structuredData }: NigeriaLandingProps) {
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -111,7 +111,7 @@ export default function NigeriaLanding({ pageId, hero, children, structuredData 
       </nav>
 
       {/* HERO */}
-      {hero}
+      {heroRender(openAuth)}
 
       {/* MARQUEE */}
       <div className="marquee-wrap">

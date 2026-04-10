@@ -1080,8 +1080,10 @@ export default function Home() {
         >
           Ghost<span style={{ color: "var(--red)" }}>Law</span>
         </div>
-        <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)", letterSpacing: "0.05em" }}>
-          Get your money back · Free forever
+        <div className="flex flex-wrap gap-4" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)", letterSpacing: "0.05em" }}>
+          <a href="/bank-reversal" className="hover:text-white transition-colors" style={{ cursor: "none", color: "var(--muted)" }}>Bank Reversals 🇳🇬</a>
+          <a href="/loan-app" className="hover:text-white transition-colors" style={{ cursor: "none", color: "var(--muted)" }}>Loan App Abuse 🇳🇬</a>
+          <a href="/telecom-refund" className="hover:text-white transition-colors" style={{ cursor: "none", color: "var(--muted)" }}>Telecom Refunds 🇳🇬</a>
         </div>
         <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--surface3)" }}>
           © 2026 GhostLaw
