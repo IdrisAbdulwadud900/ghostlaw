@@ -113,6 +113,12 @@ export default function Home() {
 
       {/* ═══ HERO ══════════════════════════════════════════ */}
       <section className="min-h-screen flex flex-col justify-center px-4 sm:px-4 sm:px-6 md:px-12 pt-24 sm:pt-32 pb-12 sm:pb-16 relative overflow-hidden" id="home">
+        <div
+          className="photo-backdrop"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80")',
+          }}
+        />
         {/* Grid background */}
         <div
           className="absolute inset-0"
@@ -247,6 +253,12 @@ export default function Home() {
 
       {/* ═══ SCANNER DEMO ══════════════════════════════════ */}
       <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal relative overflow-hidden" id="scanner">
+        <div
+          className="photo-side-panel hidden lg:block"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=80")',
+          }}
+        />
         {/* Magnifying glass decoration */}
         <div className="float-shape hidden lg:block" style={{ top: "5%", right: "4%", width: 80, height: 80, opacity: 0.05, animation: "float-slow 10s ease-in-out infinite" }}>
           <svg viewBox="0 0 80 80" fill="none">
@@ -584,6 +596,12 @@ export default function Home() {
 
       {/* ═══ WHO IT'S FOR — DUAL MARKET ═════════════════ */}
       <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal relative overflow-hidden" id="guide">
+        <div
+          className="photo-spotlight hidden xl:block"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80")',
+          }}
+        />
         {/* Globe-like decoration */}
         <div className="float-shape hidden lg:block" style={{ top: "10%", left: "4%", width: 140, height: 140, opacity: 0.04, animation: "float-slow 12s ease-in-out infinite" }}>
           <svg viewBox="0 0 140 140" fill="none">
@@ -824,6 +842,13 @@ export default function Home() {
 
       {/* ═══ CTA ═══════════════════════════════════════════ */}
       <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] text-center relative overflow-hidden reveal">
+        <div
+          className="photo-backdrop"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1600&q=80")',
+            opacity: 0.2,
+          }}
+        />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(232,25,44,0.08) 0%, transparent 70%)" }} />
         {/* Converging arrows / energy lines */}
         <div className="float-shape hidden md:block" style={{ top: "15%", left: "8%", width: 160, height: 80, opacity: 0.06, animation: "float-slow 7s ease-in-out infinite" }}>
