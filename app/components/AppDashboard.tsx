@@ -8,6 +8,7 @@ import {
   generateComplaint,
   addScanToHistory, addDisputeToHistory, addCallToHistory,
   getLocalHistory, getLocalStats, saveOutcome, getOutcome,
+  exportUserData, deleteUserAccount
 } from "@/lib/api";
 import { useToast } from "./Toast";
 import { highlightLegalTerms } from "./Tooltip";
@@ -434,6 +435,8 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const [disputeResult, setDisputeResult] = useState<ApiResult | null>(null);
   const [disputeTone, setDisputeTone] = useState("firm_but_polite");
   const [copied, setCopied] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [privacyLoading, setPrivacyLoading] = useState(false);
 
   // Call state
   const [callResult, setCallResult] = useState<ApiResult | null>(null);
@@ -661,6 +664,38 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   };
 
   const handleLogout = () => { clearToken(); onLogout(); };
+
+  const handleExportData = async () => {
+    setPrivacyLoading(true);
+    try {
+      const data = await exportUserData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ghostlaw_data_export_${new Date().getTime()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("Data exported successfully", "success");
+    } catch {
+      toast("Failed to export data", "error");
+    }
+    setPrivacyLoading(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!confirm("Are you sure? This will PERMANENTLY delete your account and all data. There is no undo.")) return;
+    setPrivacyLoading(true);
+    try {
+      await deleteUserAccount();
+      toast("Account deleted permanently", "success");
+      setTimeout(() => handleLogout(), 1500);
+    } catch {
+      toast("Failed to delete account", "error");
+      setPrivacyLoading(false);
+    }
+  };
+
   const navigate = (tab: Tab) => { if (tab === "history") refreshLocal(); setActiveTab(tab); setMobileNav(false); };
 
   const loadHistoryScan = (scan: Record<string, unknown>) => {
@@ -742,7 +777,10 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             ▤ My Money
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 flex items-center justify-center" style={{ background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.3)", fontFamily: mono, fontSize: 11, color: "var(--red)", fontWeight: 600 }}>
+            <div className="w-7 h-7 flex items-center justify-center relative cursor-pointer" 
+                 onClick={() => setPrivacyOpen(true)}
+                 title="Privacy & Data Settings"
+                 style={{ background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.3)", fontFamily: mono, fontSize: 11, color: "var(--red)", fontWeight: 600 }}>
               {user?.name?.[0]?.toUpperCase() || "U"}
             </div>
             <span className="hidden md:block" style={{ fontFamily: mono, fontSize: 11 }}>{user?.name || "User"}</span>
@@ -2262,6 +2300,43 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
           </button>
         ))}
       </div>
+{privacyOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(10,10,12,0.85)", backdropFilter: "blur(4px)" }}>
+          <div className="w-full max-w-md p-6 relative flex flex-col gap-6" style={{ background: "var(--obsidian)", border: "1px solid var(--border)", boxShadow: "0 24px 48px rgba(0,0,0,0.5)", borderRadius: 12 }}>
+            <button onClick={() => setPrivacyOpen(false)} className="absolute top-4 right-4 text-xl" style={{ color: "var(--muted)", width: 32, height: 32 }}>✕</button>
+            <div>
+              <h2 style={{ fontFamily: display, fontSize: 28, color: "var(--white)" }}>Privacy & Data</h2>
+              <p style={{ fontFamily: sans, fontSize: 14, color: "var(--muted2)", marginTop: 8, lineHeight: 1.5 }}>
+                You own your data. Download a complete archive of your interaction history, or permanently erase your account.
+              </p>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={handleExportData} 
+                disabled={privacyLoading}
+                className="btn-secondary w-full py-4 px-6 flex justify-between items-center transition-all bg-[var(--surface)] hover:bg-[var(--line-subtle)] border border-[var(--border)] group"
+                style={{ fontFamily: mono, fontSize: 13, color: "var(--white)", opacity: privacyLoading ? 0.7 : 1 }}>
+                <span className="flex items-center gap-3"><span className="text-lg">↓</span> Export My Data Archive</span>
+                <span className="text-[var(--muted)] group-hover:text-[var(--white)]">.JSON</span>
+              </button>
+              
+              <button 
+                onClick={handleDeleteAccount} 
+                disabled={privacyLoading}
+                className="w-full py-4 px-6 flex justify-between items-center transition-all group"
+                style={{ background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.3)", borderRadius: 8, fontFamily: mono, fontSize: 13, color: "var(--white)", opacity: privacyLoading ? 0.7 : 1 }}>
+                <span className="flex items-center gap-3 text-[var(--red)] group-hover:text-white"><span className="text-lg">✕</span> Permanently Delete Account</span>
+                <span className="text-[var(--red)] group-hover:text-[var(--white)]">IRREVERSIBLE</span>
+              </button>
+            </div>
+            
+            <div className="mt-2 text-center" style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)" }}>
+              Data exports are processed instantly according to CCPA/GDPR compliance.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

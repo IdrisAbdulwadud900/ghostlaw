@@ -352,3 +352,17 @@ export async function generateComplaint(
     }),
   });
 }
+
+// ── Privacy & Data ─────────────────────────────────────────
+
+export async function exportUserData() {
+  return await api("/privacy/export", {
+    method: "GET",
+  });
+}
+
+export async function deleteUserAccount() {
+  return await api("/privacy/delete", {
+    method: "DELETE",
+  });
+}
