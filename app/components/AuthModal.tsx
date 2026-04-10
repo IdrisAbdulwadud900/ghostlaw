@@ -30,7 +30,6 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<"google" | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +58,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
       client_id: GOOGLE_CLIENT_ID,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       callback: async (response: any) => {
-        setSocialLoading("google");
+        setLoading(true);
         setError("");
         try {
           await socialLogin("google", response.credential);
@@ -67,7 +66,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
         } catch (err: unknown) {
           setError(err instanceof Error ? err.message : "Google sign-in failed");
         } finally {
-          setSocialLoading(null);
+          setLoading(false);
         }
       },
     });

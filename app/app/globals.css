@@ -128,6 +128,19 @@ body::after {
   100% { background-position: 200% 0; }
 }
 
+@keyframes toast-in {
+  0% { opacity: 0; transform: translateX(100%) scale(0.95); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toast-out {
+  0% { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(100%) scale(0.95); }
+}
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.06; }
+  50% { opacity: 0.12; }
+}
+
 .fade-up { animation: fade-up 0.8s ease both; }
 .fade-up-1 { animation: fade-up 0.8s 0.1s ease both; }
 .fade-up-2 { animation: fade-up 0.8s 0.2s ease both; }

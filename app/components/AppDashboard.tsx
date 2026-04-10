@@ -9,6 +9,8 @@ import {
   addScanToHistory, addDisputeToHistory, addCallToHistory,
   getLocalHistory, getLocalStats, saveOutcome, getOutcome,
 } from "@/lib/api";
+import { useToast } from "./Toast";
+import { highlightLegalTerms } from "./Tooltip";
 
 // ── Types ────────────────────────────────────────────────────
 type Tab = "home" | "scan" | "results" | "dispute" | "call" | "complaint" | "history";
@@ -327,6 +329,7 @@ interface AppDashboardProps {
 
 export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const user = getUser();
+  const { toast, ToastContainer } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("Analyzing...");
@@ -386,6 +389,18 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   // Outcome tracking
   const [outcomeOpen, setOutcomeOpen] = useState(false);
 
+  // Issue card expand/collapse
+  const [expandedIssues, setExpandedIssues] = useState<Set<number>>(new Set());
+  const toggleIssue = (idx: number) => setExpandedIssues(prev => {
+    const next = new Set(prev);
+    if (next.has(idx)) next.delete(idx); else next.add(idx);
+    return next;
+  });
+
+  // History search/filter
+  const [historySearch, setHistorySearch] = useState("");
+  const [historyFilter, setHistoryFilter] = useState<"all" | "won" | "pending" | "untracked">("all");
+
   // Legal tip rotation
   const [tipIndex, setTipIndex] = useState(0);
   const tips = country === "NG" ? NG_LEGAL_TIPS : US_LEGAL_TIPS;
@@ -434,7 +449,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const handleFileUpload = useCallback(async (file: File) => {
     // Validate file size before uploading (10MB max)
     if (file.size > 10 * 1024 * 1024) {
-      alert("File too large — max 10MB. Try a smaller file or paste the text instead.");
+      toast("File too large — max 10MB. Try a smaller file or paste the text instead.", "error");
       return;
     }
     setLoading(true);
@@ -448,17 +463,17 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Scan failed";
       if (msg.includes("Connection failed")) {
-        alert("Upload failed — slow connection. Try a smaller file or paste the text instead.");
+        toast("Upload failed — slow connection. Try a smaller file or paste the text instead.", "error");
       } else {
-        alert(msg);
+        toast(msg, "error");
       }
     } finally { setLoading(false); }
-  }, [scanContext, country, refreshLocal]);
+  }, [scanContext, country, refreshLocal, toast]);
 
   const handleTextScan = useCallback(async (text?: string, ctx?: string) => {
     const t = text || textInput;
     if (t.length < 20) {
-      alert("Please provide more details — we need at least a few lines to analyze.");
+      toast("Please provide more details — we need at least a few lines to analyze.", "warning");
       return;
     }
     setLoading(true);
@@ -470,9 +485,9 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       refreshLocal();
       setActiveTab("results");
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Scan failed");
+      toast(err instanceof Error ? err.message : "Scan failed", "error");
     } finally { setLoading(false); }
-  }, [textInput, scanContext, refreshLocal, country]);
+  }, [textInput, scanContext, refreshLocal, country, toast]);
 
   const handleQuickScan = useCallback(async () => {
     if (!selectedIssue) return;
@@ -494,9 +509,9 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       refreshLocal();
       setActiveTab("dispute");
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to generate dispute");
+      toast(err instanceof Error ? err.message : "Failed to generate dispute", "error");
     } finally { setLoading(false); }
-  }, [scanResult, disputeTone, refreshLocal, country]);
+  }, [scanResult, disputeTone, refreshLocal, country, toast]);
 
   const handleRequestCall = useCallback(async () => {
     if (!scanResult?.scan_id || !companyName) return;
@@ -513,9 +528,9 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       refreshLocal();
       setActiveTab("call");
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to generate call script");
+      toast(err instanceof Error ? err.message : "Failed to generate call script", "error");
     } finally { setLoading(false); }
-  }, [scanResult, companyName, callObjective, disputeResult, refreshLocal, country]);
+  }, [scanResult, companyName, callObjective, disputeResult, refreshLocal, country, toast]);
 
   const handleGenerateComplaint = useCallback(async () => {
     if (!scanResult?.scan_id) return;
@@ -529,9 +544,9 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       setComplaintResult(result);
       setActiveTab("complaint");
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to generate complaint");
+      toast(err instanceof Error ? err.message : "Failed to generate complaint", "error");
     } finally { setLoading(false); }
-  }, [scanResult, complaintAgency, disputeResult, companyName, country]);
+  }, [scanResult, complaintAgency, disputeResult, companyName, country, toast]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -610,7 +625,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--black)" }}>
-      {/* ═══ TOP BAR ══════════════════════════════════════ */}
+      <ToastContainer />
       <header
         className="flex items-center justify-between px-4 md:px-6 py-3 flex-shrink-0"
         style={{ background: "var(--obsidian)", borderBottom: "1px solid var(--border)", zIndex: 40 }}
@@ -827,6 +842,58 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                     <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>{tips[tipIndex % tips.length]}</p>
                   </div>
                 </div>
+
+                {/* ── Recent Activity Feed ────────────────── */}
+                {localHistory.scans.length > 0 && (
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>Recent Activity</div>
+                      <button onClick={() => navigate("history")} style={{ fontFamily: mono, fontSize: 10, color: "var(--red)" }}>View all →</button>
+                    </div>
+                    <div className="space-y-2">
+                      {localHistory.scans.slice(0, 4).map((scan, i) => {
+                        const outcome = getOutcome(scan.scan_id);
+                        return (
+                          <button
+                            key={scan.scan_id || i}
+                            onClick={() => loadHistoryScan(scan)}
+                            className="w-full flex items-center gap-3 p-3 transition-all hover:bg-[var(--surface2)]"
+                            style={{ background: "var(--surface)", border: "1px solid var(--border)", textAlign: "left" }}
+                          >
+                            <span style={{
+                              fontSize: 14, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                              background: outcome?.status === "won" ? "rgba(65,232,102,0.1)" : "var(--surface2)",
+                              border: `1px solid ${outcome?.status === "won" ? "rgba(65,232,102,0.2)" : "var(--border)"}`,
+                            }}>
+                              {outcome?.status === "won" ? "🏆" : "📄"}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 500 }} className="truncate">{(scan.document_type as string)?.replace(/_/g, " ") || "Document"}</span>
+                                {(scan.case_strength as number) > 0 && (
+                                  <span style={{
+                                    fontFamily: mono, fontSize: 8, padding: "1px 5px",
+                                    background: (scan.case_strength as number) >= 70 ? "rgba(65,232,102,0.1)" : "rgba(232,197,65,0.1)",
+                                    color: (scan.case_strength as number) >= 70 ? "#41e866" : "#e8c541",
+                                    border: `1px solid ${(scan.case_strength as number) >= 70 ? "rgba(65,232,102,0.2)" : "rgba(232,197,65,0.2)"}`,
+                                  }}>
+                                    {scan.case_strength as number}%
+                                  </span>
+                                )}
+                              </div>
+                              <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)" }} className="truncate block">{scan.summary as string}</span>
+                            </div>
+                            {(scan.total_potential_savings as number) > 0 && (
+                              <span style={{ fontFamily: display, fontSize: 16, color: "var(--red)", whiteSpace: "nowrap" }}>
+                                {currencySymbol}{(scan.total_potential_savings as number).toLocaleString()}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               /* ── Quick Issue Form ─────────────────────── */
@@ -1107,24 +1174,34 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               <div>
                 <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Problems we found</div>
                 <div className="space-y-3">
-                  {(scanResult.issues_found as Array<ApiResult>).map((issue, i: number) => (
-                    <div key={i} className={`finding-card ${issue.severity === "critical" ? "critical" : issue.severity === "high" ? "warning" : issue.severity === "medium" ? "info" : "low"}`}>
-                      <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: issue.severity === "critical" ? "var(--red)" : issue.severity === "high" ? "#e8c541" : issue.severity === "medium" ? "#4178e8" : "#41e866", marginBottom: 6 }}>
-                        {issue.severity as string}
-                      </div>
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div style={{ fontFamily: mono, fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{issue.issue as string}</div>
-                          <div style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>{issue.explanation as string}</div>
+                  {(scanResult.issues_found as Array<ApiResult>).map((issue, i: number) => {
+                    const isExpanded = expandedIssues.has(i);
+                    return (
+                    <div key={i} className={`finding-card ${issue.severity === "critical" ? "critical" : issue.severity === "high" ? "warning" : issue.severity === "medium" ? "info" : "low"}`} style={{ cursor: "pointer", transition: "transform 0.15s" }} onClick={() => toggleIssue(i)}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: issue.severity === "critical" ? "var(--red)" : issue.severity === "high" ? "#e8c541" : issue.severity === "medium" ? "#4178e8" : "#41e866" }}>
+                            {issue.severity as string}
+                          </span>
+                          <span style={{ fontFamily: mono, fontSize: 13, fontWeight: 600 }}>{issue.issue as string}</span>
                         </div>
-                        {(issue.potential_savings as number) > 0 && (
-                          <div style={{ fontFamily: display, fontSize: 24, color: "var(--red)", whiteSpace: "nowrap" }}>
-                            −{currencySymbol}{(issue.potential_savings as number).toLocaleString()}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-3">
+                          {(issue.potential_savings as number) > 0 && (
+                            <span style={{ fontFamily: display, fontSize: 20, color: "var(--red)", whiteSpace: "nowrap" }}>
+                              −{currencySymbol}{(issue.potential_savings as number).toLocaleString()}
+                            </span>
+                          )}
+                          <span style={{ fontSize: 10, color: "var(--muted)", transition: "transform 0.2s", transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}>▾</span>
+                        </div>
                       </div>
+                      {isExpanded && (
+                        <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
+                          <div style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>{highlightLegalTerms(issue.explanation as string)}</div>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -1138,7 +1215,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 <ul className="space-y-2">
                   {(scanResult.your_rights as string[]).map((right: string, i: number) => (
                     <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
-                      <span style={{ color: "#41e866" }}>✓</span> {right}
+                      <span style={{ color: "#41e866" }}>✓</span> {highlightLegalTerms(right)}
                     </li>
                   ))}
                 </ul>
@@ -1159,6 +1236,42 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 </ol>
               </div>
             )}
+
+            {/* ── Export / Share Results ─────────────────── */}
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => {
+                  const issues = (scanResult.issues_found as Array<ApiResult>) || [];
+                  const body = [
+                    `ANALYSIS REPORT`,
+                    `Document type: ${(scanResult.document_type as string)?.replace(/_/g, " ") || "Document"}`,
+                    `Verdict: ${scanResult.verdict || "violation"}`,
+                    `Case strength: ${scanResult.case_strength || "N/A"}/100`,
+                    scanResult.plain_english ? `\nSummary:\n${scanResult.plain_english}` : "",
+                    issues.length > 0 ? `\nIssues Found (${issues.length}):` : "",
+                    ...issues.map((issue, i) => `\n${i + 1}. [${(issue.severity as string || "").toUpperCase()}] ${issue.issue}\n   ${issue.explanation}${(issue.potential_savings as number) > 0 ? `\n   Potential savings: ${currencySymbol}${(issue.potential_savings as number).toLocaleString()}` : ""}`),
+                    (scanResult.your_rights as string[])?.length ? `\n\nYour Rights:\n${(scanResult.your_rights as string[]).map(r => `• ${r}`).join("\n")}` : "",
+                    (scanResult.recommended_actions as string[])?.length ? `\n\nRecommended Actions:\n${(scanResult.recommended_actions as string[]).map((a, i) => `${i + 1}. ${a}`).join("\n")}` : "",
+                  ].filter(Boolean).join("\n");
+                  downloadPDF("GhostLaw Analysis Report", body, `GhostLaw_Analysis_${new Date().toISOString().slice(0, 10)}.pdf`);
+                  toast("PDF downloaded", "success");
+                }}
+                className="btn-sm flex items-center gap-1.5"
+                style={{ color: "var(--red)", borderColor: "rgba(232,25,44,0.3)", background: "var(--red-dim)" }}
+              >
+                ↓ Download PDF
+              </button>
+              <button
+                onClick={() => {
+                  const text = `${scanResult.plain_english || scanResult.summary || "Analysis complete"}\n\n${(scanResult.issues_found as Array<ApiResult>)?.map((iss, i) => `${i + 1}. ${iss.issue}`).join("\n") || ""}`;
+                  copyToClipboard(text);
+                  toast("Analysis copied", "success");
+                }}
+                className="btn-sm flex items-center gap-1.5"
+              >
+                {copied ? "✓ Copied" : "📋 Copy Summary"}
+              </button>
+            </div>
 
             {/* Outcome tracking */}
             {scanResult.scan_id && (
@@ -1369,7 +1482,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   </div>
                   <div className="p-6">
                     {disputeResult.send_to && <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginBottom: 12 }}>Send to: {disputeResult.send_to as string}</p>}
-                    <pre style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{disputeResult.letter_body as string}</pre>
+                    <div style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{highlightLegalTerms(disputeResult.letter_body as string)}</div>
                     <span className="letter-cursor" />
                   </div>
                 </div>
@@ -1507,28 +1620,41 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                     <>
                       {script.opening_script && (
                         <div className="card-surface p-5">
-                          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--red)", marginBottom: 10 }}>Start with this</div>
-                          <p className="p-4" style={{ fontFamily: mono, fontSize: 13, color: "var(--white)", background: "var(--surface2)", border: "1px solid var(--border)", lineHeight: 1.7, fontStyle: "italic" }}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <span style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "#41e866", background: "rgba(65,232,102,0.1)", border: "1px solid rgba(65,232,102,0.2)", padding: "2px 8px" }}>YOU</span>
+                            <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Step 1 — Opening</span>
+                          </div>
+                          <p className="p-4" style={{ fontFamily: mono, fontSize: 13, color: "var(--white)", background: "var(--surface2)", border: "1px solid var(--border)", lineHeight: 1.7, fontStyle: "italic", borderLeft: "3px solid #41e866" }}>
                             &ldquo;{script.opening_script as string}&rdquo;
                           </p>
                         </div>
                       )}
                       {(script.key_points as string[])?.length > 0 && (
                         <div className="card-surface p-5">
-                          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4178e8", marginBottom: 10 }}>Points to make</div>
-                          <ul className="space-y-2">{(script.key_points as string[]).map((p: string, i: number) => <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}><span style={{ color: "#4178e8" }}>→</span> {p}</li>)}</ul>
+                          <div className="flex items-center gap-2 mb-3">
+                            <span style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "#4178e8", background: "rgba(65,120,232,0.1)", border: "1px solid rgba(65,120,232,0.2)", padding: "2px 8px" }}>YOU</span>
+                            <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Step 2 — Key Points</span>
+                          </div>
+                          <ul className="space-y-2">{(script.key_points as string[]).map((p: string, i: number) => <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}><span style={{ fontFamily: mono, fontWeight: 700, color: "#4178e8", minWidth: 20 }}>{i + 1}.</span> {highlightLegalTerms(p)}</li>)}</ul>
                         </div>
                       )}
                       {(script.escalation_phrases as string[])?.length > 0 && (
                         <div className="card-surface p-5">
-                          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--red)", marginBottom: 10 }}>If they push back</div>
-                          <ul className="space-y-2">{(script.escalation_phrases as string[]).map((p: string, i: number) => <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}><span style={{ color: "var(--red)" }}>⚠</span> {p}</li>)}</ul>
+                          <div className="flex items-center gap-2 mb-3">
+                            <span style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "var(--red)", background: "rgba(232,25,44,0.1)", border: "1px solid rgba(232,25,44,0.2)", padding: "2px 8px" }}>YOU</span>
+                            <span style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "#e8c541", background: "rgba(232,197,65,0.1)", border: "1px solid rgba(232,197,65,0.2)", padding: "2px 8px", marginLeft: -4 }}>IF PUSHBACK</span>
+                            <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Step 3 — Escalation</span>
+                          </div>
+                          <ul className="space-y-2">{(script.escalation_phrases as string[]).map((p: string, i: number) => <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}><span style={{ color: "var(--red)" }}>⚠</span> {highlightLegalTerms(p)}</li>)}</ul>
                         </div>
                       )}
                       {script.closing_script && (
                         <div className="card-surface p-5">
-                          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#41e866", marginBottom: 10 }}>End with this</div>
-                          <p className="p-4" style={{ fontFamily: mono, fontSize: 13, color: "var(--white)", background: "var(--surface2)", border: "1px solid var(--border)", lineHeight: 1.7, fontStyle: "italic" }}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <span style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "#41e866", background: "rgba(65,232,102,0.1)", border: "1px solid rgba(65,232,102,0.2)", padding: "2px 8px" }}>YOU</span>
+                            <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Step 4 — Closing</span>
+                          </div>
+                          <p className="p-4" style={{ fontFamily: mono, fontSize: 13, color: "var(--white)", background: "var(--surface2)", border: "1px solid var(--border)", lineHeight: 1.7, fontStyle: "italic", borderLeft: "3px solid #41e866" }}>
                             &ldquo;{script.closing_script as string}&rdquo;
                           </p>
                         </div>
@@ -1658,6 +1784,43 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               </h1>
             </div>
 
+            {/* Search & Filter */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  placeholder="Search cases..."
+                  className="input-ghost w-full"
+                  style={{ padding: "0.6rem 1rem 0.6rem 2.5rem" }}
+                />
+                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "var(--muted)" }}>⌕</span>
+              </div>
+              <div className="flex gap-1">
+                {([
+                  { id: "all" as const, label: "All" },
+                  { id: "won" as const, label: "Won" },
+                  { id: "pending" as const, label: "Pending" },
+                  { id: "untracked" as const, label: "Untracked" },
+                ]).map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setHistoryFilter(f.id)}
+                    className="px-3 py-2 transition-all"
+                    style={{
+                      fontFamily: mono, fontSize: 10, letterSpacing: "0.06em",
+                      color: historyFilter === f.id ? "var(--white)" : "var(--muted)",
+                      background: historyFilter === f.id ? "var(--red-dim)" : "transparent",
+                      border: `1px solid ${historyFilter === f.id ? "rgba(232,25,44,0.3)" : "var(--border)"}`,
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { label: "Scanned", value: localStats.total_scans, color: "var(--red)" },
@@ -1672,14 +1835,32 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               ))}
             </div>
 
-            {localHistory.scans.length > 0 ? (
+            {(() => {
+              const filtered = localHistory.scans.filter((scan) => {
+                // Search filter
+                if (historySearch) {
+                  const q = historySearch.toLowerCase();
+                  const docType = ((scan.document_type as string) || "").toLowerCase();
+                  const summary = ((scan.summary as string) || "").toLowerCase();
+                  if (!docType.includes(q) && !summary.includes(q)) return false;
+                }
+                // Status filter
+                if (historyFilter !== "all") {
+                  const outcome = getOutcome(scan.scan_id);
+                  if (historyFilter === "won" && outcome?.status !== "won") return false;
+                  if (historyFilter === "pending" && outcome?.status !== "pending") return false;
+                  if (historyFilter === "untracked" && outcome) return false;
+                }
+                return true;
+              });
+              return filtered.length > 0 ? (
               <div style={{ border: "1px solid var(--border)" }}>
                 <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_auto] bg-[var(--surface2)] border-b border-[var(--border)]">
                   {["Case", "Amount", "Status", ""].map((h) => (
                     <div key={h || "action"} className="px-5 py-3 border-r border-[var(--border)] last:border-r-0" style={{ fontFamily: mono, fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--muted)" }}>{h}</div>
                   ))}
                 </div>
-                {localHistory.scans.map((scan, i) => {
+                {filtered.map((scan, i) => {
                   const outcome = getOutcome(scan.scan_id);
                   return (
                     <div key={scan.scan_id || i} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] border-b border-[var(--border)] hover:bg-[var(--surface)] transition-colors" style={{ animation: `row-in 0.5s ease ${i * 0.05}s both` }}>
@@ -1727,11 +1908,18 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             ) : (
               <div className="p-12 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
                 <div style={{ fontSize: 40, opacity: 0.15, marginBottom: 16 }}>👻</div>
-                <p style={{ fontFamily: mono, fontSize: 13, color: "var(--muted2)", marginBottom: 4 }}>No cases yet</p>
-                <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginBottom: 16 }}>Report your first issue to get started</p>
-                <button onClick={() => setActiveTab("home")} className="btn-primary py-3 px-8">Report an Issue</button>
+                <p style={{ fontFamily: mono, fontSize: 13, color: "var(--muted2)", marginBottom: 4 }}>
+                  {historySearch || historyFilter !== "all" ? "No matching cases" : "No cases yet"}
+                </p>
+                <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginBottom: 16 }}>
+                  {historySearch || historyFilter !== "all" ? "Try a different search or filter" : "Report your first issue to get started"}
+                </p>
+                <button onClick={() => { setHistorySearch(""); setHistoryFilter("all"); setActiveTab("home"); }} className="btn-primary py-3 px-8">
+                  {historySearch || historyFilter !== "all" ? "Clear Filters" : "Report an Issue"}
+                </button>
               </div>
-            )}
+            );
+            })()}
           </div>
         )}
       </main>
