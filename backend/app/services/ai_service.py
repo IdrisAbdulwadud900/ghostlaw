@@ -239,16 +239,82 @@ async def analyze_document_text(document_text: str, user_context: str = "", coun
 
 # ── Country-specific legal context ────────────────────────────
 NIGERIA_LEGAL_CONTEXT = """IMPORTANT — This user is in NIGERIA. You MUST cite Nigerian laws and agencies:
-- FCCPA 2018 (Federal Competition and Consumer Protection Act) — S.114-127 for consumer rights, S.131 for unfair practices
-- CBN Consumer Protection Framework 2019 — banks must refund failed transfers within 24-72 hours
-- NCC Consumer Code of Practice — telecom data transparency, billing accuracy
-- NERC Customer Complaints Handling Standards — estimated billing disputes, meter provision
-- Nigeria Data Protection Act 2023 (NDPA) — S.24-28 lawful processing, S.34-38 data subject rights
+
+CORE LEGISLATION:
+- FCCPA 2018 (Federal Competition and Consumer Protection Act):
+  • S.17 — product safety & liability
+  • S.114-127 — consumer transactions, right to refund for non-conforming goods, cooling-off periods
+  • S.131 — criminal penalties for unfair/unconscionable practices (up to ₦10 million fine or 5 years imprisonment)
+  • S.148-155 — dispute resolution and the Consumer Protection Tribunal
+- Electricity Act 2023 — customer rights provisions, replaces the repealed EPSRA 2005
+- Nigeria Data Protection Act 2023 (NDPA):
+  • S.24-28 — lawful basis for processing (consent, legitimate interest)
+  • S.34-38 — data subject rights (access, rectification, erasure, portability)
+  • S.42 — cross-border data transfer restrictions (adequacy requirements)
+  • Penalties: up to ₦10 million or 2% of annual gross revenue
+
+BANKING — CBN:
+- CBN Consumer Protection Framework 2019 (Circular BPS/DIR/GEN/CIR/04/014):
+  • Banks must acknowledge complaints within 24 hours
+  • Banks must resolve complaints within 72 hours for simple cases, 14 days for complex cases
+  • Failed transfer refunds: must reverse within 24 hours for intra-bank, 72 hours for inter-bank (NIP)
+  • Unauthorized debits: bank bears the burden of proof
+- CBN Anti-Fraud Framework — banks must reimburse fraud victims unless customer negligence proved
+- Relevant banks: GTBank, Access Bank, UBA, Zenith, First Bank, Kuda, OPay, Wema/ALAT, Sterling, FCMB, Moniepoint
+
+TELECOMS — NCC:
+- NCC Consumer Code of Practice 2007 (revised):
+  • Operators must obtain EXPRESS opt-in consent before activating Value Added Services (VAS)
+  • Data billing must be transparent and accurate — operators must provide usage records
+  • Consumers have right to port their number under Mobile Number Portability regulations
+  • Network quality standards: NCC Quality of Service Regulations set minimum call completion rates
+- Toll-free consumer line: 622 (all networks)
+- Process: complain to operator first (7 days) → if unresolved, escalate to NCC → NCC arbitration
+
+ELECTRICITY — NERC:
+- NERC Customer Complaints Handling Standards and Procedures 2006 (revised 2023):
+  • 3-tier escalation: (1) DisCo Customer Complaints Unit (CCU) — must resolve within 15 days
+  • (2) NERC Forum Office — file written complaint with supporting affidavit if CCU fails
+  • (3) NERC HQ hearing — formal adjudication
+- Estimated billing: customers have RIGHT to a prepaid meter under NERC Meter Asset Provider (MAP) regulations
+- DisCos must credit customers for every hour of outage above allowed threshold
+- NERC Business Rules for electricity tariff categories — customers must be billed per MYTO tariff bands
+- Relevant DisCos: EKEDC (Eko), IKEDC (Ikeja), AEDC (Abuja), BEDC (Benin), EEDC (Enugu), PHEDC (Port Harcourt), KEDCO (Kano), JEDC (Jos), YEDC (Yola), KEDC (Kaduna), IBEDC (Ibadan)
+
+LOAN APPS / FINTECH:
+- FCCPC orders against illegal loan apps (2023-2024): many shut down for harassment, contact list access
+- CBN Licensing Framework for Digital Lending 2022 — all lending apps must be CBN-licensed
+- NDPA 2023 violations: harvesting phone contacts, sending defamatory messages to contacts is a criminal offence
+- CBN interest rate cap directives for microfinance and digital lenders
+
+LANDLORD-TENANT:
 - Lagos Tenancy Law 2011 — S.13 (6-month notice for yearly tenants), S.18 (recovery of premises)
-- Currency is Nigerian Naira (₦). Use ₦ not $.
-- Nigerian companies: banks (GTBank, Access Bank, UBA, Zenith, First Bank, Kuda, OPay), telecoms (MTN, Airtel, Glo, 9mobile), DisCos (EKEDC, IKEDC, AEDC, BEDC), loan apps (FairMoney, Carbon, Branch, PalmCredit, OKash)
-- Regulatory agencies: FCCPC, CBN, NCC, NERC, NDPC, EFCC
-- Reference Nigerian case law and CBN circulars where relevant."""
+- Recovery of Premises Act (Federal) — notice periods, illegal eviction remedies
+- Self-help eviction (changing locks, removing property) is ILLEGAL — landlord must get a court order
+
+INSURANCE — NAICOM:
+- NAICOM (National Insurance Commission) Market Conduct and Business Practice Guidelines
+- Insurance Act 2003 — policyholder rights, claims settlement timelines
+- NAICOM Complaint Resolution Framework: insurer must respond within 14 days
+- HMO issues: NHIA Act 2022, National Health Insurance Scheme operational guidelines
+
+HEALTHCARE:
+- Detaining patients for inability to pay is ILLEGAL — violates Section 35 of the 1999 Constitution (right to liberty)
+- Emergency medical treatment cannot be refused — per medical ethics codes and the Child Rights Act 2003
+
+REGULATORY AGENCIES AND HOTLINES:
+- FCCPC (consumer complaints): https://fccpc.gov.ng — Hotline: 0800-FREE-CALL
+- CBN (banking): cpd@cbn.gov.ng — Consumer Protection Department
+- NCC (telecoms): https://consumer.ncc.gov.ng — Toll-free: 622
+- NERC (electricity): https://nerc.gov.ng — Forum Offices in each state
+- NDPC (data privacy): https://ndpc.gov.ng — info@ndpc.gov.ng
+- EFCC (fraud/scams): https://efcc.gov.ng — tip-offs
+- Legal Aid Council of Nigeria: free legal aid for low-income citizens
+- LEDAP (Legal Defence and Assistance Project): free legal support for rights violations
+- ReportGov.ng: unified government complaint portal
+
+Currency is Nigerian Naira (₦). Use ₦ not $.
+Reference Nigerian case law and CBN/NCC/NERC circulars where relevant."""
 
 US_LEGAL_CONTEXT = """This user is in the UNITED STATES. Cite US federal and state laws:
 - FDCPA, FCRA, FCBA, Fair Credit Billing Act, No Surprises Act
@@ -515,17 +581,17 @@ async def _generate_regulatory_complaint_impl(
         "cbn": {
             "name": "Central Bank of Nigeria — Consumer Protection Department",
             "url": "https://www.cbn.gov.ng/",
-            "scope": "banking complaints — failed transfers, unauthorized debits, excess charges, ATM issues, fintech disputes. Banks have 72 hours to resolve per CBN Consumer Protection Framework. Email: cpd@cbn.gov.ng",
+            "scope": "banking complaints — failed transfers, unauthorized debits, excess charges, ATM issues, fintech/digital lending disputes. Banks must acknowledge within 24h and resolve simple cases within 72h, complex cases within 14 days per CBN Consumer Protection Framework (Circular BPS/DIR/GEN/CIR/04/014). For failed NIP transfers, reversal must happen within 24h intra-bank or 72h inter-bank. Email: cpd@cbn.gov.ng",
         },
         "ncc": {
             "name": "Nigerian Communications Commission",
             "url": "https://consumer.ncc.gov.ng/",
-            "scope": "telecom complaints — MTN, Airtel, Glo, 9mobile: data depletion, unauthorized subscriptions, network quality, billing errors. Toll-free: 622. Cite NCC Consumer Code of Practice",
+            "scope": "telecom complaints — MTN, Airtel, Glo, 9mobile: data depletion, unauthorized VAS subscriptions, network quality, billing errors. Process: complain to operator first (7-day window) then escalate to NCC arbitration. Toll-free: 622. Cite NCC Consumer Code of Practice 2007, NCC Quality of Service Regulations",
         },
         "nerc": {
             "name": "Nigerian Electricity Regulatory Commission",
             "url": "https://nerc.gov.ng/contact-nerc/",
-            "scope": "electricity complaints — estimated billing, meter issues, outages, DisCo disputes. 3-tier escalation: 1) DisCo CCU → 2) NERC Forum → 3) NERC HQ. Cite NERC Customer Complaints Handling Standards",
+            "scope": "electricity complaints — estimated billing, meter issues, outages, DisCo disputes. IMPORTANT: 3-tier escalation must be followed: 1) DisCo CCU (must resolve within 15 days), 2) NERC Forum Office (written complaint + affidavit if CCU fails), 3) NERC HQ formal hearing. Cite NERC Customer Complaints Handling Standards 2006 (revised 2023), Electricity Act 2023, MAP regulations for meter rights",
         },
         "ndpc": {
             "name": "Nigeria Data Protection Commission",

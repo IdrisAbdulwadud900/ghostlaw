@@ -34,37 +34,37 @@ const NG_ISSUES: QuickIssue[] = [
     id: "bank_charge",
     icon: "🏦",
     label: "Bank Charged Me",
-    desc: "Unauthorized debit, hidden fees, failed transfer",
+    desc: "Hidden fees, failed transfer, unauthorized debit",
     prompt: "Bank: {bank}. {what}. Amount: {amount}.",
-    context: "Nigerian bank charge — look for CBN Consumer Protection Framework violations, unauthorized debits, VAT transparency issues",
+    context: "Nigerian banking dispute — CBN Consumer Protection Framework (Circular BPS/DIR/GEN/CIR/04/014): banks must acknowledge complaints within 24 hours, resolve simple cases within 72 hours, complex within 14 days. Failed NIP transfers must be reversed within 24h intra-bank or 72h inter-bank. Unauthorized debits — bank bears burden of proof. FCCPA S.131 criminal penalties for unfair practices. CBN Anti-Fraud Framework requires reimbursement unless customer negligence proved.",
     placeholders: [
-      { field: "bank", label: "Which bank?", placeholder: "e.g. GTBank, Access, UBA, Kuda, OPay" },
-      { field: "what", label: "What happened?", placeholder: "e.g. Debited ₦5,000 for a transfer that failed" },
-      { field: "amount", label: "How much?", placeholder: "e.g. ₦5,000" },
+      { field: "bank", label: "Which bank?", placeholder: "e.g. GTBank, Access, UBA, Zenith, Kuda, OPay, Moniepoint" },
+      { field: "what", label: "What happened?", placeholder: "e.g. They debited ₦50,000 for a transfer that never arrived" },
+      { field: "amount", label: "How much?", placeholder: "e.g. ₦85,000" },
     ],
   },
   {
     id: "data_stolen",
     icon: "📱",
-    label: "Data Disappeared",
-    desc: "Data finished too fast, VAS subscriptions",
-    prompt: "Network: {network}. {what}. Plan: {plan}.",
-    context: "Nigerian telecom — NCC Consumer Code violations, unauthorized VAS deductions, data depletion complaints",
+    label: "Data / Airtime Gone",
+    desc: "Data vanishing, unauthorized VAS charges, airtime theft",
+    prompt: "Network: {network}. {what}. Amount lost: {amount}.",
+    context: "Nigerian telecom dispute — NCC Consumer Code of Practice 2007: operators must obtain EXPRESS opt-in consent before activating Value Added Services (VAS). Data billing must be transparent — operators must provide usage records on request. Process: complain to operator first (7-day window) → if unresolved, escalate to NCC arbitration (toll-free 622). NCC Quality of Service Regulations. FCCPA S.114-127 consumer transaction rights.",
     placeholders: [
       { field: "network", label: "Which network?", placeholder: "e.g. MTN, Airtel, Glo, 9mobile" },
-      { field: "what", label: "What happened?", placeholder: "e.g. 10GB data plan finished in 3 days" },
-      { field: "plan", label: "What plan?", placeholder: "e.g. ₦3,500 for 10GB monthly" },
+      { field: "what", label: "What happened?", placeholder: "e.g. ₦2,000 data bundle finished in 1 hour with no usage" },
+      { field: "amount", label: "How much did you lose?", placeholder: "e.g. ₦5,000" },
     ],
   },
   {
     id: "light_bill",
-    icon: "⚡",
+    icon: "💡",
     label: "Crazy Light Bill",
-    desc: "Estimated billing, no meter, outages",
+    desc: "Estimated billing, no meter, outages, crazy charges",
     prompt: "DisCo: {disco}. {what}. Bill amount: {amount}.",
-    context: "Nigerian electricity — NERC violations, estimated billing disputes, right to prepaid meter, Customer Complaints Handling Standards",
+    context: "Nigerian electricity dispute — NERC Customer Complaints Handling Standards 2006 (revised 2023): 3-tier escalation: (1) DisCo CCU must resolve within 15 days, (2) NERC Forum Office — file written complaint with supporting affidavit if CCU fails, (3) NERC HQ formal hearing. Estimated billing: you have the RIGHT to a prepaid meter under NERC Meter Asset Provider (MAP) regulations. DisCos must credit for outage hours above threshold. Electricity Act 2023 customer rights. NERC MYTO tariff bands.",
     placeholders: [
-      { field: "disco", label: "Which DisCo?", placeholder: "e.g. IKEDC, EKEDC, AEDC, BEDC" },
+      { field: "disco", label: "Which DisCo?", placeholder: "e.g. EKEDC, IKEDC, AEDC, BEDC, EEDC, PHEDC" },
       { field: "what", label: "What's the problem?", placeholder: "e.g. Bill is ₦47,000 but I live in a 1-bedroom" },
       { field: "amount", label: "How much is the bill?", placeholder: "e.g. ₦47,500" },
     ],
@@ -75,9 +75,9 @@ const NG_ISSUES: QuickIssue[] = [
     label: "Loan App Harassing Me",
     desc: "Threats, contact spam, defamation",
     prompt: "Loan app: {app}. {what}. Original loan: {amount}.",
-    context: "Predatory loan app — NDPA 2023 violations (unauthorized data access), FCCPA defamation, CBN lending regulations",
+    context: "Nigerian loan app dispute — NDPA 2023 S.24-28 (lawful processing — contact list harvesting is ILLEGAL without explicit consent), S.34-38 (data subject rights — right to erasure), S.42 (cross-border transfer restrictions). FCCPA S.131: sending defamatory messages to contacts is a criminal offence carrying up to ₦10M fine or 5 years imprisonment. CBN Licensing Framework for Digital Lending 2022 — all lending apps must be CBN-licensed. FCCPC has shut down dozens of illegal loan apps in 2023-2024. NDPC penalty: up to 2% of annual gross revenue.",
     placeholders: [
-      { field: "app", label: "Which app?", placeholder: "e.g. OKash, FairMoney, Carbon, Branch" },
+      { field: "app", label: "Which app?", placeholder: "e.g. OKash, FairMoney, Carbon, Branch, PalmCredit" },
       { field: "what", label: "What are they doing?", placeholder: "e.g. Sending messages to my contacts calling me a thief" },
       { field: "amount", label: "How much was the loan?", placeholder: "e.g. ₦30,000" },
     ],
@@ -88,7 +88,7 @@ const NG_ISSUES: QuickIssue[] = [
     label: "Landlord Trouble",
     desc: "Illegal eviction, deposit theft, lock-out",
     prompt: "Location: {location}. {what}. Rent paid: {amount}.",
-    context: "Nigerian landlord-tenant dispute — Lagos Tenancy Law 2011, required notice periods, tenant rights, self-help eviction illegality",
+    context: "Nigerian landlord-tenant dispute — Lagos Tenancy Law 2011: S.13 (6-month notice for yearly tenants), S.18 (recovery of premises procedure). Recovery of Premises Act (Federal): required notice periods. Self-help eviction (changing locks, removing tenant property) is ILLEGAL — landlord MUST get a court order. FCCPA S.114-127 applies to rental services. Free legal aid: Legal Aid Council of Nigeria, LEDAP.",
     placeholders: [
       { field: "location", label: "Where? (city/state)", placeholder: "e.g. Lagos, Abuja" },
       { field: "what", label: "What happened?", placeholder: "e.g. Landlord changed the lock and told me to leave" },
@@ -101,7 +101,7 @@ const NG_ISSUES: QuickIssue[] = [
     label: "Bad Online Order",
     desc: "Fake product, no refund, wrong item",
     prompt: "Platform: {platform}. {what}. Amount: {amount}.",
-    context: "E-commerce dispute — FCCPA consumer protection, right to refund for non-conforming goods",
+    context: "E-commerce dispute — FCCPA S.114-127: right to refund for non-conforming goods, cooling-off period for online purchases. FCCPC actively monitors e-commerce platforms. NDPA 2023 for unauthorized data use. File at fccpc.gov.ng or call 0800-FREE-CALL.",
     placeholders: [
       { field: "platform", label: "Where did you buy?", placeholder: "e.g. Jumia, Konga, Instagram seller" },
       { field: "what", label: "What went wrong?", placeholder: "e.g. Ordered original phone, got a fake" },
@@ -114,7 +114,7 @@ const NG_ISSUES: QuickIssue[] = [
     label: "Airline Overcharge",
     desc: "Ticket hike, no refund, cancelled flight",
     prompt: "Airline: {airline}. {what}. Amount: {amount}.",
-    context: "Nigerian airline dispute — NCAA passenger rights charter, FCCPC sanctioning airlines for festive fare hikes, right to refund for cancelled/delayed flights, NCAA Passenger Bill of Rights",
+    context: "Nigerian airline dispute — NCAA Consumer Protection Regulations: passengers entitled to full refund for cancelled flights, compensation for delays over 2 hours, rebooking on next available flight. FCCPC has sanctioned airlines for festive fare gouging. NCAA Passenger Bill of Rights. File with NCAA or FCCPC.",
     placeholders: [
       { field: "airline", label: "Which airline?", placeholder: "e.g. Air Peace, Dana Air, Arik Air, Max Air" },
       { field: "what", label: "What happened?", placeholder: "e.g. Flight cancelled but no refund after 3 months" },
@@ -127,7 +127,7 @@ const NG_ISSUES: QuickIssue[] = [
     label: "DSTV / Cable Issue",
     desc: "Tariff hike, no signal, forced upgrade",
     prompt: "Provider: {provider}. {what}. Amount: {amount}.",
-    context: "Cable TV dispute — FCCPC vs Multichoice tariff orders, NBC Broadcasting Code, consumer right to value for money, FCCPA S.114-127",
+    context: "Cable TV dispute — FCCPC vs Multichoice tariff orders: FCCPC has ordered Multichoice to freeze tariffs. NBC Broadcasting Code. FCCPA S.114-127 consumer right to value for money. File with FCCPC for tariff disputes. Consumers can demand pro-rata refund for signal outages.",
     placeholders: [
       { field: "provider", label: "Which service?", placeholder: "e.g. DSTV, GOtv, StarTimes, Showmax" },
       { field: "what", label: "What happened?", placeholder: "e.g. Subscription increased by 40% with no notice" },
@@ -140,7 +140,7 @@ const NG_ISSUES: QuickIssue[] = [
     label: "POS / Transfer Scam",
     desc: "POS agent fraud, double debit, failed POS",
     prompt: "What happened: {what}. Agent/Location: {agent}. Amount: {amount}.",
-    context: "POS agent dispute — CBN guidelines on mobile money agents, unauthorized charges, double debit resolution, CBN Consumer Protection Framework",
+    context: "POS agent dispute — CBN Guidelines on Mobile Money & Agent Banking: agents must provide transaction receipts, unauthorized charges prohibited. Double debit: bank must reverse within 24-72 hours per CBN Consumer Protection Framework. CBN Anti-Fraud Framework applies. Report to bank first, then CBN Consumer Protection (cpd@cbn.gov.ng).",
     placeholders: [
       { field: "agent", label: "Which agent or location?", placeholder: "e.g. POS agent at Ikeja, OPay agent" },
       { field: "what", label: "What happened?", placeholder: "e.g. Money debited but POS agent says it didn't come" },
@@ -153,11 +153,24 @@ const NG_ISSUES: QuickIssue[] = [
     label: "HMO / Insurance Denied",
     desc: "Treatment denied, HMO not covering, delays",
     prompt: "HMO/Insurer: {hmo}. {what}. Amount: {amount}.",
-    context: "Nigerian HMO/Insurance dispute — NHIA Act, NHIS operational guidelines, right to treatment coverage, FCCPA unfair practices",
+    context: "Nigerian HMO/Insurance dispute — NHIA Act 2022, National Health Insurance Scheme operational guidelines: HMOs must cover all conditions in the benefits package. NAICOM Market Conduct Guidelines: insurers must respond to claims within 14 days. Insurance Act 2003 policyholder rights. FCCPA unfair practices. File with NAICOM for insurance, NHIA for HMO disputes.",
     placeholders: [
       { field: "hmo", label: "Which HMO / insurer?", placeholder: "e.g. Leadway, AXA Mansard, Hygeia, AIICO" },
       { field: "what", label: "What happened?", placeholder: "e.g. HMO refused to cover my surgery" },
       { field: "amount", label: "How much?", placeholder: "e.g. ₦350,000" },
+    ],
+  },
+  {
+    id: "hospital_bill",
+    icon: "🚑",
+    label: "Hospital Overcharge",
+    desc: "Detained for bills, inflated charges, refused treatment",
+    prompt: "Hospital: {hospital}. {what}. Amount: {amount}.",
+    context: "Nigerian hospital billing dispute — CRITICAL: Detaining patients for inability to pay is ILLEGAL under Section 35 of the 1999 Constitution (right to personal liberty). Emergency treatment cannot be refused per medical ethics codes and Child Rights Act 2003. FCCPA S.114-127 applies to healthcare services. NHIA Act 2022 for HMO coverage disputes. Free legal aid: Legal Aid Council of Nigeria, LEDAP. Report to state Ministry of Health, FCCPC, or Nigerian Medical Association.",
+    placeholders: [
+      { field: "hospital", label: "Which hospital?", placeholder: "e.g. General Hospital Lagos, private clinic name" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Hospital won't let my relative leave until we pay ₦500,000" },
+      { field: "amount", label: "How much?", placeholder: "e.g. ₦500,000" },
     ],
   },
 ];
@@ -298,16 +311,18 @@ const US_ISSUES: QuickIssue[] = [
 
 // ── Legal Tips (shown during loading + home) ────────────────
 const NG_LEGAL_TIPS = [
-  "Banks must refund failed transfers within 24-72 hours — CBN Consumer Protection Framework",
-  "You have the RIGHT to a prepaid meter — estimated billing is challengeable under NERC rules",
-  "Loan apps that message your contacts are violating the Nigeria Data Protection Act 2023",
-  "If a bank charges you without consent, that's a criminal offence under FCCPA Section 131",
-  "DisCos must credit you for every hour of outage above the allowed threshold — NERC regulation",
-  "Your landlord MUST give 6 months' notice before eviction for yearly tenants — Lagos Tenancy Law S.13",
-  "Banks have only 72 hours to resolve your complaint before you can escalate to CBN",
-  "Online sellers must refund you for counterfeit goods — FCCPA S.114-127",
-  "MTN/Airtel/Glo must get your EXPRESS consent before deducting for Value Added Services — NCC Code",
-  "You can seek up to 3x damages for unfair practices under the FCCPA",
+  "Banks must refund failed transfers within 24-72 hours — CBN Consumer Protection Framework Circular BPS/DIR/GEN/CIR/04/014",
+  "You have the RIGHT to a prepaid meter — estimated billing is challengeable under NERC Meter Asset Provider (MAP) regulations",
+  "Loan apps that message your contacts are committing a CRIMINAL OFFENCE — NDPA 2023 S.24-28 and FCCPA S.131 (up to ₦10M fine)",
+  "If a bank charges you without consent, that's a criminal offence under FCCPA Section 131 — up to 5 years imprisonment",
+  "DisCos must credit you for every hour of outage above the allowed threshold — NERC Customer Complaints Handling Standards",
+  "Your landlord MUST give 6 months' notice before eviction for yearly tenants — Lagos Tenancy Law S.13. Self-help eviction is ILLEGAL",
+  "Banks have only 72 hours to resolve simple complaints — after that, escalate to CBN Consumer Protection (cpd@cbn.gov.ng)",
+  "Online sellers must refund you for counterfeit goods — FCCPA S.114-127, cooling-off period applies to online purchases",
+  "MTN/Airtel/Glo must get your EXPRESS consent before deducting for VAS — NCC Consumer Code of Practice 2007",
+  "Detaining a patient in hospital for inability to pay is ILLEGAL — Section 35 of the 1999 Constitution (right to liberty)",
+  "NCC toll-free number 622 — call from any network to file a telecom complaint for FREE",
+  "NERC has a 3-tier escalation: DisCo CCU (15 days) → NERC Forum Office (affidavit) → NERC HQ hearing",
 ];
 const US_LEGAL_TIPS = [
   "Medical bills can be disputed for 60 days under the Fair Credit Billing Act",
@@ -360,6 +375,60 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const [scanContext, setScanContext] = useState("");
   const [textInput, setTextInput] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [draftRecovered, setDraftRecovered] = useState(false);
+
+  // ── Auto-save drafts to localStorage ─────────────────────
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("ghostlaw_draft");
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        if (draft.textInput && draft.textInput.length > 10) { setTextInput(draft.textInput); setDraftRecovered(true); }
+        if (draft.scanContext) setScanContext(draft.scanContext);
+        if (draft.quickFields && Object.keys(draft.quickFields).length > 0) {
+          setQuickFields(draft.quickFields);
+          // Restore the selected issue if possible
+          const issues = country === "NG" ? NG_ISSUES : US_ISSUES;
+          const match = issues.find(i => i.id === draft.selectedIssueId);
+          if (match) { setSelectedIssue(match); setDraftRecovered(true); }
+        }
+      } catch { /* ignore corrupt drafts */ }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save drafts on change (debounced via effect)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const timer = setTimeout(() => {
+      const draft = {
+        textInput,
+        scanContext,
+        quickFields,
+        selectedIssueId: selectedIssue?.id || null,
+      };
+      // Only save if there's actual content
+      if (textInput.length > 5 || Object.values(quickFields).some(v => v.length > 0)) {
+        localStorage.setItem("ghostlaw_draft", JSON.stringify(draft));
+      }
+    }, 1000); // 1-second debounce
+    return () => clearTimeout(timer);
+  }, [textInput, scanContext, quickFields, selectedIssue]);
+
+  // Clear draft when scan succeeds
+  useEffect(() => {
+    if (scanResult && typeof window !== "undefined") {
+      localStorage.removeItem("ghostlaw_draft");
+      setDraftRecovered(false);
+    }
+  }, [scanResult]);
+
+  // Show toast when draft is recovered
+  useEffect(() => {
+    if (draftRecovered) toast("Draft recovered — your previous input was saved automatically.", "success");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftRecovered]);
 
   // Dispute state
   const [disputeResult, setDisputeResult] = useState<ApiResult | null>(null);
@@ -1505,6 +1574,79 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                     )}
                   </ol>
                 </div>
+
+                {/* ── Escalation Path (NG-specific) ─────── */}
+                {country === "NG" && (
+                  <div className="card-surface p-5" style={{ borderLeft: "3px solid #e8c541" }}>
+                    <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#e8c541", marginBottom: 12 }}>📋 Nigerian Escalation Path</div>
+                    <div className="space-y-3">
+                      {(() => {
+                        const docType = (scanResult?.document_type as string) || "";
+                        const agency = (scanResult?.recommended_agency as string) || "";
+                        if (docType.includes("electric") || agency === "nerc") return [
+                          { step: "1", title: "DisCo Customer Complaints Unit (CCU)", detail: "File written complaint with your DisCo. They have 15 days to resolve.", time: "15 days", color: "#4178e8" },
+                          { step: "2", title: "NERC Forum Office", detail: "If CCU fails → file written complaint with supporting affidavit at your state's NERC Forum Office.", time: "30 days", color: "#e8c541" },
+                          { step: "3", title: "NERC HQ Formal Hearing", detail: "If Forum fails → escalate to NERC headquarters for formal adjudication hearing.", time: "60+ days", color: "var(--red)" },
+                        ];
+                        if (docType.includes("telecom") || docType.includes("phone") || agency === "ncc") return [
+                          { step: "1", title: "Complain to your operator", detail: "Call customer care or visit a service center. Operators have 7 days to resolve.", time: "7 days", color: "#4178e8" },
+                          { step: "2", title: "Escalate to NCC", detail: "If unresolved → call NCC toll-free 622 or file at consumer.ncc.gov.ng. NCC mediates.", time: "14 days", color: "#e8c541" },
+                          { step: "3", title: "NCC Formal Arbitration", detail: "If mediation fails → NCC conducts formal arbitration. Decision is binding on operator.", time: "30+ days", color: "var(--red)" },
+                        ];
+                        if (docType.includes("bank") || docType.includes("credit") || agency === "cbn") return [
+                          { step: "1", title: "Bank Complaint", detail: "File formal complaint with your bank. Simple cases: 72 hours. Complex: 14 days.", time: "3-14 days", color: "#4178e8" },
+                          { step: "2", title: "CBN Consumer Protection", detail: "If unresolved → email cpd@cbn.gov.ng with all evidence. CBN investigates.", time: "14 days", color: "#e8c541" },
+                          { step: "3", title: "FCCPC / Consumer Tribunal", detail: "If CBN fails → escalate to FCCPC Consumer Protection Tribunal for formal adjudication.", time: "30+ days", color: "var(--red)" },
+                        ];
+                        return [
+                          { step: "1", title: "Complain to the company", detail: "Send your demand letter. Keep screenshot proof.", time: "7-14 days", color: "#4178e8" },
+                          { step: "2", title: "File with regulator", detail: "FCCPC (fccpc.gov.ng), CBN, NCC, NERC — depending on the sector.", time: "14-30 days", color: "#e8c541" },
+                          { step: "3", title: "FCCPC Consumer Tribunal", detail: "For serious cases or if regulator mediation fails. Can award damages up to 3x.", time: "60+ days", color: "var(--red)" },
+                        ];
+                      })().map((s) => (
+                        <div key={s.step} className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", border: `1.5px solid ${s.color}`, fontFamily: mono, fontSize: 11, fontWeight: 700, color: s.color, flexShrink: 0 }}>{s.step}</div>
+                            {s.step !== "3" && <div style={{ width: 1.5, height: 20, background: "var(--border)" }} />}
+                          </div>
+                          <div style={{ paddingBottom: s.step !== "3" ? 4 : 0 }}>
+                            <div className="flex items-center gap-2">
+                              <span style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, color: "var(--white)" }}>{s.title}</span>
+                              <span style={{ fontFamily: mono, fontSize: 9, color: s.color, background: `${s.color}15`, padding: "1px 6px", border: `1px solid ${s.color}30` }}>⏱ {s.time}</span>
+                            </div>
+                            <p style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)", lineHeight: 1.5, marginTop: 2 }}>{s.detail}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Free Legal Aid (NG) ──────────────── */}
+                {country === "NG" && (
+                  <div className="card-surface p-5" style={{ background: "rgba(65,232,102,0.02)", borderColor: "rgba(65,232,102,0.15)" }}>
+                    <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#41e866", marginBottom: 10 }}>🆓 Free Legal Help (if you need a lawyer)</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {[
+                        { name: "Legal Aid Council", desc: "Free legal aid for low-income citizens", contact: "legalaidcouncil.gov.ng" },
+                        { name: "LEDAP", desc: "Legal Defence and Assistance Project", contact: "ledapnigeria.org" },
+                        { name: "NCC Consumer Line", desc: "Toll-free telecom complaints", contact: "Call 622 (free)" },
+                        { name: "CBN Consumer Protection", desc: "Banking disputes", contact: "cpd@cbn.gov.ng" },
+                        { name: "FCCPC Hotline", desc: "All consumer complaints", contact: "0800-FREE-CALL" },
+                        { name: "ReportGov.ng", desc: "Unified govt complaint portal", contact: "reportgov.ng" },
+                      ].map((aid) => (
+                        <div key={aid.name} className="flex items-start gap-2 p-2.5" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
+                          <span style={{ color: "#41e866", fontSize: 12, marginTop: 1 }}>✓</span>
+                          <div>
+                            <div style={{ fontFamily: mono, fontSize: 11, fontWeight: 600, color: "var(--white)" }}>{aid.name}</div>
+                            <div style={{ fontFamily: sans, fontSize: 10, color: "var(--muted)", lineHeight: 1.4 }}>{aid.desc}</div>
+                            <div style={{ fontFamily: mono, fontSize: 10, color: "#41e866", marginTop: 2 }}>{aid.contact}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* ── Fear Factor Escalation Warning ────── */}
                 <div className="p-4" style={{ background: "rgba(232,25,44,0.04)", border: "1px solid rgba(232,25,44,0.15)" }}>
