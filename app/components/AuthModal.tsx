@@ -31,6 +31,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<"google" | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
   // ── Load Google Identity Services SDK ──────────────────────
@@ -93,8 +94,17 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
       }
       onSuccess();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+      const raw = err instanceof Error ? err.message : "Something went wrong";
+      // Map common backend errors to user-friendly messages
+      if (raw.toLowerCase().includes("wrong password")) {
+        setError("Wrong password — double-check and try again");
+      } else if (raw.toLowerCase().includes("no account found")) {
+        setError("No account with this email — sign up first!");
+      } else if (raw.toLowerCase().includes("already registered")) {
+        setError("This email is already registered — try signing in");
+      } else {
+        setError(raw);
+      }
     } finally {
       setLoading(false);
     }
@@ -117,7 +127,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="relative w-full max-w-sm"
+        className="relative w-full max-w-sm max-h-[90vh] overflow-y-auto"
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         {/* Red top line */}
@@ -234,20 +244,34 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
               >
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-ghost"
-                placeholder="••••••••"
-                required
-                minLength={6}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-ghost pr-10"
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-white transition-colors"
+                  style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.05em" }}
+                  tabIndex={-1}
+                >
+                  {showPassword ? "HIDE" : "SHOW"}
+                </button>
+              </div>
             </div>
 
             {error && (
-              <div className="p-3 bg-[var(--red-dim)] border border-[rgba(232,25,44,0.3)]">
-                <p style={{ fontFamily: mono, fontSize: 12, color: "var(--red)", textAlign: "center" }}>
+              <div className="p-3 bg-[var(--red-dim)] border border-[rgba(232,25,44,0.3)] flex items-center gap-2.5">
+                <span style={{ fontSize: 16, flexShrink: 0 }}>
+                  {error.includes("Wrong password") ? "🔒" : error.includes("No account") ? "👤" : error.includes("already registered") ? "📧" : "⚠️"}
+                </span>
+                <p style={{ fontFamily: mono, fontSize: 12, color: "var(--red)" }}>
                   {error}
                 </p>
               </div>

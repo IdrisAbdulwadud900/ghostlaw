@@ -542,9 +542,68 @@ body::after {
    RESPONSIVE
    ═══════════════════════════════════════════ */
 
+/* ── Small Android phones (320-380px) ──── */
+@media (max-width: 380px) {
+  .btn-primary { padding: 12px 20px; font-size: 11px; }
+  .btn-ghost { padding: 12px 20px; font-size: 11px; }
+  .scanner-chrome { margin: 0 -0.5rem; }
+  .scanner-header-bar { padding: 0.5rem 0.75rem; }
+  .scanner-header-bar > div:nth-child(2) { display: none; }
+  .finding-card { padding: 1rem; }
+  .feature-card { padding: 1.5rem; }
+  .template-chip { font-size: 10px; padding: 5px 10px; }
+  .marquee-item { font-size: 12px; padding: 0 1rem; }
+  .flow-step { gap: 0.75rem; padding: 1.25rem 0; }
+  .input-ghost { font-size: 12px; padding: 0.75rem; }
+}
+
+/* ── Standard Android / mobile (380-480px) ── */
+@media (max-width: 480px) {
+  .stats-4 > div { min-width: 45%; }
+  .letter-preview .p-5 { padding: 1rem !important; }
+  .letter-preview .btn-sm { display: none; }
+}
+
+/* ── Mobile (max 768px) ──────────────────── */
 @media (max-width: 768px) {
   .scanner-body-grid { grid-template-columns: 1fr !important; }
   .features-grid-3 { grid-template-columns: 1fr !important; }
   .flow-grid-2 { grid-template-columns: 1fr !important; gap: 3rem !important; }
   .stats-4 { flex-wrap: wrap; gap: 1.5rem !important; }
+}
+
+/* ── Tablet portrait (768-1024px) ──────── */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .features-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+  .scanner-body-grid { grid-template-columns: 1fr !important; }
+  .stats-4 > div { min-width: unset; }
+  .flow-grid-2 { gap: 2rem !important; }
+  .feature-card { padding: 2rem; }
+  .letter-preview { font-size: 11px; }
+}
+
+/* ── Tablet landscape / small laptop (1024-1280px) ── */
+@media (min-width: 1024px) and (max-width: 1280px) {
+  .features-grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+  .feature-card { padding: 2rem; }
+}
+
+/* ── Touch device adjustments ────────────── */
+@media (pointer: coarse) {
+  /* Larger touch targets on mobile/tablet */
+  .btn-primary { min-height: 48px; }
+  .btn-ghost { min-height: 48px; }
+  .btn-sm { min-height: 36px; padding: 8px 14px; }
+  .template-chip { min-height: 36px; display: inline-flex; align-items: center; }
+  .input-ghost { min-height: 48px; }
+  .flow-step { min-height: 60px; }
+  /* No custom cursor on touch */
+  .cursor-dot, .cursor-ring { display: none !important; }
+}
+
+/* ── Safe area insets (notch / nav bar) ──── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-bottom-nav {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
 }

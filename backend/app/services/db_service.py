@@ -41,7 +41,7 @@ def _new_id() -> str:
 # ── Users ─────────────────────────────────────────────────────
 def create_user(email: str, password: str, name: str) -> dict:
     if any(u["email"] == email for u in _users.values()):
-        raise ValueError("Email already registered")
+        raise ValueError("This email is already registered — try signing in instead")
     user_id = _new_id()
     user = {
         "user_id": user_id,
@@ -79,11 +79,16 @@ def find_or_create_social_user(email: str, name: str, provider: str) -> dict:
     return user
 
 
-def verify_user(email: str, password: str) -> Optional[dict]:
+def verify_user(email: str, password: str):
+    """Return user dict on success, None if wrong password, False if email not found."""
     for user in _users.values():
-        if user["email"] == email and _verify_password(password, user["password_hash"]):
-            return user
-    return None
+        if user["email"] == email:
+            if not user.get("password_hash"):
+                return None  # social-only user, no password set
+            if _verify_password(password, user["password_hash"]):
+                return user
+            return None  # wrong password
+    return False  # email not found
 
 
 def get_user(user_id: str) -> Optional[dict]:

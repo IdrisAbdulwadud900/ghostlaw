@@ -80,13 +80,17 @@ export default function Home() {
 
       {/* ═══ NAV ═══════════════════════════════════════════ */}
       <nav
-        className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-12 py-5"
+        className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-4 sm:px-4 sm:px-6 md:px-12 py-4 md:py-5"
         style={{
           background: "linear-gradient(to bottom, rgba(6,6,8,0.95), transparent)",
           backdropFilter: "blur(10px)",
         }}
       >
-        <div className="flex items-center gap-2.5" style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 28, letterSpacing: "0.05em" }}>
+        <div
+          className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 28, letterSpacing: "0.05em", cursor: "none" }}
+        >
           Ghost<span style={{ color: "var(--red)" }}>Law</span>
           <span className="logo-dot" />
         </div>
@@ -100,15 +104,15 @@ export default function Home() {
 
         <button
           onClick={() => openAuth("signup")}
-          className="text-[var(--black)] bg-[var(--red)] hover:bg-[#ff2d42] px-5 py-2.5 transition-all hover:-translate-y-[1px]"
-          style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" as const, cursor: "none" }}
+          className="text-[var(--black)] bg-[var(--red)] hover:bg-[#ff2d42] px-3 sm:px-5 py-2 sm:py-2.5 transition-all hover:-translate-y-[1px]"
+          style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" as const, cursor: "none", whiteSpace: "nowrap" }}
         >
           Fight Back — Free
         </button>
       </nav>
 
       {/* ═══ HERO ══════════════════════════════════════════ */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 pt-32 pb-16 relative overflow-hidden" id="home">
+      <section className="min-h-screen flex flex-col justify-center px-4 sm:px-4 sm:px-6 md:px-12 pt-24 sm:pt-32 pb-12 sm:pb-16 relative overflow-hidden" id="home">
         {/* Grid background */}
         <div
           className="absolute inset-0"
@@ -195,7 +199,7 @@ export default function Home() {
       </div>
 
       {/* ═══ SCANNER DEMO ══════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--obsidian)] reveal" id="scanner">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal" id="scanner">
         <div className="max-w-6xl mx-auto">
           <div
             className="flex items-center gap-3 mb-4"
@@ -305,7 +309,7 @@ export default function Home() {
       </section>
 
       {/* ═══ FEATURES ══════════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--black)] reveal" id="features">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal" id="features">
         <div className="max-w-6xl mx-auto">
           <div
             className="flex items-center gap-3 mb-4"
@@ -351,7 +355,7 @@ export default function Home() {
       </section>
 
       {/* ═══ HOW IT WORKS ══════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--obsidian)] reveal" id="how">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal" id="how">
         <div className="max-w-6xl mx-auto">
           <div
             className="flex items-center gap-3 mb-4"
@@ -428,7 +432,7 @@ export default function Home() {
       </section>
 
       {/* ═══ HISTORY TABLE ═════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--black)] reveal">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal">
         <div className="max-w-6xl mx-auto">
           <div
             className="flex items-center gap-3 mb-4"
@@ -493,7 +497,7 @@ export default function Home() {
       </section>
 
       {/* ═══ WHO IT'S FOR — DUAL MARKET ═════════════════ */}
-      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--obsidian)] reveal" id="guide">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal" id="guide">
         <div className="max-w-6xl mx-auto">
           <div
             className="flex items-center gap-3 mb-4"
@@ -584,7 +588,7 @@ export default function Home() {
       </section>
 
       {/* ═══ HOW TO USE — STEP BY STEP GUIDE ═══════════════ */}
-      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--black)] reveal">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal">
         <div className="max-w-6xl mx-auto">
           <div
             className="flex items-center gap-3 mb-4"
@@ -719,7 +723,7 @@ export default function Home() {
       </section>
 
       {/* ═══ CTA ═══════════════════════════════════════════ */}
-      <section className="py-20 md:py-32 px-6 md:px-12 bg-[var(--obsidian)] text-center relative overflow-hidden reveal">
+      <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] text-center relative overflow-hidden reveal">
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(232,25,44,0.08) 0%, transparent 70%)" }} />
         <div className="relative z-10">
           <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)", marginBottom: "1.5rem" }}>
@@ -751,8 +755,12 @@ export default function Home() {
       </section>
 
       {/* ═══ FOOTER ════════════════════════════════════════ */}
-      <footer className="px-6 md:px-12 py-6 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-3">
-        <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 24, letterSpacing: "0.05em" }}>
+      <footer className="px-4 sm:px-6 md:px-12 py-6 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-3">
+        <div
+          className="cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 24, letterSpacing: "0.05em" }}
+        >
           Ghost<span style={{ color: "var(--red)" }}>Law</span>
         </div>
         <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)", letterSpacing: "0.05em" }}>

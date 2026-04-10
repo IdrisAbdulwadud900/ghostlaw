@@ -606,7 +606,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
         style={{ background: "var(--obsidian)", borderBottom: "1px solid var(--border)", zIndex: 40 }}
       >
         <div className="flex items-center gap-4">
-          <button onClick={() => setActiveTab("home")} className="flex items-center gap-2 hover:opacity-80 transition-opacity" style={{ cursor: "pointer" }}>
+          <button onClick={() => { setActiveTab("home"); setSelectedIssue(null); setQuickFields({}); setScanResult(null); setDisputeResult(null); setCallResult(null); setComplaintResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2 hover:opacity-80 transition-opacity" style={{ cursor: "pointer" }}>
             <span style={{ fontFamily: display, fontSize: 22, letterSpacing: "0.05em" }}>
               Ghost<span style={{ color: "var(--red)" }}>Law</span>
             </span>
@@ -753,7 +753,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             {/* Issue Grid */}
             {!selectedIssue ? (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
                   {(country === "NG" ? NG_ISSUES : US_ISSUES).map((issue) => (
                     <button
                       key={issue.id}
@@ -769,7 +769,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 </div>
 
                 {/* Alternative actions */}
-                <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => setActiveTab("scan")}
                     className="flex-1 p-4 flex items-center gap-3 transition-all hover:bg-[var(--surface2)]"
@@ -1648,7 +1648,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               </h1>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { label: "Scanned", value: localStats.total_scans, color: "var(--red)" },
                 { label: "Disputes", value: localStats.total_disputes, color: "#4178e8" },
@@ -1754,7 +1754,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       )}
 
       {/* ═══ MOBILE BOTTOM TAB BAR ════════════════════════ */}
-      <div className="md:hidden flex-shrink-0 flex items-center justify-around py-2" style={{ background: "var(--obsidian)", borderTop: "1px solid var(--border)" }}>
+      <div className="md:hidden flex-shrink-0 flex items-center justify-around py-2 mobile-bottom-nav" style={{ background: "var(--obsidian)", borderTop: "1px solid var(--border)" }}>
         {[
           { id: "home" as Tab, icon: "⌕", label: "Report" },
           { id: "results" as Tab, icon: "◉", label: "Results" },
@@ -1763,10 +1763,10 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
           <button
             key={item.id}
             onClick={() => navigate(item.id)}
-            className="flex flex-col items-center gap-0.5 px-4 py-1"
+            className="flex flex-col items-center gap-0.5 px-6 py-2 min-w-[64px]"
             style={{ color: activeTab === item.id ? "var(--red)" : "var(--muted)", fontFamily: mono, fontSize: 9 }}
           >
-            <span style={{ fontSize: 18 }}>{item.icon}</span>
+            <span style={{ fontSize: 20 }}>{item.icon}</span>
             {item.label}
           </button>
         ))}
