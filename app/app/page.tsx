@@ -185,7 +185,7 @@ export default function Home() {
           </svg>
         </div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 max-w-[760px] glass-panel p-6 md:p-10">
           <div
             className="fade-up flex items-center gap-3 mb-6"
             style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 500, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
@@ -219,7 +219,7 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="fade-up-4 flex flex-wrap gap-8 md:gap-12 mt-16 pt-10 border-t border-[var(--border)] stats-4">
+          <div className="fade-up-4 flex flex-wrap gap-8 md:gap-12 mt-16 pt-10 border-t border-[rgba(255,255,255,0.1)] stats-4">
             {[
               { num: <>94<span style={{ color: "var(--red)" }}>%</span></>, label: "Win rate" },
               { num: <>60<span style={{ color: "var(--red)" }}>s</span></>, label: "Paste to complaint" },
@@ -312,7 +312,7 @@ export default function Home() {
                 </div>
 
                 <div
-                  className="flex-1 bg-[var(--surface2)] border border-[var(--border)] p-4 min-h-[200px]"
+                  className="flex-1 glass-card p-4 min-h-[200px]"
                   style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 13, lineHeight: 1.7, color: "var(--muted2)" }}
                 >
                   <span style={{ color: "var(--white)" }}>ITEMIZED MEDICAL BILL — Memorial Hospital</span><br /><br />
@@ -415,7 +415,7 @@ export default function Home() {
                 >
                   {f.num}
                 </div>
-                <div className="w-10 h-10 border border-[var(--border)] group-hover:border-[var(--red)] flex items-center justify-center mb-5 relative z-10 transition-colors text-lg">
+                <div className="w-10 h-10 border border-[rgba(255,255,255,0.12)] group-hover:border-[var(--red)] flex items-center justify-center mb-5 relative z-10 transition-colors text-lg glass-card">
                   {f.icon}
                 </div>
                 <div className="relative z-10" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 14, fontWeight: 600, marginBottom: "0.75rem", letterSpacing: "0.02em" }}>
@@ -845,8 +845,8 @@ export default function Home() {
         <div
           className="photo-backdrop"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1600&q=80")',
-            opacity: 0.2,
+            backgroundImage: 'url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80")',
+            opacity: 0.26,
           }}
         />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(232,25,44,0.08) 0%, transparent 70%)" }} />
@@ -874,7 +874,7 @@ export default function Home() {
         <div className="float-shape hidden md:block" style={{ bottom: "25%", right: "5%", width: 24, height: 24, opacity: 0.08, animation: "float-drift 11s ease-in-out 2s infinite" }}>
           <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" stroke="var(--red)" strokeWidth="1" transform="rotate(45 12 12)" /></svg>
         </div>
-        <div className="relative z-10">
+        <div className="relative z-10 max-w-4xl mx-auto glass-panel px-6 py-10 md:px-10 md:py-14">
           <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)", marginBottom: "1.5rem" }}>
             No Lawyers. No Fees. Real Results.
           </div>
