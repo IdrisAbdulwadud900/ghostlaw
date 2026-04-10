@@ -5,12 +5,60 @@ import { AnimatePresence } from "framer-motion";
 import AuthModal from "@/components/AuthModal";
 import AppDashboard from "../components/AppDashboard";
 import { getToken } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 /* ═══════════════════════════════════════════════════════════
    LANDING PAGE — matches ghostlaw.html design
    ═══════════════════════════════════════════════════════════ */
 
 export default function Home() {
+    const faqStructuredData = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Does GhostLaw give real next steps?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. GhostLaw is strongest when users need a dispute letter, phone script, or regulator-ready complaint they can use immediately.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Will GhostLaw work for every legal problem?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "No. GhostLaw is focused on consumer money disputes such as bills, overcharges, subscriptions, banking reversals, telecom problems, and complaint workflows.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is my data under my control?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. The product supports authenticated accounts along with export and delete-account controls.",
+          },
+        },
+      ],
+    };
+
+    const softwareStructuredData = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "GhostLaw",
+      applicationCategory: "LegalService",
+      operatingSystem: "Web",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      description:
+        "AI-powered consumer protection app for Nigeria and the US that helps users dispute bills, generate complaint letters, and prepare regulator filings.",
+      areaServed: ["NG", "US"],
+    };
+
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -64,16 +112,20 @@ export default function Home() {
   }
 
   const openAuth = (mode: "login" | "signup") => {
+    trackEvent("open_auth_modal", { mode, page: "landing" });
     setAuthMode(mode);
     setShowAuth(true);
   };
 
   const scrollTo = (id: string) => {
+    trackEvent("scroll_to_section", { section: id, page: "landing" });
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <div className="relative" style={{ cursor: "none" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareStructuredData) }} />
       {/* Cursor */}
       <div ref={cursorRef} className="cursor-dot hidden md:block" />
       <div ref={ringRef} className="cursor-ring hidden md:block" />
