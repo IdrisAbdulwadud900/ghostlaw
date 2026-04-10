@@ -16,6 +16,11 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class SocialLoginRequest(BaseModel):
+    provider: str = Field(..., pattern="^(google|apple)$")
+    id_token: str = Field(..., min_length=10)
+
+
 class AuthResponse(BaseModel):
     access_token: str
     user_id: str

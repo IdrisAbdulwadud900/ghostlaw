@@ -57,6 +57,28 @@ def create_user(email: str, password: str, name: str) -> dict:
     return user
 
 
+def find_or_create_social_user(email: str, name: str, provider: str) -> dict:
+    """Find existing user by email or create a new social-auth user."""
+    for user in _users.values():
+        if user["email"] == email:
+            return user
+    # Create new user — no password for social logins
+    user_id = _new_id()
+    user = {
+        "user_id": user_id,
+        "email": email,
+        "password_hash": "",
+        "name": name,
+        "provider": provider,
+        "created_at": _now(),
+        "scans_count": 0,
+        "disputes_count": 0,
+        "total_saved": 0.0,
+    }
+    _users[user_id] = user
+    return user
+
+
 def verify_user(email: str, password: str) -> Optional[dict]:
     for user in _users.values():
         if user["email"] == email and _verify_password(password, user["password_hash"]):

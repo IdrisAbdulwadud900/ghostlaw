@@ -185,6 +185,16 @@ export async function login(email: string, password: string) {
   return data;
 }
 
+export async function socialLogin(provider: "google" | "apple", idToken: string) {
+  const data = await api("/auth/social", {
+    method: "POST",
+    body: JSON.stringify({ provider, id_token: idToken }),
+  });
+  setToken(data.access_token);
+  setUser({ user_id: data.user_id, email: data.email, name: data.name });
+  return data;
+}
+
 export async function getProfile() {
   return api("/auth/me");
 }

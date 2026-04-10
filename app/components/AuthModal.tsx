@@ -1,12 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { signup, login } from "@/lib/api";
+import { signup, login, socialLogin } from "@/lib/api";
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    google?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    AppleID?: any;
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════
-   AUTH MODAL — dark terminal style
+   AUTH MODAL — dark terminal style + Social Login
    ═══════════════════════════════════════════════════════════ */
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+const APPLE_CLIENT_ID = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "";
 
 interface AuthModalProps {
   mode: "login" | "signup";
@@ -21,6 +33,98 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<"google" | "apple" | null>(null);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+
+  // ── Load Google Identity Services SDK ──────────────────────
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+    const existing = document.getElementById("google-gsi-script");
+    if (existing) {
+      // Script already loaded — re-init
+      initGoogle();
+      return;
+    }
+    const script = document.createElement("script");
+    script.id = "google-gsi-script";
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.onload = initGoogle;
+    document.head.appendChild(script);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function initGoogle() {
+    if (!window.google || !GOOGLE_CLIENT_ID) return;
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      callback: async (response: any) => {
+        setSocialLoading("google");
+        setError("");
+        try {
+          await socialLogin("google", response.credential);
+          onSuccess();
+        } catch (err: unknown) {
+          setError(err instanceof Error ? err.message : "Google sign-in failed");
+        } finally {
+          setSocialLoading(null);
+        }
+      },
+    });
+  }
+
+  // ── Google Sign-In click handler ───────────────────────────
+  function handleGoogleClick() {
+    if (!window.google || !GOOGLE_CLIENT_ID) {
+      setError("Google Sign-In is not configured yet. Use email signup.");
+      return;
+    }
+    // Trigger the One Tap / popup flow
+    window.google.accounts.id.prompt();
+  }
+
+  // ── Apple Sign-In ──────────────────────────────────────────
+  async function handleAppleClick() {
+    if (!APPLE_CLIENT_ID || !window.AppleID) {
+      setError("Apple Sign-In is not configured yet. Use email signup.");
+      return;
+    }
+    setSocialLoading("apple");
+    setError("");
+    try {
+      window.AppleID.auth.init({
+        clientId: APPLE_CLIENT_ID,
+        scope: "email name",
+        redirectURI: window.location.origin,
+        usePopup: true,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res: any = await window.AppleID.auth.signIn();
+      await socialLogin("apple", res.authorization.id_token);
+      onSuccess();
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "error" in err) {
+        // User cancelled
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((err as any).error === "popup_closed_by_user") return;
+      }
+      setError(err instanceof Error ? err.message : "Apple sign-in failed");
+    } finally {
+      setSocialLoading(null);
+    }
+  }
+
+  // ── Load Apple JS SDK ──────────────────────────────────────
+  useEffect(() => {
+    if (!APPLE_CLIENT_ID) return;
+    if (document.getElementById("apple-signin-script")) return;
+    const script = document.createElement("script");
+    script.id = "apple-signin-script";
+    script.src = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,6 +144,9 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
       setLoading(false);
     }
   }
+
+  const mono = "var(--font-ibm-plex-mono), monospace";
+  const display = "var(--font-bebas-neue), sans-serif";
 
   return (
     <motion.div
@@ -69,14 +176,14 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
               <div className="dot-y" />
               <div className="dot-g" />
             </div>
-            <span style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 12, color: "var(--muted)", letterSpacing: "0.05em" }}>
+            <span style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", letterSpacing: "0.05em" }}>
               {mode === "signup" ? "ghostlaw — sign up" : "ghostlaw — sign in"}
             </span>
           </div>
           <button
             onClick={onClose}
             className="text-[var(--muted)] hover:text-white transition-colors"
-            style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 14 }}
+            style={{ fontFamily: mono, fontSize: 14 }}
           >
             ✕
           </button>
@@ -84,13 +191,67 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
 
         <div className="px-6 py-6">
           {/* Title */}
-          <div className="text-center mb-6">
-            <div style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: 32, letterSpacing: "0.03em" }}>
+          <div className="text-center mb-5">
+            <div style={{ fontFamily: display, fontSize: 32, letterSpacing: "0.03em" }}>
               Ghost<span style={{ color: "var(--red)" }}>Law</span>
             </div>
-            <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+            <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
               {mode === "signup" ? "Create your account — start fighting back" : "Welcome back — pick up the fight"}
             </p>
+          </div>
+
+          {/* ── Social Login Buttons ───────────────────── */}
+          <div className="space-y-2.5 mb-5">
+            {/* Google */}
+            <button
+              onClick={handleGoogleClick}
+              disabled={!!socialLoading}
+              className="w-full flex items-center justify-center gap-3 py-3 px-4 transition-all hover:brightness-110 disabled:opacity-50"
+              style={{ background: "#ffffff", border: "1px solid #dadce0", borderRadius: 0, cursor: socialLoading === "google" ? "wait" : "pointer" }}
+            >
+              {socialLoading === "google" ? (
+                <span className="spinner-sm" style={{ width: 18, height: 18, borderColor: "#4285f4 transparent transparent transparent" }} />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 48 48">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+              )}
+              <span style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: 14, fontWeight: 500, color: "#3c4043" }}>
+                {mode === "signup" ? "Sign up with Google" : "Sign in with Google"}
+              </span>
+            </button>
+
+            {/* Apple */}
+            <button
+              onClick={handleAppleClick}
+              disabled={!!socialLoading}
+              className="w-full flex items-center justify-center gap-3 py-3 px-4 transition-all hover:brightness-110 disabled:opacity-50"
+              style={{ background: "#000000", border: "1px solid #333", borderRadius: 0, cursor: socialLoading === "apple" ? "wait" : "pointer" }}
+            >
+              {socialLoading === "apple" ? (
+                <span className="spinner-sm" style={{ width: 18, height: 18, borderColor: "#fff transparent transparent transparent" }} />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.53-3.23 0-1.44.62-2.2.44-3.06-.4C4.24 16.7 4.89 10.34 8.7 10.1c1.25.07 2.12.72 2.86.76.91-.18 1.78-.87 2.95-.79 1.4.1 2.45.6 3.14 1.7-2.88 1.72-2.2 5.52.4 6.57-.5 1.26-1.14 2.5-2 3.94zM12.03 10c-.14-2.65 2.08-4.95 4.75-5.12.33 2.93-2.7 5.19-4.75 5.12z"/>
+                </svg>
+              )}
+              <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif", fontSize: 14, fontWeight: 500, color: "#ffffff" }}>
+                {mode === "signup" ? "Sign up with Apple" : "Sign in with Apple"}
+              </span>
+            </button>
+
+            {/* Hidden Google One-Tap anchor */}
+            <div ref={googleBtnRef} style={{ display: "none" }} />
+          </div>
+
+          {/* ── Divider ────────────────────────────────── */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+            <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", letterSpacing: "0.1em", textTransform: "uppercase" as const }}>or</span>
+            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -98,7 +259,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
               <div>
                 <label
                   className="block mb-1.5"
-                  style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
+                  style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
                 >
                   Name
                 </label>
@@ -116,7 +277,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
             <div>
               <label
                 className="block mb-1.5"
-                style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
+                style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
               >
                 Email
               </label>
@@ -133,7 +294,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
             <div>
               <label
                 className="block mb-1.5"
-                style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
+                style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--muted)" }}
               >
                 Password
               </label>
@@ -150,7 +311,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
 
             {error && (
               <div className="p-3 bg-[var(--red-dim)] border border-[rgba(232,25,44,0.3)]">
-                <p style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 12, color: "var(--red)", textAlign: "center" }}>
+                <p style={{ fontFamily: mono, fontSize: 12, color: "var(--red)", textAlign: "center" }}>
                   {error}
                 </p>
               </div>
@@ -167,7 +328,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
             </button>
           </form>
 
-          <p className="text-center mt-5" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, color: "var(--muted)" }}>
+          <p className="text-center mt-5" style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)" }}>
             {mode === "signup" ? "Already have an account?" : "Don't have an account?"}{" "}
             <button onClick={onSwitchMode} className="text-[var(--red)] hover:underline transition-colors">
               {mode === "signup" ? "Sign in" : "Sign up"}
