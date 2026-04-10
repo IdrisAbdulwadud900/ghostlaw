@@ -11,93 +11,209 @@ import {
 } from "@/lib/api";
 
 // ── Types ────────────────────────────────────────────────────
-type Tab = "scan" | "results" | "dispute" | "call" | "complaint" | "history";
+type Tab = "home" | "scan" | "results" | "dispute" | "call" | "complaint" | "history";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiResult = Record<string, any>;
 
-interface QuickTemplate {
+interface QuickIssue {
+  id: string;
+  icon: string;
   label: string;
+  desc: string;
   prompt: string;
   context: string;
+  placeholders: { field: string; label: string; placeholder: string }[];
 }
 
-// ── Templates ────────────────────────────────────────────────
-const TEMPLATES: QuickTemplate[] = [
+// ── Quick Issue Flows (NG) ───────────────────────────────────
+const NG_ISSUES: QuickIssue[] = [
   {
-    label: "Medical Bill",
-    prompt: `ITEMIZED MEDICAL BILL — Memorial Hospital System\nPatient: [Name], DOB: [Date], Account #: 88274-X\n\nService Date: February 14, 2025\n\nCHARGES:\n- Emergency Room Visit (Level 3)...........$850.00\n- Facility Fee (undisclosed)....................$420.00\n- Blood Panel — Comprehensive (CPT 80053)...$230.00\n- IV Administration...............................$185.00\n- Physician Consultation (CPT 99213).........$145.00\n- Physician Consultation (CPT 99213).........$145.00  ← DUPLICATE\n\nSUBTOTAL: $1,975.00\nInsurance Adjustment: -$640.00\nAMOUNT DUE: $1,335.00`,
-    context: "Medical bill — look for upcoding, surprise billing, and charges above Medicare rates",
+    id: "bank_charge",
+    icon: "🏦",
+    label: "Bank Charged Me",
+    desc: "Unauthorized debit, hidden fees, failed transfer",
+    prompt: "Bank: {bank}. {what}. Amount: {amount}.",
+    context: "Nigerian bank charge — look for CBN Consumer Protection Framework violations, unauthorized debits, VAT transparency issues",
+    placeholders: [
+      { field: "bank", label: "Which bank?", placeholder: "e.g. GTBank, Access, UBA, Kuda, OPay" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Debited ₦5,000 for a transfer that failed" },
+      { field: "amount", label: "How much?", placeholder: "e.g. ₦5,000" },
+    ],
   },
   {
-    label: "Lease",
-    prompt: `RESIDENTIAL LEASE AGREEMENT\n\nTenant agrees to pay a late fee of $150 for any payment received after the 1st of the month. Additionally, tenant waives right to 24-hour notice before landlord entry. Tenant is responsible for all repairs under $500. Lease auto-renews unless cancelled 90 days prior...`,
-    context: "Lease agreement — look for illegal clauses, excessive fees, and tenant rights violations",
+    id: "data_stolen",
+    icon: "📱",
+    label: "Data Disappeared",
+    desc: "Data finished too fast, VAS subscriptions",
+    prompt: "Network: {network}. {what}. Plan: {plan}.",
+    context: "Nigerian telecom — NCC Consumer Code violations, unauthorized VAS deductions, data depletion complaints",
+    placeholders: [
+      { field: "network", label: "Which network?", placeholder: "e.g. MTN, Airtel, Glo, 9mobile" },
+      { field: "what", label: "What happened?", placeholder: "e.g. 10GB data plan finished in 3 days" },
+      { field: "plan", label: "What plan?", placeholder: "e.g. ₦3,500 for 10GB monthly" },
+    ],
   },
   {
-    label: "Phone Contract",
-    prompt: `Your monthly charges include: Plan fee $65, Device payment $42, Regulatory fees $8.99, Administrative fee $3.99, Network access charge $9.99 (NEW), Premium data throttling protection $4.99 (NEW), Paper statement fee $3.50...`,
-    context: "Phone/wireless bill — look for cramming, unauthorized charges, and FCC violations",
+    id: "light_bill",
+    icon: "⚡",
+    label: "Crazy Light Bill",
+    desc: "Estimated billing, no meter, outages",
+    prompt: "DisCo: {disco}. {what}. Bill amount: {amount}.",
+    context: "Nigerian electricity — NERC violations, estimated billing disputes, right to prepaid meter, Customer Complaints Handling Standards",
+    placeholders: [
+      { field: "disco", label: "Which DisCo?", placeholder: "e.g. IKEDC, EKEDC, AEDC, BEDC" },
+      { field: "what", label: "What's the problem?", placeholder: "e.g. Bill is ₦47,000 but I live in a 1-bedroom" },
+      { field: "amount", label: "How much is the bill?", placeholder: "e.g. ₦47,500" },
+    ],
   },
   {
-    label: "Insurance",
-    prompt: `EXPLANATION OF BENEFITS — Claim Denied\nClaim #: INS-2025-88421\nService: MRI Lumbar Spine without contrast\nDenial Reason: "Not medically necessary"\nAmount billed: $2,400. Your responsibility: $2,400.\nAppeal deadline: 60 days from this notice.`,
-    context: "Insurance document — look for wrongful denial, bad faith practices, and coverage gaps",
+    id: "loan_app",
+    icon: "🚨",
+    label: "Loan App Harassing Me",
+    desc: "Threats, contact spam, defamation",
+    prompt: "Loan app: {app}. {what}. Original loan: {amount}.",
+    context: "Predatory loan app — NDPA 2023 violations (unauthorized data access), FCCPA defamation, CBN lending regulations",
+    placeholders: [
+      { field: "app", label: "Which app?", placeholder: "e.g. OKash, FairMoney, Carbon, Branch" },
+      { field: "what", label: "What are they doing?", placeholder: "e.g. Sending messages to my contacts calling me a thief" },
+      { field: "amount", label: "How much was the loan?", placeholder: "e.g. ₦30,000" },
+    ],
   },
   {
-    label: "Subscription",
-    prompt: `Your account has been charged $29.99/month for the past 8 months for GymFlex Premium. You may cancel at any time — however please note that cancellation requires written notice 30 days in advance and cancellation fees may apply...`,
-    context: "Subscription — look for dark patterns, hidden auto-renewal, and FTC violations",
+    id: "rent_landlord",
+    icon: "🏠",
+    label: "Landlord Trouble",
+    desc: "Illegal eviction, deposit theft, lock-out",
+    prompt: "Location: {location}. {what}. Rent paid: {amount}.",
+    context: "Nigerian landlord-tenant dispute — Lagos Tenancy Law 2011, required notice periods, tenant rights, self-help eviction illegality",
+    placeholders: [
+      { field: "location", label: "Where? (city/state)", placeholder: "e.g. Lagos, Abuja" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Landlord changed the lock and told me to leave" },
+      { field: "amount", label: "How much rent did you pay?", placeholder: "e.g. ₦1,200,000 per year" },
+    ],
   },
   {
-    label: "Parking Ticket",
-    prompt: `CITY PARKING VIOLATION NOTICE\nTicket #: PKG-2025-44182\nDate: March 12, 2025, 3:47 PM\nLocation: 450 Main St (metered zone)\nViolation: Expired meter\nFine: $85.00 (doubles to $170 after 30 days)\n\nNotes: Meter #2241. No photo evidence attached. Sign partially obscured by tree branch. Meter was reported broken by 3 other drivers same week.`,
-    context: "Parking ticket — look for procedural defects, signage issues, meter malfunctions, missing evidence, and appeal deadlines",
-  },
-  {
-    label: "Bank/Credit Card",
-    prompt: `CREDIT CARD STATEMENT — Chase Visa\nStatement Period: Feb 1-28, 2025\n\nDisputed charges:\n- Feb 3: RECURRING CHARGE - StreamMax Plus $14.99 (cancelled in January)\n- Feb 8: INTL FEE - Amazon UK $4.50 (I never authorized international purchase)\n- Feb 15: ANNUAL FEE $95.00 (was told this would be waived)\n- Feb 22: OVERLIMIT FEE $39.00 (limit was $5000, balance was $4,800 before annual fee pushed it over)`,
-    context: "Credit card/bank charges — look for FCBA violations, unauthorized charges, and chargeback rights under Regulation Z",
+    id: "online_order",
+    icon: "🛒",
+    label: "Bad Online Order",
+    desc: "Fake product, no refund, wrong item",
+    prompt: "Platform: {platform}. {what}. Amount: {amount}.",
+    context: "E-commerce dispute — FCCPA consumer protection, right to refund for non-conforming goods",
+    placeholders: [
+      { field: "platform", label: "Where did you buy?", placeholder: "e.g. Jumia, Konga, Instagram seller" },
+      { field: "what", label: "What went wrong?", placeholder: "e.g. Ordered original phone, got a fake" },
+      { field: "amount", label: "How much did you pay?", placeholder: "e.g. ₦189,000" },
+    ],
   },
 ];
 
-// ── Nigerian Templates ─────────────────────────────────────────
-const NG_TEMPLATES: QuickTemplate[] = [
+// ── Quick Issue Flows (US) ───────────────────────────────────
+const US_ISSUES: QuickIssue[] = [
   {
-    label: "🏦 Bank Reversal",
-    prompt: `TRANSACTION ALERT \u2014 GTBank\nAcct: 0123456789\nDate: March 15, 2025, 2:47 PM\n\nDebit: \u20a685,000.00\nRef: NIP/250315/GTB/087234\nRemarks: Transfer to 2087654321/Access Bank\n\nBUT: The recipient NEVER received the money. I've waited 5 days. Bank says "it's being investigated" but no reversal. This was my rent money.`,
-    context: "Failed bank transfer — debited but not credited to recipient. Look for CBN Consumer Protection Framework violations, 24-72hr resolution mandate",
+    id: "medical_bill",
+    icon: "🏥",
+    label: "Medical Bill",
+    desc: "Overcharges, surprise billing, errors",
+    prompt: "Hospital/Provider: {provider}. {what}. Amount: {amount}.",
+    context: "Medical bill — look for upcoding, surprise billing, balance billing, No Surprises Act violations, charges above Medicare rates",
+    placeholders: [
+      { field: "provider", label: "Hospital or provider?", placeholder: "e.g. Metro General Hospital" },
+      { field: "what", label: "What's wrong with the bill?", placeholder: "e.g. Charged $450 for a blood test that should be $80" },
+      { field: "amount", label: "Total amount?", placeholder: "e.g. $4,847" },
+    ],
   },
   {
-    label: "🚨 Loan App",
-    prompt: `I borrowed \u20a630,000 from OKash loan app 3 months ago. I repaid \u20a645,000 (the full amount with interest). Now they say I still owe \u20a622,000 in "processing fees" and "late penalties". They have:\n- Sent threatening SMS to all my phone contacts\n- Called my employer saying I'm a debtor\n- Posted my photo on a WhatsApp group calling me a thief\n- They accessed my contacts without permission when I installed the app`,
-    context: "Predatory loan app harassment — look for NDPA 2023 violations (unauthorized data access), FCCPA defamation, and CBN lending regulations",
+    id: "subscription",
+    icon: "💳",
+    label: "Won't Let Me Cancel",
+    desc: "Subscription trap, hidden auto-renew",
+    prompt: "Company: {company}. {what}. Monthly charge: {amount}.",
+    context: "Subscription trap — FTC dark pattern rules, ROSCA violations, state consumer protection acts",
+    placeholders: [
+      { field: "company", label: "Which company?", placeholder: "e.g. Planet Fitness, Adobe, GymFlex" },
+      { field: "what", label: "What happened?", placeholder: "e.g. I cancelled but they keep charging me" },
+      { field: "amount", label: "How much per month?", placeholder: "e.g. $29.99/month" },
+    ],
   },
   {
-    label: "⚡ Light Bill",
-    prompt: `ELECTRICITY BILL \u2014 Ikeja Electric (IKEDC)\nAccount: 04/12/01/0456-01\nMonth: February 2025\n\nEstimated Consumption: 890 kWh\nAmount Due: \u20a647,500.00\nBilling Type: ESTIMATED (no meter installed)\n\nBut: I've applied for a prepaid meter 8 months ago. My apartment is a 1-bedroom, usually empty during the day. There's no way I'm using 890 kWh. My neighbor with same apartment size and a meter pays \u20a68,000-12,000/month.`,
-    context: "Estimated electricity billing — look for NERC regulation violations, right to metering, estimated billing complaints handling standards",
+    id: "insurance",
+    icon: "🛡",
+    label: "Insurance Denied Me",
+    desc: "Claim denied, bad faith, delays",
+    prompt: "Insurance company: {company}. {what}. Claim amount: {amount}.",
+    context: "Insurance denial — bad faith practices, wrongful denial, appeal rights, state insurance commissioner complaints",
+    placeholders: [
+      { field: "company", label: "Which insurer?", placeholder: "e.g. Blue Cross, Aetna, State Farm" },
+      { field: "what", label: "What was denied?", placeholder: "e.g. MRI denied as 'not medically necessary'" },
+      { field: "amount", label: "How much is the claim?", placeholder: "e.g. $2,400" },
+    ],
   },
   {
-    label: "📱 Data/Airtime",
-    prompt: `MTN NIGERIA — Line: 0803 XXX XXXX\n\nMy 10GB monthly data plan (\u20a63,500) activated on March 1st was completely depleted by March 8th. I barely use data — no streaming, no downloads. Also:\n- Auto-subscribed to "MTN Caller Tunez" at \u20a6100/week (never requested)\n- Auto-subscribed to "Daily News Alert" at \u20a650/day (never requested)  \n- \u20a62,400 deducted in the last month from these "services"\n\nI've called 180 three times. Each time they say "it has been escalated" but nothing happens.`,
-    context: "Telecom data depletion and unauthorized VAS subscriptions — look for NCC Consumer Code violations, right to opt-in only services",
+    id: "phone_bill",
+    icon: "📞",
+    label: "Phone/Internet Bill",
+    desc: "Hidden fees, cramming, throttling",
+    prompt: "Provider: {provider}. {what}. Monthly total: {amount}.",
+    context: "Telecom bill — FCC violations, cramming, unauthorized charges, Telecommunications Act",
+    placeholders: [
+      { field: "provider", label: "Which provider?", placeholder: "e.g. AT&T, Comcast, T-Mobile, Verizon" },
+      { field: "what", label: "What's wrong?", placeholder: "e.g. New $9.99 'network access' fee I never agreed to" },
+      { field: "amount", label: "How much is the bill?", placeholder: "e.g. $142/month" },
+    ],
   },
   {
-    label: "📺 DSTV/GoTV",
-    prompt: `DSTV SUBSCRIPTION \u2014 MultiChoice\nSmartcard: 7032XXXXXX\nPackage: DStv Compact (\u20a615,700/month)\n\nIssues:\n- Service was down for 12 days in February (decoder showed "No Signal")\n- Called 08039003788 multiple times, told it was "area maintenance"\n- Was auto-renewed on March 1 for full \u20a615,700 despite 12 days downtime\n- Requested pro-rata credit/refund — denied\n- Channels keep getting removed from my package but price keeps going UP`,
-    context: "Pay TV subscription dispute — look for FCCPA consumer rights, right to service paid for, pro-rata refund for downtime",
+    id: "lease",
+    icon: "🏠",
+    label: "Landlord / Lease",
+    desc: "Illegal clauses, deposit theft, eviction",
+    prompt: "Location: {location}. {what}. Amount involved: {amount}.",
+    context: "Lease/landlord dispute — tenant rights, illegal clauses, security deposit laws, habitability requirements",
+    placeholders: [
+      { field: "location", label: "City & state?", placeholder: "e.g. Austin, TX" },
+      { field: "what", label: "What happened?", placeholder: "e.g. Won't return my $2,000 security deposit" },
+      { field: "amount", label: "Amount involved?", placeholder: "e.g. $2,000" },
+    ],
   },
   {
-    label: "🏠 Rent/Landlord",
-    prompt: `My landlord at [Address], Lagos, gave me a 1-week "quit notice" to vacate my apartment. I paid \u20a61,200,000 for a 1-year rent starting June 2024. The lease expires June 2025. He says he wants to renovate and has already showed the apartment to new tenants. He also:\n- Changed the gate lock last week\n- Cut off my water supply\n- Threatened to remove my belongings if I don't leave by Friday`,
-    context: "Illegal ejection — look for Lagos Tenancy Law 2011 violations, required notice periods, tenant rights, self-help eviction illegality",
+    id: "debt_collector",
+    icon: "📬",
+    label: "Debt Collector",
+    desc: "Harassment, wrong debt, threats",
+    prompt: "Collector: {collector}. {what}. Amount they claim: {amount}.",
+    context: "Debt collection — FDCPA violations, right to validate debt, harassment protections, cease communication rights",
+    placeholders: [
+      { field: "collector", label: "Who's calling?", placeholder: "e.g. Midland Credit, Portfolio Recovery" },
+      { field: "what", label: "What are they doing?", placeholder: "e.g. Calling 5 times a day about a debt I already paid" },
+      { field: "amount", label: "How much do they claim?", placeholder: "e.g. $3,200" },
+    ],
   },
-  {
-    label: "🛒 Online Order",
-    prompt: `JUMIA ORDER #JUM-NG-885721\nOrdered: Samsung Galaxy A54 (\u20a6189,000)\nPaid via: Paystack — Card ending 4521\nOrder Date: Feb 20, 2025\nDelivery Date: "Feb 25-28"\n\nWhat arrived on March 5:\n- A clearly used/refurbished phone (scratches on screen, old software)\n- IMEI doesn't match what's on the box\n- Requested return/refund on March 5\n- Jumia says "return window expired" (it was only 5 days late!)\n- \u20a6189,000 gone.`,
-    context: "E-commerce fraud/defective product — look for FCCPA consumer protection, right to refund for non-conforming goods, Jumia marketplace liability",
-  },
+];
+
+// ── Legal Tips (shown during loading + home) ────────────────
+const NG_LEGAL_TIPS = [
+  "Banks must refund failed transfers within 24-72 hours — CBN Consumer Protection Framework",
+  "You have the RIGHT to a prepaid meter — estimated billing is challengeable under NERC rules",
+  "Loan apps that message your contacts are violating the Nigeria Data Protection Act 2023",
+  "If a bank charges you without consent, that's a criminal offence under FCCPA Section 131",
+  "DisCos must credit you for every hour of outage above the allowed threshold — NERC regulation",
+  "Your landlord MUST give 6 months' notice before eviction for yearly tenants — Lagos Tenancy Law S.13",
+  "Banks have only 72 hours to resolve your complaint before you can escalate to CBN",
+  "Online sellers must refund you for counterfeit goods — FCCPA S.114-127",
+  "MTN/Airtel/Glo must get your EXPRESS consent before deducting for Value Added Services — NCC Code",
+  "You can seek up to 3x damages for unfair practices under the FCCPA",
+];
+const US_LEGAL_TIPS = [
+  "Medical bills can be disputed for 60 days under the Fair Credit Billing Act",
+  "The No Surprises Act bans surprise out-of-network bills for emergency services",
+  "Debt collectors can't call you before 8am or after 9pm — FDCPA Section 805",
+  "Your landlord must return your security deposit within 14-45 days depending on state law",
+  "CFPB complaints have a 97% company response rate — they actually work",
+  "You can demand debt validation within 30 days — if they can't prove it, they must stop collecting",
+  "Subscription companies must provide a simple cancellation method — FTC Click-to-Cancel Rule",
+  "Insurance companies must explain claim denials in writing — state Bad Faith laws protect you",
+  "Phone carriers can't add charges you didn't agree to — that's 'cramming' and it's illegal under FCC rules",
+  "You have the right to a free copy of your credit report — errors must be corrected within 30 days",
 ];
 
 // ── Component ────────────────────────────────────────────────
@@ -107,9 +223,9 @@ interface AppDashboardProps {
 
 export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const user = getUser();
-  const [activeTab, setActiveTab] = useState<Tab>("scan");
+  const [activeTab, setActiveTab] = useState<Tab>("home");
   const [loading, setLoading] = useState(false);
-  const [loadingMsg, setLoadingMsg] = useState("Analyzing your document...");
+  const [loadingMsg, setLoadingMsg] = useState("Analyzing...");
   const [mobileNav, setMobileNav] = useState(false);
 
   // Country state (persisted)
@@ -122,16 +238,20 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const switchCountry = (c: "US" | "NG") => {
     setCountry(c);
     if (typeof window !== "undefined") localStorage.setItem("ghostlaw_country", c);
-    // Reset complaint agency to first of new country
     setComplaintAgency(c === "NG" ? "fccpc" : "cfpb");
+    setSelectedIssue(null);
+    setQuickFields({});
   };
   const currencySymbol = country === "NG" ? "₦" : "$";
+
+  // Quick-issue flow state
+  const [selectedIssue, setSelectedIssue] = useState<QuickIssue | null>(null);
+  const [quickFields, setQuickFields] = useState<Record<string, string>>({});
 
   // Scan state
   const [scanResult, setScanResult] = useState<ApiResult | null>(null);
   const [scanContext, setScanContext] = useState("");
   const [textInput, setTextInput] = useState("");
-  const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Dispute state
@@ -148,6 +268,13 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const [complaintResult, setComplaintResult] = useState<ApiResult | null>(null);
   const [complaintAgency, setComplaintAgency] = useState("cfpb");
 
+  // Auto-suggest agency when scan result has recommendation
+  useEffect(() => {
+    if (scanResult?.recommended_agency && typeof scanResult.recommended_agency === "string") {
+      setComplaintAgency(scanResult.recommended_agency as string);
+    }
+  }, [scanResult]);
+
   // History state
   const [localStats, setLocalStats] = useState(getLocalStats());
   const [localHistory, setLocalHistory] = useState(getLocalHistory());
@@ -155,12 +282,49 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   // Outcome tracking
   const [outcomeOpen, setOutcomeOpen] = useState(false);
 
+  // Legal tip rotation
+  const [tipIndex, setTipIndex] = useState(0);
+  const tips = country === "NG" ? NG_LEGAL_TIPS : US_LEGAL_TIPS;
+
+  // Dispute sent date tracking (for deadline countdown)
+  const [disputeSentDate, setDisputeSentDate] = useState<string | null>(() => {
+    if (typeof window !== "undefined") return localStorage.getItem("ghostlaw_dispute_sent");
+    return null;
+  });
+
+  const markDisputeSent = () => {
+    const d = new Date().toISOString();
+    setDisputeSentDate(d);
+    if (typeof window !== "undefined") localStorage.setItem("ghostlaw_dispute_sent", d);
+  };
+
   const refreshLocal = useCallback(() => {
     setLocalStats(getLocalStats());
     setLocalHistory(getLocalHistory());
   }, []);
 
   useEffect(() => { refreshLocal(); }, [refreshLocal]);
+
+  // Rotate legal tips while loading OR on home
+  useEffect(() => {
+    if (!loading && activeTab !== "home") return;
+    const iv = setInterval(() => setTipIndex(i => (i + 1) % tips.length), loading ? 4000 : 8000);
+    return () => clearInterval(iv);
+  }, [loading, activeTab, tips.length]);
+
+  // ── Navigation helpers ─────────────────────────────────
+  const FLOW: Tab[] = ["home", "results", "dispute", "call", "complaint"];
+  const flowIndex = FLOW.indexOf(activeTab);
+  const canGoBack = flowIndex > 0 || activeTab === "scan" || activeTab === "history";
+  const canGoNext = flowIndex >= 0 && flowIndex < FLOW.length - 1 && scanResult;
+
+  const goBack = () => {
+    if (activeTab === "scan" || activeTab === "history") { setActiveTab("home"); return; }
+    if (flowIndex > 0) setActiveTab(FLOW[flowIndex - 1]);
+  };
+  const goNext = () => {
+    if (flowIndex >= 0 && flowIndex < FLOW.length - 1) setActiveTab(FLOW[flowIndex + 1]);
+  };
 
   // ── Handlers ─────────────────────────────────────────────
   const handleFileUpload = useCallback(async (file: File) => {
@@ -177,15 +341,16 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     } finally { setLoading(false); }
   }, [scanContext, country, refreshLocal]);
 
-  const handleTextScan = useCallback(async () => {
-    if (textInput.length < 20) {
-      alert("Paste more text — we need at least a few lines to analyze.");
+  const handleTextScan = useCallback(async (text?: string, ctx?: string) => {
+    const t = text || textInput;
+    if (t.length < 20) {
+      alert("Please provide more details — we need at least a few lines to analyze.");
       return;
     }
     setLoading(true);
-    setLoadingMsg("Analyzing your document...");
+    setLoadingMsg("Finding violations & calculating what you're owed...");
     try {
-      const result = await scanText(textInput, scanContext, country);
+      const result = await scanText(t, ctx || scanContext, country);
       setScanResult(result);
       addScanToHistory(result);
       refreshLocal();
@@ -194,6 +359,15 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
       alert(err instanceof Error ? err.message : "Scan failed");
     } finally { setLoading(false); }
   }, [textInput, scanContext, refreshLocal, country]);
+
+  const handleQuickScan = useCallback(async () => {
+    if (!selectedIssue) return;
+    let prompt = selectedIssue.prompt;
+    for (const [key, val] of Object.entries(quickFields)) {
+      prompt = prompt.replace(`{${key}}`, val || "[not provided]");
+    }
+    await handleTextScan(prompt, selectedIssue.context);
+  }, [selectedIssue, quickFields, handleTextScan]);
 
   const handleGenerateDispute = useCallback(async () => {
     if (!scanResult?.scan_id) return;
@@ -262,36 +436,22 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
   const downloadPDF = (title: string, body: string, filename: string) => {
     const doc = new jsPDF();
     const pageW = doc.internal.pageSize.getWidth();
-    // Header
-    doc.setFontSize(8);
-    doc.setTextColor(150);
+    doc.setFontSize(8); doc.setTextColor(150);
     doc.text("Generated by GhostLaw — ghostlaw.app", pageW / 2, 12, { align: "center" });
-    doc.setDrawColor(200);
-    doc.line(15, 16, pageW - 15, 16);
-    // Title
-    doc.setFontSize(18);
-    doc.setTextColor(30);
-    doc.text(title, 15, 28);
-    // Date
-    doc.setFontSize(9);
-    doc.setTextColor(120);
+    doc.setDrawColor(200); doc.line(15, 16, pageW - 15, 16);
+    doc.setFontSize(18); doc.setTextColor(30); doc.text(title, 15, 28);
+    doc.setFontSize(9); doc.setTextColor(120);
     doc.text(`Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, 15, 35);
-    // Body
-    doc.setFontSize(11);
-    doc.setTextColor(40);
+    doc.setFontSize(11); doc.setTextColor(40);
     const lines = doc.splitTextToSize(body, pageW - 30);
     let y = 44;
     for (const line of lines) {
       if (y > 275) { doc.addPage(); y = 20; }
-      doc.text(line, 15, y);
-      y += 6;
+      doc.text(line, 15, y); y += 6;
     }
-    // Footer
     const pages = doc.getNumberOfPages();
     for (let i = 1; i <= pages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(170);
+      doc.setPage(i); doc.setFontSize(8); doc.setTextColor(170);
       doc.text(`Page ${i} of ${pages}`, pageW / 2, 290, { align: "center" });
     }
     doc.save(filename);
@@ -317,310 +477,334 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
     setOutcomeOpen(false);
   };
 
-  const applyTemplate = (t: QuickTemplate) => {
-    setTextInput(t.prompt);
-    setScanContext(t.context);
-    setActiveTemplate(t.label);
-  };
+  // suppress unused-var lint for downloadText
+  void downloadText;
 
   // ── Font helpers ───────────────────────────────────────────
   const mono = "var(--font-ibm-plex-mono), monospace";
   const sans = "var(--font-ibm-plex-sans), sans-serif";
   const display = "var(--font-bebas-neue), sans-serif";
 
-  // ── Nav items ──────────────────────────────────────────────
-  const navItems: { id: Tab; label: string; icon: string; disabled?: boolean }[] = [
-    { id: "scan", label: "Scanner", icon: "⌕" },
-    { id: "results", label: "Results", icon: "◉", disabled: !scanResult },
-    { id: "dispute", label: "Dispute", icon: "✉", disabled: !scanResult },
-    { id: "call", label: "Call Script", icon: "☎", disabled: !scanResult },
-    { id: "complaint", label: "File Complaint", icon: "⚖", disabled: !scanResult },
-    { id: "history", label: "History", icon: "▤" },
+  // ── Flow step labels ───────────────────────────────────────
+  const flowSteps = [
+    { id: "home" as Tab, label: "Report", icon: "⌕", desc: "Tell us what happened" },
+    { id: "results" as Tab, label: "Analysis", icon: "◉", desc: "See what you're owed" },
+    { id: "dispute" as Tab, label: "Letter", icon: "✉", desc: "Send a dispute letter" },
+    { id: "call" as Tab, label: "Call", icon: "☎", desc: "Get a call script" },
+    { id: "complaint" as Tab, label: "Escalate", icon: "⚖", desc: "File with government" },
   ];
 
   return (
-    <div className="min-h-screen flex">
-      {/* ═══ SIDEBAR ═══════════════════════════════════════ */}
-      <aside
-        className="hidden md:flex w-56 flex-col flex-shrink-0"
-        style={{ background: "var(--obsidian)", borderRight: "1px solid var(--border)" }}
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--black)" }}>
+      {/* ═══ TOP BAR ══════════════════════════════════════ */}
+      <header
+        className="flex items-center justify-between px-4 md:px-6 py-3 flex-shrink-0"
+        style={{ background: "var(--obsidian)", borderBottom: "1px solid var(--border)", zIndex: 40 }}
       >
-        {/* Logo */}
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-4">
+          <button onClick={() => setActiveTab("home")} className="flex items-center gap-2 hover:opacity-80 transition-opacity" style={{ cursor: "pointer" }}>
             <span style={{ fontFamily: display, fontSize: 22, letterSpacing: "0.05em" }}>
               Ghost<span style={{ color: "var(--red)" }}>Law</span>
             </span>
             <span className="logo-dot" />
-          </div>
-        </div>
+          </button>
 
-        {/* Country toggle */}
-        <div className="px-3 py-2.5" style={{ borderBottom: "1px solid var(--border)" }}>
-          <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 6 }}>Region</div>
-          <div className="flex gap-1">
-            {([["US", "🇺🇸", "USA"], ["NG", "🇳🇬", "Nigeria"]] as const).map(([code, flag, label]) => (
+          {/* Country toggle */}
+          <div className="flex gap-0.5 ml-2" style={{ border: "1px solid var(--border)" }}>
+            {([["US", "🇺🇸"], ["NG", "🇳🇬"]] as const).map(([code, flag]) => (
               <button
                 key={code}
                 onClick={() => switchCountry(code)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 transition-all"
+                className="px-2.5 py-1.5 transition-all"
                 style={{
-                  fontFamily: mono,
-                  fontSize: 11,
-                  fontWeight: country === code ? 600 : 400,
+                  fontFamily: mono, fontSize: 11,
                   color: country === code ? "var(--white)" : "var(--muted)",
                   background: country === code ? "var(--red-dim)" : "transparent",
-                  border: `1px solid ${country === code ? "rgba(232,25,44,0.3)" : "var(--border)"}`,
                 }}
               >
-                <span style={{ fontSize: 14 }}>{flag}</span>
-                {label}
+                {flag}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-auto">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.id)}
-              disabled={item.disabled}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 transition-all"
-              style={{
-                fontFamily: mono,
-                fontSize: 12,
-                letterSpacing: "0.04em",
-                color: activeTab === item.id ? "var(--red)" : "var(--muted)",
-                background: activeTab === item.id ? "var(--red-dim)" : "transparent",
-                borderLeft: activeTab === item.id ? "2px solid var(--red)" : "2px solid transparent",
-                opacity: item.disabled ? 0.2 : 1,
-                cursor: item.disabled ? "not-allowed" : "pointer",
-              }}
-            >
+        {/* Right side */}
+        <div className="flex items-center gap-3">
+          {localStats.total_scans > 0 && (
+            <button onClick={() => navigate("history")} className="hidden md:flex items-center gap-2 px-3 py-1.5 transition-colors hover:bg-[var(--surface)]" style={{ border: "1px solid var(--border)" }}>
+              <span style={{ fontFamily: display, fontSize: 16, color: "#41e866" }}>{currencySymbol}{(localStats.confirmed_savings || localStats.estimated_savings).toLocaleString()}</span>
+              <span style={{ fontFamily: mono, fontSize: 9, color: "var(--muted)", textTransform: "uppercase" }}>saved</span>
+            </button>
+          )}
+          <button
+            onClick={() => navigate("history")}
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 transition-colors hover:bg-[var(--surface)]"
+            style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", border: "1px solid var(--border)" }}
+          >
+            ▤ History
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 flex items-center justify-center" style={{ background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.3)", fontFamily: mono, fontSize: 11, color: "var(--red)", fontWeight: 600 }}>
+              {user?.name?.[0]?.toUpperCase() || "U"}
+            </div>
+            <span className="hidden md:block" style={{ fontFamily: mono, fontSize: 11 }}>{user?.name || "User"}</span>
+          </div>
+          <button onClick={handleLogout} style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", cursor: "pointer" }}>↗ out</button>
+          {/* Mobile hamburger */}
+          <button className="md:hidden" onClick={() => setMobileNav(!mobileNav)} style={{ fontFamily: mono, fontSize: 18, color: "var(--muted2)" }}>
+            {mobileNav ? "✕" : "☰"}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile nav dropdown */}
+      {mobileNav && (
+        <div className="md:hidden px-4 py-3 space-y-1" style={{ background: "var(--obsidian)", borderBottom: "1px solid var(--border)", zIndex: 39 }}>
+          {[
+            { id: "home" as Tab, icon: "⌕", label: "Report Issue" },
+            { id: "scan" as Tab, icon: "📋", label: "Paste Document" },
+            { id: "results" as Tab, icon: "◉", label: "Results" },
+            { id: "history" as Tab, icon: "▤", label: "History" },
+          ].map(item => (
+            <button key={item.id} onClick={() => navigate(item.id)} className="w-full flex items-center gap-2.5 px-3 py-2.5" style={{ fontFamily: mono, fontSize: 12, color: activeTab === item.id ? "var(--red)" : "var(--muted)", background: activeTab === item.id ? "var(--red-dim)" : "transparent" }}>
               <span style={{ fontSize: 14, width: 18, textAlign: "center" }}>{item.icon}</span>
               {item.label}
             </button>
           ))}
-        </nav>
-
-        {/* Stats */}
-        {localStats.total_scans > 0 && (
-          <div className="px-3 py-3" style={{ borderTop: "1px solid var(--border)" }}>
-            <div className="grid grid-cols-2 gap-1.5">
-              <div className="text-center p-2" style={{ background: "var(--surface)" }}>
-                <p style={{ fontFamily: display, fontSize: 22, color: "var(--white)" }}>{localStats.total_scans}</p>
-                <p style={{ fontFamily: mono, fontSize: 9, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>scans</p>
-              </div>
-              <div className="text-center p-2" style={{ background: "var(--surface)" }}>
-                <p style={{ fontFamily: display, fontSize: 22, color: "var(--red)" }}>{currencySymbol}{localStats.confirmed_savings || localStats.estimated_savings}</p>
-                <p style={{ fontFamily: mono, fontSize: 9, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{localStats.confirmed_savings > 0 ? "saved" : "potential"}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* User */}
-        <div className="px-3 py-3" style={{ borderTop: "1px solid var(--border)" }}>
-          <div className="flex items-center gap-2.5 px-2 mb-2">
-            <div className="w-7 h-7 flex items-center justify-center" style={{ background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.3)", fontFamily: mono, fontSize: 11, color: "var(--red)", fontWeight: 600 }}>
-              {user?.name?.[0]?.toUpperCase() || "U"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p style={{ fontFamily: mono, fontSize: 11, fontWeight: 500 }} className="truncate">{user?.name || "User"}</p>
-              <p style={{ fontFamily: mono, fontSize: 9, color: "var(--muted)" }} className="truncate">{user?.email || ""}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-1.5 transition-colors hover:bg-[var(--red-dim)]"
-            style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}
-          >
-            ↗ Sign out
-          </button>
         </div>
-      </aside>
+      )}
 
-      {/* ═══ MOBILE HEADER ═════════════════════════════════ */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40" style={{ background: "rgba(6,6,8,0.95)", backdropFilter: "blur(10px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="flex items-center justify-between px-4 py-3">
-          <span style={{ fontFamily: display, fontSize: 20, letterSpacing: "0.05em" }}>
-            Ghost<span style={{ color: "var(--red)" }}>Law</span>
-          </span>
-          <button onClick={() => setMobileNav(!mobileNav)} style={{ fontFamily: mono, fontSize: 18, color: "var(--muted2)" }}>
-            {mobileNav ? "✕" : "☰"}
-          </button>
-        </div>
-        {mobileNav && (
-          <div className="px-3 pb-3 space-y-0.5" style={{ background: "var(--obsidian)", borderBottom: "1px solid var(--border)" }}>
-            {/* Mobile country toggle */}
-            <div className="flex gap-1 mb-2">
-              {([["US", "🇺🇸", "USA"], ["NG", "🇳🇬", "Nigeria"]] as const).map(([code, flag, label]) => (
-                <button
-                  key={code}
-                  onClick={() => switchCountry(code)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2"
-                  style={{
-                    fontFamily: mono,
-                    fontSize: 11,
-                    fontWeight: country === code ? 600 : 400,
-                    color: country === code ? "var(--white)" : "var(--muted)",
-                    background: country === code ? "var(--red-dim)" : "transparent",
-                    border: `1px solid ${country === code ? "rgba(232,25,44,0.3)" : "var(--border)"}`,
-                  }}
-                >
-                  <span style={{ fontSize: 14 }}>{flag}</span>
-                  {label}
-                </button>
-              ))}
-            </div>
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => navigate(item.id)}
-                disabled={item.disabled}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5"
-                style={{
-                  fontFamily: mono, fontSize: 12,
-                  color: activeTab === item.id ? "var(--red)" : "var(--muted)",
-                  background: activeTab === item.id ? "var(--red-dim)" : "transparent",
-                  opacity: item.disabled ? 0.2 : 1,
-                }}
-              >
-                <span style={{ fontSize: 14, width: 18, textAlign: "center" }}>{item.icon}</span>
-                {item.label}
-              </button>
-            ))}
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5"
-              style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)" }}
-            >
-              ↗ Sign out
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* ═══ MAIN CONTENT ══════════════════════════════════ */}
-      <main className="flex-1 overflow-auto p-4 pt-16 md:p-8 md:pt-8" style={{ background: "var(--black)" }}>
-        {/* Loading overlay */}
-        {loading && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}>
-            <div className="text-center p-8" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-              <div className="spinner-sm mx-auto mb-4" style={{ width: 24, height: 24, borderWidth: 2 }} />
-              <p style={{ fontFamily: mono, fontSize: 13, fontWeight: 500 }}>{loadingMsg}</p>
-              <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginTop: 4 }}>Usually takes 5-15 seconds</p>
-            </div>
-          </div>
-        )}
-
-        {/* Progress pipeline — shows when a scan exists */}
-        {scanResult && (
-          <div className="mb-6 hidden md:block">
-            <div className="flex items-center gap-0 max-w-4xl mx-auto" style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              {[
-                { id: "scan" as Tab, label: "Scanned", done: !!scanResult },
-                { id: "results" as Tab, label: "Issues Found", done: !!scanResult?.issues_found },
-                { id: "dispute" as Tab, label: "Letter Sent", done: !!disputeResult },
-                { id: "call" as Tab, label: "Call Made", done: !!callResult },
-                { id: "complaint" as Tab, label: "Filed", done: !!complaintResult },
-              ].map((step, i) => (
+      {/* ═══ FLOW PROGRESS BAR ════════════════════════════ */}
+      {scanResult && activeTab !== "home" && activeTab !== "history" && activeTab !== "scan" && (
+        <div className="px-4 md:px-8 py-3 flex-shrink-0" style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
+          <div className="flex items-center gap-0 max-w-4xl mx-auto" style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            {flowSteps.map((step, i) => {
+              const done = step.id === "home" ? !!scanResult
+                : step.id === "results" ? !!scanResult?.issues_found
+                : step.id === "dispute" ? !!disputeResult
+                : step.id === "call" ? !!callResult
+                : !!complaintResult;
+              const active = activeTab === step.id;
+              return (
                 <div key={step.id} className="flex items-center flex-1">
                   <button
                     onClick={() => navigate(step.id)}
-                    className="flex items-center gap-1.5 transition-colors"
-                    style={{ color: step.done ? "#41e866" : activeTab === step.id ? "var(--red)" : "var(--muted)", cursor: "pointer" }}
+                    className="flex items-center gap-1.5 transition-colors group"
+                    style={{ color: done ? "#41e866" : active ? "var(--red)" : "var(--muted)", cursor: "pointer" }}
+                    title={step.desc}
                   >
                     <span style={{
-                      display: "inline-flex", width: 18, height: 18, alignItems: "center", justifyContent: "center",
-                      border: `1.5px solid ${step.done ? "#41e866" : activeTab === step.id ? "var(--red)" : "var(--border)"}`,
-                      background: step.done ? "rgba(65,232,102,0.1)" : "transparent",
-                      fontSize: 10,
+                      display: "inline-flex", width: 20, height: 20, alignItems: "center", justifyContent: "center",
+                      border: `1.5px solid ${done ? "#41e866" : active ? "var(--red)" : "var(--border)"}`,
+                      background: done ? "rgba(65,232,102,0.1)" : active ? "var(--red-dim)" : "transparent",
+                      fontSize: 10, fontWeight: 600,
                     }}>
-                      {step.done ? "✓" : i + 1}
+                      {done ? "✓" : i + 1}
                     </span>
-                    {step.label}
+                    <span className="hidden md:inline">{step.label}</span>
                   </button>
-                  {i < 4 && (
-                    <div className="flex-1 mx-2" style={{ height: 1, background: step.done ? "rgba(65,232,102,0.3)" : "var(--border)" }} />
+                  {i < flowSteps.length - 1 && (
+                    <div className="flex-1 mx-2" style={{ height: 1, background: done ? "rgba(65,232,102,0.3)" : "var(--border)" }} />
                   )}
                 </div>
-              ))}
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ MAIN CONTENT ══════════════════════════════════ */}
+      <main className="flex-1 overflow-auto p-4 md:p-8">
+        {/* Loading overlay with legal tips */}
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}>
+            <div className="text-center p-8 max-w-md" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div className="spinner-sm mx-auto mb-4" style={{ width: 28, height: 28, borderWidth: 2 }} />
+              <p style={{ fontFamily: mono, fontSize: 13, fontWeight: 500 }}>{loadingMsg}</p>
+              <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginTop: 4 }}>Usually takes 5-15 seconds</p>
+              <div className="mt-5 p-3" style={{ background: "var(--surface2)", border: "1px solid var(--border)", minHeight: 48 }}>
+                <p style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 4 }}>💡 Did you know?</p>
+                <p style={{ fontFamily: sans, fontSize: 11, color: "var(--muted2)", lineHeight: 1.6, transition: "opacity 0.5s" }}>{tips[tipIndex]}</p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* ═══ SCAN TAB ════════════════════════════════════ */}
+        {/* ═══ HOME TAB — QUICK ISSUE PICKER ═══════════════ */}
+        {activeTab === "home" && (
+          <div className="max-w-4xl mx-auto">
+            {/* Hero */}
+            <div className="text-center mb-8 pt-4">
+              <h1 style={{ fontFamily: display, fontSize: "clamp(40px, 6vw, 64px)", lineHeight: 0.95, marginBottom: 12 }}>
+                WHAT <span style={{ color: "var(--red)" }}>HAPPENED</span>?
+              </h1>
+              <p style={{ fontFamily: sans, fontSize: 14, color: "var(--muted2)", maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>
+                {country === "NG"
+                  ? "Tap your issue below. Answer 2-3 quick questions. We'll find every violation of Nigerian law and tell you exactly what you're owed."
+                  : "Tap your issue below. Answer 2-3 quick questions. We'll find every violation and tell you exactly what you're owed."
+                }
+              </p>
+            </div>
+
+            {/* Issue Grid */}
+            {!selectedIssue ? (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                  {(country === "NG" ? NG_ISSUES : US_ISSUES).map((issue) => (
+                    <button
+                      key={issue.id}
+                      onClick={() => { setSelectedIssue(issue); setQuickFields({}); }}
+                      className="text-left p-5 transition-all hover:scale-[1.02] group"
+                      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+                    >
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>{issue.icon}</div>
+                      <div style={{ fontFamily: mono, fontSize: 13, fontWeight: 600, marginBottom: 4, color: "var(--white)" }}>{issue.label}</div>
+                      <div style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)", lineHeight: 1.5 }}>{issue.desc}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Alternative actions */}
+                <div className="flex flex-col md:flex-row gap-3">
+                  <button
+                    onClick={() => setActiveTab("scan")}
+                    className="flex-1 p-4 flex items-center gap-3 transition-all hover:bg-[var(--surface2)]"
+                    style={{ border: "1px dashed var(--border)" }}
+                  >
+                    <span style={{ fontSize: 20 }}>📋</span>
+                    <div className="text-left">
+                      <div style={{ fontFamily: mono, fontSize: 12, fontWeight: 600 }}>Paste a document instead</div>
+                      <div style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)" }}>Bills, contracts, receipts — paste the full text</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    className="flex-1 p-4 flex items-center gap-3 transition-all hover:bg-[var(--surface2)]"
+                    style={{ border: "1px dashed var(--border)" }}
+                  >
+                    <span style={{ fontSize: 20 }}>📷</span>
+                    <div className="text-left">
+                      <div style={{ fontFamily: mono, fontSize: 12, fontWeight: 600 }}>Upload a photo or PDF</div>
+                      <div style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)" }}>Screenshot a bill, snap a receipt — AI reads it</div>
+                    </div>
+                    <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }} />
+                  </button>
+                </div>
+
+                {/* Stats card at bottom */}
+                {localStats.total_scans > 0 && (
+                  <button onClick={() => navigate("history")} className="w-full mt-6 p-4 flex items-center justify-between transition-colors hover:bg-[var(--surface2)]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                    <div className="flex items-center gap-3">
+                      <span style={{ fontFamily: display, fontSize: 32, color: "#41e866" }}>{currencySymbol}{(localStats.confirmed_savings || localStats.estimated_savings).toLocaleString()}</span>
+                      <div className="text-left">
+                        <div style={{ fontFamily: mono, fontSize: 11, fontWeight: 600 }}>{localStats.confirmed_savings > 0 ? "Confirmed saved" : "Potential savings found"}</div>
+                        <div style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)" }}>{localStats.total_scans} scans · {localStats.total_disputes} disputes</div>
+                      </div>
+                    </div>
+                    <span style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)" }}>View history →</span>
+                  </button>
+                )}
+
+                {/* ── Did You Know? ─────────────────────── */}
+                <div className="mt-4 p-4 flex items-start gap-3" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>💡</span>
+                  <div>
+                    <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 4 }}>Did you know?</div>
+                    <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>{tips[tipIndex % tips.length]}</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* ── Quick Issue Form ─────────────────────── */
+              <div className="max-w-lg mx-auto">
+                <button
+                  onClick={() => { setSelectedIssue(null); setQuickFields({}); }}
+                  className="flex items-center gap-2 mb-6 transition-colors hover:text-[var(--red)]"
+                  style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", cursor: "pointer" }}
+                >
+                  ← Back to issues
+                </button>
+
+                <div className="card-surface p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <span style={{ fontSize: 32 }}>{selectedIssue.icon}</span>
+                    <div>
+                      <h2 style={{ fontFamily: display, fontSize: 28, lineHeight: 1 }}>{selectedIssue.label}</h2>
+                      <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)" }}>{selectedIssue.desc}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {selectedIssue.placeholders.map((p, i) => (
+                      <div key={p.field}>
+                        <label style={{ fontFamily: mono, fontSize: 11, fontWeight: 600, color: "var(--muted2)", display: "block", marginBottom: 6 }}>
+                          <span style={{ color: "var(--red)", marginRight: 4 }}>{i + 1}.</span>
+                          {p.label}
+                        </label>
+                        <input
+                          type="text"
+                          value={quickFields[p.field] || ""}
+                          onChange={(e) => setQuickFields({ ...quickFields, [p.field]: e.target.value })}
+                          placeholder={p.placeholder}
+                          className="input-ghost"
+                          style={{ padding: "0.75rem 1rem" }}
+                          autoFocus={i === 0}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleQuickScan}
+                    disabled={Object.values(quickFields).filter(Boolean).length < 2}
+                    className="btn-primary w-full py-4 mt-6 flex items-center justify-center gap-2"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+                    Find What I&apos;m Owed
+                  </button>
+                  <p style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)", textAlign: "center", marginTop: 8 }}>
+                    Takes ~10 seconds · AI analyzes against {country === "NG" ? "Nigerian" : "US"} law
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ SCAN TAB (Full paste) ═══════════════════════ */}
         {activeTab === "scan" && (
           <div className="max-w-4xl mx-auto">
+            <button onClick={() => setActiveTab("home")} className="flex items-center gap-2 mb-4 transition-colors hover:text-[var(--red)]" style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", cursor: "pointer" }}>
+              ← Back
+            </button>
+
             <div className="scanner-chrome">
               <div className="scanner-header-bar">
-                <div className="dot-group">
-                  <div className="dot-r" />
-                  <div className="dot-y" />
-                  <div className="dot-g" />
-                </div>
-                <div style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", letterSpacing: "0.05em" }}>
-                  ghostlaw_scanner — ready
-                </div>
-                <div className="status-indicator">
-                  <div className="status-dot" />
-                  AI Active
-                </div>
+                <div className="dot-group"><div className="dot-r" /><div className="dot-y" /><div className="dot-g" /></div>
+                <div style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", letterSpacing: "0.05em" }}>ghostlaw_scanner — paste or type</div>
+                <div className="status-indicator"><div className="status-dot" /> AI Active</div>
               </div>
 
               <div className="p-6 space-y-5">
-                {/* Templates */}
-                <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
-                      Quick Start {country === "NG" ? "🇳🇬" : "🇺🇸"}
-                    </div>
-                    <button
-                      onClick={() => switchCountry(country === "US" ? "NG" : "US")}
-                      style={{ fontFamily: mono, fontSize: 10, color: "var(--red)", cursor: "pointer", background: "none", border: "none" }}
-                    >
-                      Switch to {country === "US" ? "Nigeria 🇳🇬" : "USA 🇺🇸"}
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(country === "NG" ? NG_TEMPLATES : TEMPLATES).map((t) => (
-                      <button
-                        key={t.label}
-                        onClick={() => applyTemplate(t)}
-                        className={`template-chip ${activeTemplate === t.label ? "active" : ""}`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Textarea */}
                 <textarea
                   value={textInput}
-                  onChange={(e) => { setTextInput(e.target.value); setActiveTemplate(null); }}
-                  placeholder={country === "NG" 
-                    ? `Paste your document, bill, or message here...\n\nOr describe the situation:\n'GTBank debited me ₦85,000 for a transfer that \nnever reached the recipient. It's been 5 days.'\n\nGhostLaw will scan for:\n• Hidden fees & overcharges\n• Illegal or unenforceable clauses\n• Violations of Nigerian consumer protection law\n• Your rights and dispute options`
-                    : `Paste your document, bill, or contract here...\n\nOr describe the situation:\n'My medical bill has a $450 charge for a blood test \nthat Medicare covers. The hospital is saying I owe it.'\n\nGhostLaw will scan for:\n• Hidden fees & overcharges\n• Illegal or unenforceable clauses\n• Violations of consumer protection law\n• Your rights and dispute options`}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  placeholder={country === "NG"
+                    ? `Paste your document, bill, or message here...\n\nExamples:\n• Bank alert: "GTBank debited me ₦85,000 for a transfer that never reached the recipient"\n• Light bill: paste the full bill text\n• Loan app message: copy their threatening SMS\n• Landlord notice: paste the letter`
+                    : `Paste your document, bill, or contract here...\n\nExamples:\n• Medical bill: paste the itemized charges\n• Lease: paste the clause you think is unfair\n• Insurance denial: paste the denial letter\n• Phone bill: paste the charges breakdown`}
                   className="input-ghost resize-none w-full"
-                  style={{ minHeight: 260 }}
+                  style={{ minHeight: 240 }}
                 />
 
-                {/* Context */}
                 <div>
                   <label style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", display: "block", marginBottom: 6 }}>
-                    Additional context (optional)
+                    Extra context (optional)
                   </label>
                   <input
-                    type="text"
-                    value={scanContext}
+                    type="text" value={scanContext}
                     onChange={(e) => setScanContext(e.target.value)}
-                    placeholder={country === "NG" ? "e.g., 'I already complained to the bank' or 'No meter installed'" : "e.g., 'I only stayed 2 hours' or 'I already paid $500'"}
-                    className="input-ghost"
-                    style={{ padding: "0.75rem 1rem" }}
+                    placeholder={country === "NG" ? "e.g., 'Already complained to the bank' or 'No meter installed'" : "e.g., 'I only stayed 2 hours' or 'I already paid $500'"}
+                    className="input-ghost" style={{ padding: "0.75rem 1rem" }}
                   />
                 </div>
 
@@ -629,103 +813,40 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   onClick={() => fileRef.current?.click()}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileUpload(f); }}
-                  className="p-6 text-center cursor-pointer transition-colors hover:bg-[var(--surface2)]"
+                  className="p-5 text-center cursor-pointer transition-colors hover:bg-[var(--surface2)]"
                   style={{ border: "1px dashed var(--border)" }}
                 >
-                  <p style={{ fontFamily: mono, fontSize: 12, color: "var(--muted2)" }}>
-                    Or drop a photo / PDF here
-                  </p>
-                  <p style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", marginTop: 4 }}>
-                    JPG, PNG, WebP, or PDF · Max 10MB
-                  </p>
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,application/pdf"
-                    className="hidden"
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }}
-                  />
+                  <p style={{ fontFamily: mono, fontSize: 12, color: "var(--muted2)" }}>Or drop a photo / PDF here</p>
+                  <p style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", marginTop: 4 }}>JPG, PNG, WebP, or PDF · Max 10MB</p>
+                  <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }} />
                 </div>
 
-                {/* Scan button */}
-                <button
-                  onClick={handleTextScan}
-                  disabled={textInput.length < 20}
-                  className="btn-primary w-full flex items-center justify-center gap-2.5 py-4"
-                >
+                <button onClick={() => handleTextScan()} disabled={textInput.length < 20} className="btn-primary w-full flex items-center justify-center gap-2.5 py-4">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-                  Analyze & Generate Dispute
+                  Find What I&apos;m Owed
                 </button>
               </div>
             </div>
-
-            {/* How it works (if no scans) */}
-            {localStats.total_scans === 0 && (
-              <div className="mt-8 space-y-4">
-                {/* Welcome banner */}
-                <div className="p-6" style={{ background: "var(--red-dim)", border: "1px solid rgba(232,25,44,0.2)" }}>
-                  <div className="flex items-start gap-4">
-                    <span style={{ fontSize: 32 }}>👻</span>
-                    <div>
-                      <h3 style={{ fontFamily: display, fontSize: 24, lineHeight: 1, marginBottom: 8 }}>
-                        Welcome to Ghost<span style={{ color: "var(--red)" }}>Law</span>
-                      </h3>
-                      <p style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.7, marginBottom: 10 }}>
-                        {country === "NG"
-                          ? "GhostLaw fights for you. Paste your bank alert, electricity bill, loan app message, or any document — and the AI will find every violation of Nigerian consumer protection law and generate weapons to fight back."
-                          : "GhostLaw fights for you. Paste your medical bill, lease, phone contract, or any document — and the AI will find every violation of consumer protection law and generate weapons to fight back."
-                        }
-                      </p>
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1.5" style={{ fontFamily: mono, fontSize: 10, color: "#41e866" }}>
-                          <span className="w-1.5 h-1.5 bg-[#41e866] rounded-full" /> 100% Free
-                        </span>
-                        <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)" }}>·</span>
-                        <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted2)" }}>
-                          {country === "NG" ? "🇳🇬 Nigeria mode active — citing FCCPA, CBN, NCC, NERC, NDPA" : "🇺🇸 USA mode active — citing FDCPA, FCRA, FCBA, No Surprises Act"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick steps */}
-                <div style={{ background: "var(--surface)", border: "1px solid var(--border)", padding: "1.5rem" }}>
-                  <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--red)", marginBottom: 16 }}>
-                    How it works
-                  </div>
-                  <div className="space-y-4">
-                    {(country === "NG" ? [
-                      { n: "01", t: "Pick a template or paste your document", d: "Bank alerts, NEPA bills, loan app messages, DSTV issues, landlord notices — anything you need to fight." },
-                      { n: "02", t: "AI scans against Nigerian law", d: "We check for violations of FCCPA, CBN Framework, NCC Code, NERC Standards, NDPA 2023, and more." },
-                      { n: "03", t: "Get your weapons", d: "Dispute letter, call script, and regulatory complaint to FCCPC, CBN, NCC, or NERC — ready to send." },
-                      { n: "04", t: "Send via Email or WhatsApp", d: "Share via WhatsApp, download as PDF, or send by email. Track outcomes in your History." },
-                    ] : [
-                      { n: "01", t: "Paste or upload any document", d: "Medical bills, leases, phone contracts, insurance claims — anything you think might be screwing you over." },
-                      { n: "02", t: "AI finds the problems", d: "We check for overcharges, hidden fees, illegal clauses, and violations of your consumer rights." },
-                      { n: "03", t: "Get your weapons", d: "Dispute letter, call script, and regulatory complaint to CFPB, FCC, FTC — all ready to send." },
-                      { n: "04", t: "Track your wins", d: "Mark outcomes and see how much you've saved over time." },
-                    ]).map((s) => (
-                    <div key={s.n} className="flex items-start gap-4">
-                      <span style={{ fontFamily: display, fontSize: 28, lineHeight: 1, color: "rgba(255,255,255,0.05)", minWidth: 32 }}>{s.n}</span>
-                      <div>
-                        <p style={{ fontFamily: mono, fontSize: 13, fontWeight: 600 }}>{s.t}</p>
-                        <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", lineHeight: 1.6 }}>{s.d}</p>
-                      </div>
-                    </div>
-                  ))}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
         {/* ═══ RESULTS TAB ═════════════════════════════════ */}
         {activeTab === "results" && scanResult && (
           <div className="max-w-4xl mx-auto space-y-4">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4">
+            {/* Hero savings banner */}
+            {(scanResult.total_potential_savings as number) > 0 ? (
+              <div className="text-center py-6 px-4" style={{ background: "linear-gradient(135deg, rgba(65,232,102,0.06), rgba(65,232,102,0.02))", border: "1px solid rgba(65,232,102,0.15)" }}>
+                <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#41e866", marginBottom: 4 }}>
+                  {country === "NG" ? "You may be owed" : "You could save"}
+                </div>
+                <div style={{ fontFamily: display, fontSize: "clamp(48px, 8vw, 80px)", color: "#41e866", lineHeight: 1 }}>
+                  {currencySymbol}{(scanResult.total_potential_savings as number).toLocaleString()}
+                </div>
+                <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 8 }}>
+                  Based on {(scanResult.issues_found as Array<ApiResult>)?.length || 0} issues found in your {(scanResult.document_type as string)?.replace(/_/g, " ")}
+                </p>
+              </div>
+            ) : (
               <div>
                 <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--red)", marginBottom: 6 }}>
                   <span className="inline-block w-4 h-[1px] bg-[var(--red)] mr-2 align-middle" />
@@ -738,7 +859,11 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   {(scanResult.document_type as string)?.replace(/_/g, " ")} · {(scanResult.issues_found as Array<ApiResult>)?.length || 0} issues detected
                 </p>
               </div>
-              {scanResult.risk_level && (
+            )}
+
+            {/* Risk badge */}
+            {scanResult.risk_level && (
+              <div className="flex items-center gap-3">
                 <span className={`badge ${
                   scanResult.risk_level === "critical" ? "badge-critical"
                   : scanResult.risk_level === "high" ? "badge-warn"
@@ -747,21 +872,70 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 }`}>
                   {scanResult.risk_level as string} risk
                 </span>
-              )}
-            </div>
+                <span style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)" }}>
+                  {scanResult.risk_level === "critical" ? "This needs immediate action" : scanResult.risk_level === "high" ? "Strong case — take action soon" : scanResult.risk_level === "medium" ? "Worth disputing" : "Minor issues found"}
+                </span>
+              </div>
+            )}
 
-            {/* Summary */}
-            {scanResult.summary && (
+            {/* ── Case Strength Meter ───────────────────── */}
+            {(scanResult.case_strength as number) > 0 && (
               <div className="card-surface p-5">
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 8 }}>Summary</div>
-                <p style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.7 }}>{scanResult.summary as string}</p>
+                <div className="flex items-center justify-between mb-3">
+                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>Case Strength</div>
+                  <div style={{ fontFamily: display, fontSize: 32, color: (scanResult.case_strength as number) >= 70 ? "#41e866" : (scanResult.case_strength as number) >= 40 ? "#e8c541" : "var(--red)" }}>
+                    {scanResult.case_strength as number}<span style={{ fontSize: 16, color: "var(--muted)" }}>/100</span>
+                  </div>
+                </div>
+                <div style={{ background: "var(--surface2)", height: 8, width: "100%", position: "relative", overflow: "hidden" }}>
+                  <div style={{
+                    height: "100%",
+                    width: `${scanResult.case_strength as number}%`,
+                    background: (scanResult.case_strength as number) >= 70 ? "linear-gradient(90deg, #41e866, #2dd657)" : (scanResult.case_strength as number) >= 40 ? "linear-gradient(90deg, #e8c541, #d4a526)" : "linear-gradient(90deg, var(--red), #ff4d5e)",
+                    transition: "width 1.5s ease-out",
+                  }} />
+                </div>
+                <p style={{ fontFamily: sans, fontSize: 11, color: "var(--muted2)", marginTop: 8 }}>
+                  {(scanResult.case_strength as number) >= 80 ? "🔥 Extremely strong case — you should absolutely fight this"
+                    : (scanResult.case_strength as number) >= 60 ? "💪 Strong case — good chance of winning if you take action"
+                    : (scanResult.case_strength as number) >= 40 ? "📋 Moderate case — worth pursuing, especially with a dispute letter"
+                    : "📝 This may be harder to win, but a formal complaint still puts pressure on them"}
+                </p>
+              </div>
+            )}
+
+            {/* ── Urgency / Deadline Badge ──────────────── */}
+            {(scanResult.deadline_days || scanResult.urgency) && (
+              <div className="flex flex-wrap gap-2">
+                {scanResult.urgency === "immediate" && (
+                  <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "rgba(232,25,44,0.08)", border: "1px solid rgba(232,25,44,0.2)" }}>
+                    <span style={{ fontSize: 14 }}>🚨</span>
+                    <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 600, color: "var(--red)" }}>ACT NOW — Time-sensitive deadline</span>
+                  </div>
+                )}
+                {scanResult.urgency === "soon" && (
+                  <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "rgba(232,197,65,0.08)", border: "1px solid rgba(232,197,65,0.2)" }}>
+                    <span style={{ fontSize: 14 }}>⏰</span>
+                    <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 600, color: "#e8c541" }}>Take action within 1-2 weeks</span>
+                  </div>
+                )}
+                {(scanResult.deadline_days as number) > 0 && (
+                  <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "rgba(65,120,232,0.08)", border: "1px solid rgba(65,120,232,0.2)" }}>
+                    <span style={{ fontSize: 14 }}>📅</span>
+                    <span style={{ fontFamily: mono, fontSize: 11, color: "#4178e8" }}>
+                      {country === "NG"
+                        ? `Company must respond within ${scanResult.deadline_days} day${(scanResult.deadline_days as number) > 1 ? "s" : ""}`
+                        : `${scanResult.deadline_days}-day legal response deadline`}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Plain English */}
             {scanResult.plain_english && (
               <div className="card-surface p-5">
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 8 }}>In plain english</div>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 8 }}>What&apos;s going on (plain english)</div>
                 <p style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.7 }}>{scanResult.plain_english as string}</p>
               </div>
             )}
@@ -769,20 +943,12 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             {/* Issues */}
             {(scanResult.issues_found as Array<ApiResult>)?.length > 0 && (
               <div>
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Issues Found</div>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Problems we found</div>
                 <div className="space-y-3">
                   {(scanResult.issues_found as Array<ApiResult>).map((issue, i: number) => (
-                    <div
-                      key={i}
-                      className={`finding-card ${
-                        issue.severity === "critical" ? "critical"
-                        : issue.severity === "high" ? "warning"
-                        : issue.severity === "medium" ? "info"
-                        : "low"
-                      }`}
-                    >
+                    <div key={i} className={`finding-card ${issue.severity === "critical" ? "critical" : issue.severity === "high" ? "warning" : issue.severity === "medium" ? "info" : "low"}`}>
                       <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: issue.severity === "critical" ? "var(--red)" : issue.severity === "high" ? "#e8c541" : issue.severity === "medium" ? "#4178e8" : "#41e866", marginBottom: 6 }}>
-                        {issue.severity as string} · {issue.category as string || "Issue"}
+                        {issue.severity as string}
                       </div>
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -801,25 +967,14 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               </div>
             )}
 
-            {/* Total savings */}
-            {(scanResult.total_potential_savings as number) > 0 && (
-              <div className="card-surface p-5 flex items-center gap-4" style={{ background: "rgba(65,232,102,0.03)", borderColor: "rgba(65,232,102,0.15)" }}>
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>You could save</div>
-                <div style={{ fontFamily: display, fontSize: 36, color: "#41e866" }}>
-                  {currencySymbol}{(scanResult.total_potential_savings as number).toLocaleString()}
-                </div>
-              </div>
-            )}
-
             {/* Rights */}
             {(scanResult.your_rights as string[])?.length > 0 && (
               <div className="card-surface p-5">
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>Your Rights</div>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>Laws that protect you</div>
                 <ul className="space-y-2">
                   {(scanResult.your_rights as string[]).map((right: string, i: number) => (
                     <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
-                      <span style={{ color: "#41e866" }}>✓</span>
-                      {right}
+                      <span style={{ color: "#41e866" }}>✓</span> {right}
                     </li>
                   ))}
                 </ul>
@@ -829,7 +984,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             {/* Actions */}
             {(scanResult.recommended_actions as string[])?.length > 0 && (
               <div className="card-surface p-5">
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>What To Do Next</div>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>What to do next</div>
                 <ol className="space-y-2">
                   {(scanResult.recommended_actions as string[]).map((action: string, i: number) => (
                     <li key={i} className="flex items-start gap-3" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
@@ -848,28 +1003,66 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                   const existing = getOutcome(scanResult.scan_id as string);
                   if (existing) {
                     return (
-                      <div className="flex items-center gap-3">
-                        <span style={{ fontSize: 18 }}>🏆</span>
-                        <div>
-                          <p style={{ fontFamily: mono, fontSize: 12, fontWeight: 500 }}>
-                            Outcome:{" "}
-                            <span style={{ color: existing.status === "won" ? "#41e866" : existing.status === "partial" ? "#4178e8" : existing.status === "lost" ? "var(--red)" : "#e8c541" }}>
-                              {existing.status === "won" ? "Won! 🎉" : existing.status === "partial" ? "Partial win" : existing.status === "lost" ? "Denied" : "Pending..."}
-                            </span>
-                          </p>
-                          {existing.actual_savings ? <p style={{ fontFamily: mono, fontSize: 11, color: "#41e866" }}>Saved {currencySymbol}{existing.actual_savings.toLocaleString()}</p> : null}
+                      <div>
+                        <div className="flex items-center gap-3">
+                          <span style={{ fontSize: 18 }}>🏆</span>
+                          <div>
+                            <p style={{ fontFamily: mono, fontSize: 12, fontWeight: 500 }}>
+                              Outcome:{" "}
+                              <span style={{ color: existing.status === "won" ? "#41e866" : existing.status === "partial" ? "#4178e8" : existing.status === "lost" ? "var(--red)" : "#e8c541" }}>
+                                {existing.status === "won" ? "Won! 🎉" : existing.status === "partial" ? "Partial win" : existing.status === "lost" ? "Denied" : "Pending..."}
+                              </span>
+                            </p>
+                            {existing.actual_savings ? <p style={{ fontFamily: mono, fontSize: 11, color: "#41e866" }}>Saved {currencySymbol}{existing.actual_savings.toLocaleString()}</p> : null}
+                          </div>
                         </div>
+
+                        {/* ── Victory Share Card ───────── */}
+                        {existing.status === "won" && (
+                          <div className="mt-4 p-5 text-center" style={{ background: "linear-gradient(135deg, rgba(65,232,102,0.08), rgba(65,232,102,0.02))", border: "1px solid rgba(65,232,102,0.2)" }}>
+                            <p style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.15em", textTransform: "uppercase", color: "#41e866", marginBottom: 6 }}>🎉 Share your win</p>
+                            <p style={{ fontFamily: display, fontSize: 28, color: "#41e866", lineHeight: 1 }}>
+                              I saved {currencySymbol}{(existing.actual_savings || scanResult.total_potential_savings as number || 0).toLocaleString()}
+                            </p>
+                            <p style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)", marginTop: 4 }}>using GhostLaw 👻</p>
+                            <div className="flex justify-center gap-2 mt-4">
+                              <button
+                                onClick={() => {
+                                  const msg = `I just saved ${currencySymbol}${(existing.actual_savings || (scanResult.total_potential_savings as number) || 0).toLocaleString()} on my ${(scanResult.document_type as string)?.replace(/_/g, " ")} using GhostLaw! 👻🔥\n\nThis AI found violations the company hoped I'd never notice.\n\nTry it free: ${typeof window !== "undefined" ? window.location.origin : "https://ghostlaw.app"}`;
+                                  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`, "_blank");
+                                }}
+                                className="btn-sm" style={{ color: "#1DA1F2", borderColor: "rgba(29,161,242,0.3)", background: "rgba(29,161,242,0.08)" }}
+                              >
+                                𝕏 Tweet
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const msg = `I just saved ${currencySymbol}${(existing.actual_savings || (scanResult.total_potential_savings as number) || 0).toLocaleString()} on my ${(scanResult.document_type as string)?.replace(/_/g, " ")} using GhostLaw! 👻🔥\n\nThis AI found violations the company hoped I'd never notice.\n\nTry it free: ${typeof window !== "undefined" ? window.location.origin : "https://ghostlaw.app"}`;
+                                  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+                                }}
+                                className="btn-sm" style={{ color: "#25D366", borderColor: "rgba(37,211,102,0.3)", background: "rgba(37,211,102,0.08)" }}
+                              >
+                                📱 WhatsApp
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const msg = `I just saved ${currencySymbol}${(existing.actual_savings || (scanResult.total_potential_savings as number) || 0).toLocaleString()} on my ${(scanResult.document_type as string)?.replace(/_/g, " ")} using GhostLaw! 👻🔥 Try it free: ${typeof window !== "undefined" ? window.location.origin : "https://ghostlaw.app"}`;
+                                  copyToClipboard(msg);
+                                }}
+                                className="btn-sm"
+                              >
+                                {copied ? "✓ Copied" : "📋 Copy"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   }
                   return (
                     <div>
-                      <button
-                        onClick={() => setOutcomeOpen(!outcomeOpen)}
-                        className="flex items-center gap-2 transition-colors"
-                        style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", cursor: "pointer" }}
-                      >
-                        🏆 Track the outcome of this dispute
+                      <button onClick={() => setOutcomeOpen(!outcomeOpen)} className="flex items-center gap-2 transition-colors" style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", cursor: "pointer" }}>
+                        🏆 Did you win? Track the outcome
                         <span style={{ transition: "transform 0.2s", transform: outcomeOpen ? "rotate(180deg)" : "rotate(0)" }}>▾</span>
                       </button>
                       {outcomeOpen && (
@@ -880,12 +1073,7 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                             { s: "pending", l: "Still pending", c: "rgba(232,197,65,0.1)", tc: "#e8c541" },
                             { s: "lost", l: "Denied", c: "rgba(232,25,44,0.1)", tc: "var(--red)" },
                           ].map((o) => (
-                            <button
-                              key={o.s}
-                              onClick={() => handleSaveOutcome(o.s, o.s === "won" ? scanResult.total_potential_savings as number : undefined)}
-                              className="py-2 transition-colors"
-                              style={{ fontFamily: mono, fontSize: 11, fontWeight: 500, background: o.c, color: o.tc, border: "1px solid transparent" }}
-                            >
+                            <button key={o.s} onClick={() => handleSaveOutcome(o.s, o.s === "won" ? scanResult.total_potential_savings as number : undefined)} className="py-2 transition-colors" style={{ fontFamily: mono, fontSize: 11, fontWeight: 500, background: o.c, color: o.tc, border: "1px solid transparent" }}>
                               {o.l}
                             </button>
                           ))}
@@ -897,25 +1085,42 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               </div>
             )}
 
-            {/* Action buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-              <button onClick={handleGenerateDispute} className="btn-primary flex items-center justify-center gap-2 py-3.5">
-                ✉ Write Dispute Letter
-              </button>
-              <button
-                onClick={() => setActiveTab("call")}
-                className="py-3.5 flex items-center justify-center gap-2 transition-all"
-                style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4178e8", background: "rgba(65,120,232,0.08)", border: "1px solid rgba(65,120,232,0.2)" }}
-              >
-                ☎ Get Call Script
-              </button>
-              <button
-                onClick={() => setActiveTab("complaint")}
-                className="py-3.5 flex items-center justify-center gap-2 transition-all"
-                style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8c541", background: "rgba(232,197,65,0.08)", border: "1px solid rgba(232,197,65,0.2)" }}
-              >
-                ⚖ File Complaint
-              </button>
+            {/* Next steps — big clear CTAs */}
+            <div className="pt-2">
+              <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>
+                Fight back — pick your weapon
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button onClick={handleGenerateDispute} className="btn-primary flex items-center justify-center gap-2 py-4">
+                  <span style={{ fontSize: 16 }}>✉</span>
+                  <div className="text-left">
+                    <div>Write Dispute Letter</div>
+                    <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>AI writes a letter citing specific laws</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab("call")}
+                  className="py-4 flex items-center justify-center gap-2 transition-all"
+                  style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4178e8", background: "rgba(65,120,232,0.08)", border: "1px solid rgba(65,120,232,0.2)" }}
+                >
+                  <span style={{ fontSize: 16 }}>☎</span>
+                  <div className="text-left">
+                    <div>Get Call Script</div>
+                    <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Exactly what to say on the phone</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab("complaint")}
+                  className="py-4 flex items-center justify-center gap-2 transition-all"
+                  style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8c541", background: "rgba(232,197,65,0.08)", border: "1px solid rgba(232,197,65,0.2)" }}
+                >
+                  <span style={{ fontSize: 16 }}>⚖</span>
+                  <div className="text-left">
+                    <div>File Complaint</div>
+                    <div style={{ fontSize: 9, opacity: 0.7, fontWeight: 400, letterSpacing: "0.02em", textTransform: "none" }}>Report to {country === "NG" ? "CBN/FCCPC/NCC" : "CFPB/FCC/FTC"}</div>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -926,11 +1131,14 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             <div>
               <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--red)", marginBottom: 6 }}>
                 <span className="inline-block w-4 h-[1px] bg-[var(--red)] mr-2 align-middle" />
-                Weapon Ready
+                Step 2 of 4
               </div>
               <h1 style={{ fontFamily: display, fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1 }}>
                 DISPUTE<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>LETTER</span>
               </h1>
+              <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 8 }}>
+                AI writes a professional dispute letter citing the exact laws they violated. Send it by email or WhatsApp.
+              </p>
             </div>
 
             {!disputeResult ? (
@@ -938,21 +1146,24 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                 <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Pick a tone</div>
                 <div className="space-y-2 mb-5">
                   {[
-                    { id: "firm_but_polite", label: "Firm but polite", desc: "Professional. Cites specific laws and regulations." },
-                    { id: "aggressive", label: "Aggressive", desc: "Demanding. References legal action if unresolved." },
-                    { id: "friendly", label: "Friendly", desc: "Cooperative but clear about what's wrong." },
+                    { id: "firm_but_polite", label: "Firm but polite", desc: "Professional. Cites specific laws and regulations.", icon: "📝" },
+                    { id: "aggressive", label: "Aggressive", desc: "Demanding. References legal action if unresolved.", icon: "⚡" },
+                    { id: "friendly", label: "Friendly", desc: "Cooperative but clear about what's wrong.", icon: "🤝" },
                   ].map((t) => (
                     <button
                       key={t.id}
                       onClick={() => setDisputeTone(t.id)}
-                      className="w-full text-left p-4 transition-all"
+                      className="w-full text-left p-4 transition-all flex items-center gap-3"
                       style={{
                         background: disputeTone === t.id ? "var(--red-dim)" : "var(--surface2)",
                         border: `1px solid ${disputeTone === t.id ? "rgba(232,25,44,0.3)" : "var(--border)"}`,
                       }}
                     >
-                      <p style={{ fontFamily: mono, fontSize: 13, fontWeight: 600 }}>{t.label}</p>
-                      <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 4 }}>{t.desc}</p>
+                      <span style={{ fontSize: 20 }}>{t.icon}</span>
+                      <div>
+                        <p style={{ fontFamily: mono, fontSize: 13, fontWeight: 600 }}>{t.label}</p>
+                        <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{t.desc}</p>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -962,112 +1173,90 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                {/* Letter chrome */}
                 <div className="letter-preview">
-                  <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--surface2)", borderBottom: "1px solid var(--border)" }}>
+                  <div className="flex items-center justify-between px-5 py-3 flex-wrap gap-2" style={{ background: "var(--surface2)", borderBottom: "1px solid var(--border)" }}>
                     <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--red)" }}>
-                      ⚡ Dispute Letter — {disputeResult.subject_line as string}
+                      ⚡ {disputeResult.subject_line as string}
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => copyToClipboard(disputeResult.letter_body as string)} className="btn-sm">
-                        {copied ? "✓ Copied" : "Copy"}
-                      </button>
-                      <button
-                        onClick={() => downloadText(
-                          `Subject: ${disputeResult.subject_line}\nTo: ${disputeResult.send_to}\n\n${disputeResult.letter_body}`,
-                          `GhostLaw_Dispute_${new Date().toISOString().slice(0, 10)}.txt`
-                        )}
-                        className="btn-sm"
-                      >
-                        ↓ TXT
-                      </button>
-                      <button
-                        onClick={() => downloadPDF(
-                          `Dispute Letter — ${disputeResult.subject_line}`,
-                          `To: ${disputeResult.send_to}\n\n${disputeResult.letter_body}`,
-                          `GhostLaw_Dispute_${new Date().toISOString().slice(0, 10)}.pdf`
-                        )}
-                        className="btn-sm"
-                        style={{ color: "var(--red)", borderColor: "rgba(232,25,44,0.3)" }}
-                      >
-                        ↓ PDF
-                      </button>
-                      <button
-                        onClick={() => sendViaEmail(
-                          (disputeResult.send_to as string) || "",
-                          `Formal Dispute: ${disputeResult.subject_line}`,
-                          disputeResult.letter_body as string
-                        )}
-                        className="btn-sm"
-                        style={{ color: "#4178e8", borderColor: "rgba(65,120,232,0.3)" }}
-                      >
-                        ✉ Email
-                      </button>
-                      <button
-                        onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`*Dispute Letter — ${disputeResult.subject_line}*\n\n${disputeResult.letter_body}`)}`, "_blank")}
-                        className="btn-sm"
-                        style={{ color: "#25D366", borderColor: "rgba(37,211,102,0.3)" }}
-                      >
-                        📱 WhatsApp
-                      </button>
+                    <div className="flex gap-2 flex-wrap">
+                      <button onClick={() => copyToClipboard(disputeResult.letter_body as string)} className="btn-sm">{copied ? "✓ Copied" : "📋 Copy"}</button>
+                      <button onClick={() => downloadPDF(`Dispute Letter — ${disputeResult.subject_line}`, `To: ${disputeResult.send_to}\n\n${disputeResult.letter_body}`, `GhostLaw_Dispute_${new Date().toISOString().slice(0, 10)}.pdf`)} className="btn-sm" style={{ color: "var(--red)", borderColor: "rgba(232,25,44,0.3)" }}>↓ PDF</button>
+                      <button onClick={() => sendViaEmail((disputeResult.send_to as string) || "", `Formal Dispute: ${disputeResult.subject_line}`, disputeResult.letter_body as string)} className="btn-sm" style={{ color: "#4178e8", borderColor: "rgba(65,120,232,0.3)" }}>✉ Email</button>
+                      <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`*Dispute Letter — ${disputeResult.subject_line}*\n\n${disputeResult.letter_body}`)}`, "_blank")} className="btn-sm" style={{ color: "#25D366", borderColor: "rgba(37,211,102,0.3)" }}>📱 WhatsApp</button>
                     </div>
                   </div>
                   <div className="p-6">
-                    {disputeResult.send_to && (
-                      <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginBottom: 12 }}>Send to: {disputeResult.send_to as string}</p>
-                    )}
-                    <pre style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                      {disputeResult.letter_body as string}
-                    </pre>
+                    {disputeResult.send_to && <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginBottom: 12 }}>Send to: {disputeResult.send_to as string}</p>}
+                    <pre style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{disputeResult.letter_body as string}</pre>
                     <span className="letter-cursor" />
                   </div>
                 </div>
 
-                {/* Post-dispute guidance */}
                 <div className="card-surface p-5" style={{ background: "rgba(65,120,232,0.03)", borderColor: "rgba(65,120,232,0.15)" }}>
                   <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4178e8", marginBottom: 10 }}>After you send this</div>
                   <ol className="space-y-1.5" style={{ fontFamily: mono, fontSize: 11, color: "var(--muted2)" }}>
                     {country === "NG" ? (
                       <>
-                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>1.</span> Send by email AND keep a screenshot of the delivery confirmation</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>1.</span> Send by email AND keep a screenshot</li>
                         <li><span style={{ color: "#4178e8", fontWeight: 600 }}>2.</span> Banks must respond within 24-72 hours (CBN mandate)</li>
-                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>3.</span> If no response, file with FCCPC or the relevant regulator (CBN, NCC, NERC)</li>
-                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>4.</span> Come back and mark the outcome to track your wins</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>3.</span> If no response → file a complaint with the regulator (next step)</li>
                       </>
                     ) : (
                       <>
-                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>1.</span> Send by email AND certified mail if the amount is over $500</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>1.</span> Send by email AND certified mail if over $500</li>
                         <li><span style={{ color: "#4178e8", fontWeight: 600 }}>2.</span> They have 30 days to respond (federal requirement)</li>
-                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>3.</span> If no response, file a complaint with CFPB or your State AG</li>
-                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>4.</span> Come back and mark the outcome to track your wins</li>
+                        <li><span style={{ color: "#4178e8", fontWeight: 600 }}>3.</span> If no response → file a complaint with CFPB (next step)</li>
                       </>
                     )}
                   </ol>
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => setActiveTab("call")}
-                    className="flex-1 py-3 flex items-center justify-center gap-2 transition-all"
-                    style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4178e8", background: "rgba(65,120,232,0.08)", border: "1px solid rgba(65,120,232,0.2)" }}
-                  >
-                    ☎ Get call script too
-                  </button>
-                  <button
-                    onClick={handleGenerateComplaint}
-                    className="flex-1 py-3 flex items-center justify-center gap-2 transition-all"
-                    style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8c541", background: "rgba(232,197,65,0.08)", border: "1px solid rgba(232,197,65,0.2)" }}
-                  >
-                    ⚖ File complaint
-                  </button>
-                  <button
-                    onClick={() => { setDisputeResult(null); setDisputeTone("firm_but_polite"); }}
-                    className="py-3 px-4 transition-colors"
-                    style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", border: "1px solid var(--border)" }}
-                  >
-                    ↺
-                  </button>
+                {/* ── Fight Timeline / Progress Tracker ─── */}
+                <div className="card-surface p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#41e866" }}>⚔ Your Fight Timeline</div>
+                    {!disputeSentDate && (
+                      <button onClick={markDisputeSent} className="btn-sm" style={{ color: "#41e866", borderColor: "rgba(65,232,102,0.3)", background: "rgba(65,232,102,0.08)" }}>
+                        ✓ I sent it
+                      </button>
+                    )}
+                  </div>
+                  {(() => {
+                    const deadlineDays = (scanResult?.deadline_days as number) || (country === "NG" ? 3 : 30);
+                    const daysSinceSent = disputeSentDate
+                      ? Math.floor((Date.now() - new Date(disputeSentDate).getTime()) / 86400000)
+                      : null;
+                    const steps = [
+                      { label: "Scan & analyze", done: true, detail: "Issues found, rights identified" },
+                      { label: "Dispute letter written", done: true, detail: disputeResult?.subject_line as string },
+                      { label: "Letter sent", done: !!disputeSentDate, detail: disputeSentDate ? `Sent ${new Date(disputeSentDate).toLocaleDateString()}` : "Tap 'I sent it' after you send" },
+                      { label: `Wait for response (${deadlineDays} days)`, done: daysSinceSent !== null && daysSinceSent >= deadlineDays, detail: daysSinceSent !== null ? (daysSinceSent >= deadlineDays ? "Deadline passed — time to escalate!" : `Day ${daysSinceSent} of ${deadlineDays} — ${deadlineDays - daysSinceSent} days left`) : "Starts when you send the letter" },
+                      { label: "No response? File complaint", done: !!complaintResult, detail: "Escalate to government regulator" },
+                    ];
+                    return (
+                      <div className="space-y-0">
+                        {steps.map((step, i) => (
+                          <div key={i} className="flex gap-3" style={{ paddingBottom: i < steps.length - 1 ? 0 : 0 }}>
+                            <div className="flex flex-col items-center">
+                              <div style={{
+                                width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                                background: step.done ? "rgba(65,232,102,0.15)" : "var(--surface2)",
+                                border: `1.5px solid ${step.done ? "#41e866" : "var(--border)"}`,
+                                fontFamily: mono, fontSize: 10, color: step.done ? "#41e866" : "var(--muted)",
+                              }}>
+                                {step.done ? "✓" : i + 1}
+                              </div>
+                              {i < steps.length - 1 && <div style={{ width: 1.5, height: 28, background: step.done ? "rgba(65,232,102,0.3)" : "var(--border)" }} />}
+                            </div>
+                            <div style={{ paddingBottom: i < steps.length - 1 ? 12 : 0 }}>
+                              <p style={{ fontFamily: mono, fontSize: 12, fontWeight: 500, color: step.done ? "#41e866" : "var(--white)" }}>{step.label}</p>
+                              <p style={{ fontFamily: sans, fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{step.detail}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -1080,35 +1269,37 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             <div>
               <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--red)", marginBottom: 6 }}>
                 <span className="inline-block w-4 h-[1px] bg-[var(--red)] mr-2 align-middle" />
-                Phone Weapon
+                Step 3 of 4
               </div>
               <h1 style={{ fontFamily: display, fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1 }}>
                 CALL<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>SCRIPT</span>
               </h1>
+              <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 8 }}>
+                Exactly what to say when you call them. Follow the script — most people get results on the first call.
+              </p>
             </div>
 
             {!callResult ? (
               <div className="card-surface p-6 space-y-4">
                 <div>
-                  <label style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", display: "block", marginBottom: 6 }}>
-                    Who are you calling?
+                  <label style={{ fontFamily: mono, fontSize: 11, fontWeight: 600, color: "var(--muted2)", display: "block", marginBottom: 6 }}>
+                    <span style={{ color: "var(--red)", marginRight: 4 }}>1.</span> Who are you calling?
                   </label>
-                  <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="input-ghost" style={{ padding: "0.75rem 1rem" }} placeholder={country === "NG" ? "e.g., GTBank, MTN, Ikeja Electric, OKash" : "e.g., Metro General Hospital, Comcast, AT&T"} />
+                  <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="input-ghost" style={{ padding: "0.75rem 1rem" }} placeholder={country === "NG" ? "e.g. GTBank, MTN, Ikeja Electric" : "e.g. Metro General Hospital, Comcast, AT&T"} />
                 </div>
                 <div>
-                  <label style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", display: "block", marginBottom: 6 }}>
-                    What do you want them to do?
+                  <label style={{ fontFamily: mono, fontSize: 11, fontWeight: 600, color: "var(--muted2)", display: "block", marginBottom: 6 }}>
+                    <span style={{ color: "var(--red)", marginRight: 4 }}>2.</span> What do you want them to do?
                   </label>
-                  <input type="text" value={callObjective} onChange={(e) => setCallObjective(e.target.value)} className="input-ghost" style={{ padding: "0.75rem 1rem" }} placeholder="e.g., Reduce my bill, waive the late fee" />
+                  <input type="text" value={callObjective} onChange={(e) => setCallObjective(e.target.value)} className="input-ghost" style={{ padding: "0.75rem 1rem" }} placeholder="e.g. Reverse the charge, waive the fee, refund my money" />
                 </div>
 
-                {/* Call tips */}
                 <div className="p-4" style={{ background: "rgba(232,197,65,0.05)", border: "1px solid rgba(232,197,65,0.1)" }}>
-                  <p style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8c541", marginBottom: 8 }}>📞 Call tips that actually work</p>
+                  <p style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8c541", marginBottom: 8 }}>📞 Quick tips</p>
                   <ul style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", lineHeight: 1.8 }}>
                     <li>• Call early morning (Tue-Thu) — shorter hold times</li>
-                    <li>• Ask for the &ldquo;retention&rdquo; department — they can cut deals</li>
-                    <li>• Always get the rep&apos;s name and employee ID first</li>
+                    <li>• Get the rep&apos;s name and employee ID first</li>
+                    <li>• {country === "NG" ? "Say 'I will report to CBN/FCCPC' — it works" : "Ask for the 'retention' department — they can cut deals"}</li>
                   </ul>
                 </div>
 
@@ -1143,37 +1334,13 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                       {(script.key_points as string[])?.length > 0 && (
                         <div className="card-surface p-5">
                           <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4178e8", marginBottom: 10 }}>Points to make</div>
-                          <ul className="space-y-2">
-                            {(script.key_points as string[]).map((p: string, i: number) => (
-                              <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
-                                <span style={{ color: "#4178e8" }}>→</span> {p}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {(script.negotiation_tactics as string[])?.length > 0 && (
-                        <div className="card-surface p-5">
-                          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8c541", marginBottom: 10 }}>Negotiation moves</div>
-                          <ul className="space-y-2">
-                            {(script.negotiation_tactics as string[]).map((t: string, i: number) => (
-                              <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
-                                <span style={{ color: "#e8c541" }}>→</span> {t}
-                              </li>
-                            ))}
-                          </ul>
+                          <ul className="space-y-2">{(script.key_points as string[]).map((p: string, i: number) => <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}><span style={{ color: "#4178e8" }}>→</span> {p}</li>)}</ul>
                         </div>
                       )}
                       {(script.escalation_phrases as string[])?.length > 0 && (
                         <div className="card-surface p-5">
                           <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--red)", marginBottom: 10 }}>If they push back</div>
-                          <ul className="space-y-2">
-                            {(script.escalation_phrases as string[]).map((p: string, i: number) => (
-                              <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
-                                <span style={{ color: "var(--red)" }}>⚠</span> {p}
-                              </li>
-                            ))}
-                          </ul>
+                          <ul className="space-y-2">{(script.escalation_phrases as string[]).map((p: string, i: number) => <li key={i} className="flex items-start gap-2" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}><span style={{ color: "var(--red)" }}>⚠</span> {p}</li>)}</ul>
                         </div>
                       )}
                       {script.closing_script && (
@@ -1184,51 +1351,10 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
                           </p>
                         </div>
                       )}
-                      {(script.target_outcome || script.estimated_call_duration) && (
-                        <div className="grid grid-cols-2 gap-3">
-                          {script.target_outcome && (
-                            <div className="card-surface p-4">
-                              <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 4 }}>Target outcome</div>
-                              <p style={{ fontFamily: mono, fontSize: 13, color: "#41e866" }}>{script.target_outcome as string}</p>
-                            </div>
-                          )}
-                          {script.estimated_call_duration && (
-                            <div className="card-surface p-4">
-                              <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 4 }}>Estimated time</div>
-                              <p style={{ fontFamily: mono, fontSize: 13 }}>{script.estimated_call_duration as string}</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
                       <div className="flex gap-3 flex-wrap">
-                        <button onClick={() => copyToClipboard(buildFullScript())} className="btn-primary flex-1 py-3 flex items-center justify-center gap-2">
-                          {copied ? "✓ Copied" : "Copy Full Script"}
-                        </button>
-                        <button
-                          onClick={() => downloadText(buildFullScript(), `GhostLaw_CallScript_${companyName.replace(/\s+/g, "_")}.txt`)}
-                          className="py-3 px-5 transition-colors"
-                          style={{ fontFamily: mono, fontSize: 12, color: "#4178e8", background: "rgba(65,120,232,0.08)", border: "1px solid rgba(65,120,232,0.2)" }}
-                        >
-                          ↓ TXT
-                        </button>
-                        <button
-                          onClick={() => downloadPDF(
-                            `Call Script — ${companyName}`,
-                            buildFullScript(),
-                            `GhostLaw_CallScript_${companyName.replace(/\s+/g, "_")}.pdf`
-                          )}
-                          className="py-3 px-5 transition-colors"
-                          style={{ fontFamily: mono, fontSize: 12, color: "var(--red)", background: "rgba(232,25,44,0.08)", border: "1px solid rgba(232,25,44,0.2)" }}
-                        >
-                          ↓ PDF
-                        </button>
-                        <button
-                          onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildFullScript())}`, "_blank")}
-                          className="py-3 px-5 transition-colors"
-                          style={{ fontFamily: mono, fontSize: 12, color: "#25D366", background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.2)" }}
-                        >
-                          📱 WhatsApp
-                        </button>
+                        <button onClick={() => copyToClipboard(buildFullScript())} className="btn-primary flex-1 py-3 flex items-center justify-center gap-2">{copied ? "✓ Copied" : "📋 Copy Full Script"}</button>
+                        <button onClick={() => downloadPDF(`Call Script — ${companyName}`, buildFullScript(), `GhostLaw_CallScript_${companyName.replace(/\s+/g, "_")}.pdf`)} className="py-3 px-5 transition-colors" style={{ fontFamily: mono, fontSize: 12, color: "var(--red)", background: "rgba(232,25,44,0.08)", border: "1px solid rgba(232,25,44,0.2)" }}>↓ PDF</button>
+                        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildFullScript())}`, "_blank")} className="py-3 px-5 transition-colors" style={{ fontFamily: mono, fontSize: 12, color: "#25D366", background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.2)" }}>📱 WhatsApp</button>
                       </div>
                     </>
                   );
@@ -1244,43 +1370,44 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             <div>
               <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--red)", marginBottom: 6 }}>
                 <span className="inline-block w-4 h-[1px] bg-[var(--red)] mr-2 align-middle" />
-                Nuclear Option
+                Step 4 of 4 — Nuclear Option
               </div>
               <h1 style={{ fontFamily: display, fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1 }}>
-                REGULATORY<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>COMPLAINT</span>
+                FILE A<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>COMPLAINT</span>
               </h1>
+              <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted)", marginTop: 8 }}>
+                {country === "NG"
+                  ? "Report them to the Nigerian government. Companies respond FAST when regulators get involved."
+                  : "File with a government agency. Companies respond FAST when regulators get involved."
+                }
+              </p>
             </div>
 
             {!complaintResult ? (
               <div className="space-y-4">
                 <div className="card-surface p-5">
-                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Pick an agency {country === "NG" ? "🇳🇬" : "🇺🇸"}</div>
+                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Which agency? {country === "NG" ? "🇳🇬" : "🇺🇸"}</div>
                   <div className="space-y-2">
                     {(country === "NG" ? [
-                      { id: "fccpc", name: "FCCPC", full: "Federal Competition & Consumer Protection Commission", desc: "General consumer complaints — products, services, unfair practices", stat: "Primary consumer body" },
+                      { id: "fccpc", name: "FCCPC", full: "Consumer Protection Commission", desc: "General consumer complaints — products, services, unfair practices", stat: "Primary consumer body" },
                       { id: "cbn", name: "CBN", full: "Central Bank of Nigeria", desc: "Bank charges, failed transfers, loan issues, unauthorized debits", stat: "24-72hr resolution mandate" },
-                      { id: "ncc", name: "NCC", full: "Nigerian Communications Commission", desc: "MTN, Airtel, Glo, 9mobile — data, airtime, billing, service quality", stat: "Enforces Consumer Code" },
-                      { id: "nerc", name: "NERC", full: "Nigerian Electricity Regulatory Commission", desc: "EKEDC, IKEDC, AEDC — estimated billing, metering, outages", stat: "Metering is your right" },
-                      { id: "ndpc", name: "NDPC", full: "Nigeria Data Protection Commission", desc: "Data privacy violations, unauthorized contact access, spam", stat: "NDPA 2023 enforcement" },
-                      { id: "efcc", name: "EFCC", full: "Economic & Financial Crimes Commission", desc: "Fraud, scams, financial crimes, online fraud", stat: "Criminal investigations" },
+                      { id: "ncc", name: "NCC", full: "Communications Commission", desc: "MTN, Airtel, Glo, 9mobile — data, airtime, billing", stat: "Enforces Consumer Code" },
+                      { id: "nerc", name: "NERC", full: "Electricity Regulatory Commission", desc: "Estimated billing, metering, outages, DisCo disputes", stat: "Metering is your right" },
+                      { id: "ndpc", name: "NDPC", full: "Data Protection Commission", desc: "Data privacy violations, unauthorized contact access", stat: "NDPA 2023 enforcement" },
+                      { id: "efcc", name: "EFCC", full: "Financial Crimes Commission", desc: "Fraud, scams, financial crimes", stat: "Criminal investigations" },
                     ] : [
-                      { id: "cfpb", name: "CFPB", full: "Consumer Financial Protection Bureau", desc: "Medical bills, debt collection, banking fees, credit card disputes", stat: "97% response rate" },
-                      { id: "fcc", name: "FCC", full: "Federal Communications Commission", desc: "Phone bills, internet, cable, wireless carrier issues", stat: "Companies respond within days" },
-                      { id: "state_ag", name: "State AG", full: "State Attorney General", desc: "Local businesses, price gouging, fraud, deceptive practices", stat: "Can investigate and sue" },
-                      { id: "ftc", name: "FTC", full: "Federal Trade Commission", desc: "Scams, fraud, deceptive advertising, subscription traps", stat: "Builds cases from complaints" },
+                      { id: "cfpb", name: "CFPB", full: "Consumer Financial Protection Bureau", desc: "Medical bills, debt collection, banking fees", stat: "97% response rate" },
+                      { id: "fcc", name: "FCC", full: "Federal Communications Commission", desc: "Phone bills, internet, cable, wireless carrier", stat: "Companies respond within days" },
+                      { id: "state_ag", name: "State AG", full: "State Attorney General", desc: "Local businesses, fraud, deceptive practices", stat: "Can investigate and sue" },
+                      { id: "ftc", name: "FTC", full: "Federal Trade Commission", desc: "Scams, fraud, deceptive advertising", stat: "Builds cases from complaints" },
                     ]).map((a) => (
-                      <button
-                        key={a.id}
-                        onClick={() => setComplaintAgency(a.id)}
-                        className="w-full text-left p-4 transition-all"
-                        style={{
-                          background: complaintAgency === a.id ? "rgba(232,197,65,0.05)" : "var(--surface2)",
-                          border: `1px solid ${complaintAgency === a.id ? "rgba(232,197,65,0.2)" : "var(--border)"}`,
-                        }}
-                      >
+                      <button key={a.id} onClick={() => setComplaintAgency(a.id)} className="w-full text-left p-4 transition-all" style={{ background: complaintAgency === a.id ? "rgba(232,197,65,0.05)" : "var(--surface2)", border: `1px solid ${complaintAgency === a.id ? "rgba(232,197,65,0.2)" : "var(--border)"}` }}>
                         <div className="flex items-center gap-2 mb-1">
                           <span style={{ fontFamily: mono, fontSize: 13, fontWeight: 700, color: "#e8c541" }}>{a.name}</span>
                           <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)" }}>— {a.full}</span>
+                          {scanResult?.recommended_agency === a.id && (
+                            <span className="badge badge-success" style={{ fontSize: 8, padding: "1px 6px" }}>★ AI RECOMMENDED</span>
+                          )}
                         </div>
                         <p style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)" }}>{a.desc}</p>
                         <p style={{ fontFamily: mono, fontSize: 10, color: "#41e866", marginTop: 4, opacity: 0.7 }}>{a.stat}</p>
@@ -1291,121 +1418,46 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
 
                 {!companyName && (
                   <div className="card-surface p-4">
-                    <label style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", display: "block", marginBottom: 6 }}>
-                      Company you&apos;re complaining about
-                    </label>
-                    <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="input-ghost" style={{ padding: "0.75rem 1rem" }} placeholder="e.g., Metro General Hospital" />
+                    <label style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", display: "block", marginBottom: 6 }}>Company you&apos;re complaining about</label>
+                    <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="input-ghost" style={{ padding: "0.75rem 1rem" }} placeholder="e.g. GTBank, MTN, Metro Hospital" />
                   </div>
                 )}
 
-                <button onClick={handleGenerateComplaint} disabled={!scanResult} className="btn-primary w-full py-4 flex items-center justify-center gap-2">
-                  ⚡ Generate Complaint
-                </button>
+                <button onClick={handleGenerateComplaint} disabled={!scanResult} className="btn-primary w-full py-4 flex items-center justify-center gap-2">⚡ Generate Complaint</button>
               </div>
             ) : (
               <div className="space-y-3">
-                {/* Agency info */}
                 <div className="card-surface p-4 flex items-center justify-between flex-wrap gap-3" style={{ background: "rgba(232,197,65,0.03)", borderColor: "rgba(232,197,65,0.15)" }}>
                   <div>
                     <p style={{ fontFamily: mono, fontSize: 13, fontWeight: 600 }}>{(complaintResult.agency_full_name as string) || complaintAgency.toUpperCase()}</p>
-                    <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginTop: 2 }}>Ready to file</p>
+                    <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginTop: 2 }}>Complaint ready to file</p>
                   </div>
-                  {complaintResult.filing_url && (
-                    <a
-                      href={complaintResult.filing_url as string}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-sm"
-                      style={{ color: "#e8c541", borderColor: "rgba(232,197,65,0.3)", background: "rgba(232,197,65,0.1)" }}
-                    >
-                      ↗ Go to filing page
-                    </a>
-                  )}
+                  {complaintResult.filing_url && <a href={complaintResult.filing_url as string} target="_blank" rel="noopener noreferrer" className="btn-sm" style={{ color: "#e8c541", borderColor: "rgba(232,197,65,0.3)", background: "rgba(232,197,65,0.1)" }}>↗ Go to filing page</a>}
                 </div>
 
-                {/* Complaint text */}
                 {complaintResult.complaint_text && (
                   <div className="letter-preview">
-                    <div className="flex items-center justify-between px-5 py-3" style={{ background: "var(--surface2)", borderBottom: "1px solid var(--border)" }}>
-                      <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8c541" }}>
-                        ⚖ Complaint Text
-                      </div>
+                    <div className="flex items-center justify-between px-5 py-3 flex-wrap gap-2" style={{ background: "var(--surface2)", borderBottom: "1px solid var(--border)" }}>
+                      <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8c541" }}>⚖ Complaint</div>
                       <div className="flex gap-2 flex-wrap">
-                        <button onClick={() => copyToClipboard(complaintResult.complaint_text as string)} className="btn-sm">{copied ? "✓ Copied" : "Copy"}</button>
-                        <button onClick={() => downloadText(complaintResult.complaint_text as string, `GhostLaw_Complaint_${complaintAgency.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.txt`)} className="btn-sm">↓ TXT</button>
-                        <button
-                          onClick={() => downloadPDF(
-                            `${complaintAgency.toUpperCase()} Complaint`,
-                            complaintResult.complaint_text as string,
-                            `GhostLaw_Complaint_${complaintAgency.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.pdf`
-                          )}
-                          className="btn-sm"
-                          style={{ color: "var(--red)", borderColor: "rgba(232,25,44,0.3)" }}
-                        >
-                          ↓ PDF
-                        </button>
-                        <button
-                          onClick={() => sendViaEmail(
-                            "",
-                            `${(complaintResult.agency_full_name as string) || complaintAgency.toUpperCase()} Complaint`,
-                            complaintResult.complaint_text as string
-                          )}
-                          className="btn-sm"
-                          style={{ color: "#4178e8", borderColor: "rgba(65,120,232,0.3)" }}
-                        >
-                          ✉ Email
-                        </button>
-                        <button
-                          onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`*${(complaintResult.agency_full_name as string) || complaintAgency.toUpperCase()} Complaint*\n\n${complaintResult.complaint_text}`)}`, "_blank")}
-                          className="btn-sm"
-                          style={{ color: "#25D366", borderColor: "rgba(37,211,102,0.3)" }}
-                        >
-                          📱 WhatsApp
-                        </button>
+                        <button onClick={() => copyToClipboard(complaintResult.complaint_text as string)} className="btn-sm">{copied ? "✓ Copied" : "📋 Copy"}</button>
+                        <button onClick={() => downloadPDF(`${complaintAgency.toUpperCase()} Complaint`, complaintResult.complaint_text as string, `GhostLaw_Complaint_${complaintAgency.toUpperCase()}.pdf`)} className="btn-sm" style={{ color: "var(--red)", borderColor: "rgba(232,25,44,0.3)" }}>↓ PDF</button>
+                        <button onClick={() => sendViaEmail("", `${(complaintResult.agency_full_name as string) || complaintAgency.toUpperCase()} Complaint`, complaintResult.complaint_text as string)} className="btn-sm" style={{ color: "#4178e8", borderColor: "rgba(65,120,232,0.3)" }}>✉ Email</button>
+                        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`*${(complaintResult.agency_full_name as string) || complaintAgency.toUpperCase()} Complaint*\n\n${complaintResult.complaint_text}`)}`, "_blank")} className="btn-sm" style={{ color: "#25D366", borderColor: "rgba(37,211,102,0.3)" }}>📱 WhatsApp</button>
                       </div>
                     </div>
-                    <pre className="p-6 max-h-96 overflow-auto" style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                      {complaintResult.complaint_text as string}
-                    </pre>
+                    <pre className="p-6 max-h-96 overflow-auto" style={{ fontFamily: sans, fontSize: 13, color: "var(--muted2)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{complaintResult.complaint_text as string}</pre>
                   </div>
                 )}
 
-                {/* Filing steps */}
                 {(complaintResult.filing_steps as string[])?.length > 0 && (
                   <div className="card-surface p-5">
                     <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8c541", marginBottom: 10 }}>How to file — step by step</div>
-                    <ol className="space-y-2">
-                      {(complaintResult.filing_steps as string[]).map((step: string, i: number) => (
-                        <li key={i} className="flex items-start gap-3" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}>
-                          <span style={{ fontFamily: display, fontSize: 18, color: "rgba(232,197,65,0.3)", minWidth: 20 }}>0{i + 1}</span>
-                          {step}
-                        </li>
-                      ))}
-                    </ol>
+                    <ol className="space-y-2">{(complaintResult.filing_steps as string[]).map((step: string, i: number) => <li key={i} className="flex items-start gap-3" style={{ fontFamily: sans, fontSize: 12, color: "var(--muted2)", lineHeight: 1.6 }}><span style={{ fontFamily: display, fontSize: 18, color: "rgba(232,197,65,0.3)", minWidth: 20 }}>0{i + 1}</span>{step}</li>)}</ol>
                   </div>
                 )}
 
-                {/* Pro tips */}
-                {(complaintResult.pro_tips as string[])?.length > 0 && (
-                  <div className="card-surface p-5" style={{ background: "rgba(65,232,102,0.03)", borderColor: "rgba(65,232,102,0.15)" }}>
-                    <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#41e866", marginBottom: 10 }}>Pro tips</div>
-                    <ul className="space-y-1.5">
-                      {(complaintResult.pro_tips as string[]).map((tip: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2" style={{ fontFamily: mono, fontSize: 11, color: "var(--muted2)", lineHeight: 1.6 }}>
-                          <span style={{ color: "#41e866" }}>✓</span> {tip}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setComplaintResult(null)}
-                  className="w-full py-3 text-center transition-colors"
-                  style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", border: "1px solid var(--border)" }}
-                >
-                  ↺ Try a different agency
-                </button>
+                <button onClick={() => setComplaintResult(null)} className="w-full py-3 text-center transition-colors" style={{ fontFamily: mono, fontSize: 12, color: "var(--muted)", border: "1px solid var(--border)" }}>↺ Try a different agency</button>
               </div>
             )}
           </div>
@@ -1417,14 +1469,13 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
             <div>
               <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--red)", marginBottom: 6 }}>
                 <span className="inline-block w-4 h-[1px] bg-[var(--red)] mr-2 align-middle" />
-                Case Files
+                Your Record
               </div>
               <h1 style={{ fontFamily: display, fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1 }}>
-                YOUR WINS<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>ON RECORD</span>
+                CASE<br /><span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>HISTORY</span>
               </h1>
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { label: "Scanned", value: localStats.total_scans, color: "var(--red)" },
@@ -1439,63 +1490,115 @@ export default function AppDashboard({ onLogout }: AppDashboardProps) {
               ))}
             </div>
 
-            {/* Scan history table */}
             {localHistory.scans.length > 0 ? (
               <div style={{ border: "1px solid var(--border)" }}>
-                {/* Header */}
-                <div className="hidden md:grid grid-cols-[2fr_1fr_1fr] bg-[var(--surface2)] border-b border-[var(--border)]">
-                  {["Case", "Amount", "Status"].map((h) => (
-                    <div key={h} className="px-5 py-3 border-r border-[var(--border)] last:border-r-0" style={{ fontFamily: mono, fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--muted)" }}>
-                      {h}
-                    </div>
+                <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_auto] bg-[var(--surface2)] border-b border-[var(--border)]">
+                  {["Case", "Amount", "Status", ""].map((h) => (
+                    <div key={h || "action"} className="px-5 py-3 border-r border-[var(--border)] last:border-r-0" style={{ fontFamily: mono, fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--muted)" }}>{h}</div>
                   ))}
                 </div>
                 {localHistory.scans.map((scan, i) => {
                   const outcome = getOutcome(scan.scan_id);
                   return (
-                    <button
-                      key={scan.scan_id || i}
-                      onClick={() => loadHistoryScan(scan)}
-                      className="w-full grid grid-cols-[2fr_1fr_1fr] border-b border-[var(--border)] hover:bg-[var(--surface)] transition-colors text-left"
-                      style={{ animation: `row-in 0.5s ease ${i * 0.05}s both` }}
-                    >
-                      <div className="px-5 py-3.5 border-r border-[var(--border)]">
-                        <p style={{ fontFamily: mono, fontSize: 12, fontWeight: 500 }}>
-                          {(scan.document_type as string)?.replace(/_/g, " ") || "Document"} scan
-                        </p>
-                        <p style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", marginTop: 2 }} className="truncate">
-                          {scan.summary as string}
-                        </p>
-                      </div>
-                      <div className="px-5 py-3.5 border-r border-[var(--border)] flex items-center" style={{ fontFamily: display, fontSize: 16, color: "var(--red)" }}>
+                    <div key={scan.scan_id || i} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] border-b border-[var(--border)] hover:bg-[var(--surface)] transition-colors" style={{ animation: `row-in 0.5s ease ${i * 0.05}s both` }}>
+                      <button onClick={() => loadHistoryScan(scan)} className="text-left px-5 py-3.5 md:border-r border-[var(--border)]">
+                        <div className="flex items-center gap-2">
+                          <p style={{ fontFamily: mono, fontSize: 12, fontWeight: 500 }}>{(scan.document_type as string)?.replace(/_/g, " ") || "Document"}</p>
+                          {(scan.case_strength as number) > 0 && (
+                            <span className="badge" style={{
+                              fontSize: 8, padding: "1px 6px",
+                              background: (scan.case_strength as number) >= 70 ? "rgba(65,232,102,0.1)" : (scan.case_strength as number) >= 40 ? "rgba(232,197,65,0.1)" : "rgba(232,25,44,0.1)",
+                              color: (scan.case_strength as number) >= 70 ? "#41e866" : (scan.case_strength as number) >= 40 ? "#e8c541" : "var(--red)",
+                              border: `1px solid ${(scan.case_strength as number) >= 70 ? "rgba(65,232,102,0.3)" : (scan.case_strength as number) >= 40 ? "rgba(232,197,65,0.3)" : "rgba(232,25,44,0.3)"}`,
+                            }}>
+                              {scan.case_strength as number}%
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", marginTop: 2 }} className="truncate">{scan.summary as string}</p>
+                      </button>
+                      <button onClick={() => loadHistoryScan(scan)} className="text-left px-5 py-3.5 md:border-r border-[var(--border)] flex items-center" style={{ fontFamily: display, fontSize: 16, color: "var(--red)" }}>
                         {(scan.total_potential_savings as number) > 0 ? `${currencySymbol}${(scan.total_potential_savings as number).toLocaleString()}` : "—"}
-                      </div>
-                      <div className="px-5 py-3.5 flex items-center">
+                      </button>
+                      <div className="px-5 py-3.5 md:border-r border-[var(--border)] flex items-center">
                         {outcome ? (
                           <span className={`pill ${outcome.status === "won" ? "pill-won" : outcome.status === "partial" ? "pill-partial" : outcome.status === "pending" ? "pill-pending" : "pill-denied"}`}>
                             {outcome.status === "won" ? "Won ✓" : outcome.status}
                           </span>
-                        ) : (
-                          <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)" }}>—</span>
-                        )}
+                        ) : <span style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)" }}>—</span>}
                       </div>
-                    </button>
+                      <div className="px-5 py-3.5 flex items-center">
+                        {!outcome || outcome.status === "pending" ? (
+                          <button
+                            onClick={() => { setScanResult(scan); setActiveTab("dispute"); }}
+                            className="btn-sm whitespace-nowrap"
+                            style={{ color: "var(--red)", borderColor: "rgba(232,25,44,0.3)", background: "var(--red-dim)", fontSize: 9 }}
+                          >
+                            ⚔ Fight
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
             ) : (
               <div className="p-12 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
                 <div style={{ fontSize: 40, opacity: 0.15, marginBottom: 16 }}>👻</div>
-                <p style={{ fontFamily: mono, fontSize: 13, color: "var(--muted2)", marginBottom: 4 }}>Nothing here yet</p>
-                <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginBottom: 16 }}>Scan a bill to get started</p>
-                <button onClick={() => setActiveTab("scan")} className="btn-primary py-3 px-8">
-                  Start Scanning
-                </button>
+                <p style={{ fontFamily: mono, fontSize: 13, color: "var(--muted2)", marginBottom: 4 }}>No cases yet</p>
+                <p style={{ fontFamily: mono, fontSize: 11, color: "var(--muted)", marginBottom: 16 }}>Report your first issue to get started</p>
+                <button onClick={() => setActiveTab("home")} className="btn-primary py-3 px-8">Report an Issue</button>
               </div>
             )}
           </div>
         )}
       </main>
+
+      {/* ═══ BOTTOM NAV BAR (Back/Next for flow pages) ═══ */}
+      {activeTab !== "home" && activeTab !== "history" && (
+        <div className="hidden md:flex flex-shrink-0 px-4 md:px-8 py-3 items-center justify-between" style={{ background: "var(--obsidian)", borderTop: "1px solid var(--border)" }}>
+          <button
+            onClick={goBack}
+            disabled={!canGoBack}
+            className="flex items-center gap-2 px-4 py-2.5 transition-colors"
+            style={{ fontFamily: mono, fontSize: 12, color: canGoBack ? "var(--muted2)" : "var(--muted)", border: "1px solid var(--border)", opacity: canGoBack ? 1 : 0.3, cursor: canGoBack ? "pointer" : "not-allowed" }}
+          >
+            ← Back
+          </button>
+
+          <div style={{ fontFamily: mono, fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            {activeTab === "scan" ? "Paste document" : activeTab === "results" ? "Analysis" : activeTab === "dispute" ? "Dispute letter" : activeTab === "call" ? "Call script" : "Complaint"}
+          </div>
+
+          <button
+            onClick={goNext}
+            disabled={!canGoNext}
+            className="flex items-center gap-2 px-4 py-2.5 transition-colors"
+            style={{ fontFamily: mono, fontSize: 12, color: canGoNext ? "var(--red)" : "var(--muted)", border: `1px solid ${canGoNext ? "rgba(232,25,44,0.3)" : "var(--border)"}`, background: canGoNext ? "var(--red-dim)" : "transparent", opacity: canGoNext ? 1 : 0.3, cursor: canGoNext ? "pointer" : "not-allowed" }}
+          >
+            Next →
+          </button>
+        </div>
+      )}
+
+      {/* ═══ MOBILE BOTTOM TAB BAR ════════════════════════ */}
+      <div className="md:hidden flex-shrink-0 flex items-center justify-around py-2" style={{ background: "var(--obsidian)", borderTop: "1px solid var(--border)" }}>
+        {[
+          { id: "home" as Tab, icon: "⌕", label: "Report" },
+          { id: "results" as Tab, icon: "◉", label: "Results" },
+          { id: "history" as Tab, icon: "▤", label: "History" },
+        ].map(item => (
+          <button
+            key={item.id}
+            onClick={() => navigate(item.id)}
+            className="flex flex-col items-center gap-0.5 px-4 py-1"
+            style={{ color: activeTab === item.id ? "var(--red)" : "var(--muted)", fontFamily: mono, fontSize: 9 }}
+          >
+            <span style={{ fontSize: 18 }}>{item.icon}</span>
+            {item.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

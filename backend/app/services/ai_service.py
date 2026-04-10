@@ -137,6 +137,10 @@ Return a JSON object with EXACTLY this structure:
     ],
     "total_potential_savings": 0.00,
     "risk_level": "low|medium|high|critical",
+    "case_strength": 75,
+    "deadline_days": 30,
+    "urgency": "immediate|soon|standard",
+    "recommended_agency": "cfpb|fcc|state_ag|ftc|fccpc|cbn|ncc|nerc|ndpc|efcc",
     "your_rights": ["List of specific legal rights the person has — cite the EXACT law sections"],
     "recommended_actions": ["Step-by-step actions the person should take"]
 }}
@@ -149,6 +153,10 @@ IMPORTANT:
 - If it's a lease, look for illegal clauses, excessive fees, habitability issues.
 - If it's a Nigerian bank debit/charge, look for undisclosed fees, VAT overcharges, failed transfer refund delays, unauthorized debits.
 - Always side with the consumer. Be their advocate.
+- case_strength: Rate 0-100 how strong the consumer's case is. 80+ means very strong, likely to win. 50-79 moderate. Below 50 weaker.
+- deadline_days: How many days the company legally has to respond (e.g. 30 for US FCBA, 72 hours for CBN Nigeria bank complaints).
+- urgency: 'immediate' if there's a time-sensitive deadline or active harm, 'soon' if within 1-2 weeks, 'standard' otherwise.
+- recommended_agency: Which regulatory agency is best suited for this specific complaint.
 """
 
     response = await _generate_with_fallback(
@@ -238,11 +246,19 @@ Return a JSON object with EXACTLY this structure:
     ],
     "total_potential_savings": 0.00,
     "risk_level": "low|medium|high|critical",
+    "case_strength": 75,
+    "deadline_days": 30,
+    "urgency": "immediate|soon|standard",
+    "recommended_agency": "cfpb|fcc|state_ag|ftc|fccpc|cbn|ncc|nerc|ndpc|efcc",
     "your_rights": ["List of specific legal rights the person has — cite the EXACT law sections"],
     "recommended_actions": ["Step-by-step actions to take"]
 }}
 
-Be aggressive in finding issues. Always side with the consumer."""
+Be aggressive in finding issues. Always side with the consumer.
+- case_strength: Rate 0-100 how strong the consumer's case is. 80+ very strong, 50-79 moderate, below 50 weaker.
+- deadline_days: Legal response deadline in days (e.g. 30 for US FCBA, 3 for CBN Nigeria).
+- urgency: 'immediate' if time-sensitive, 'soon' if within 1-2 weeks, 'standard' otherwise.
+- recommended_agency: Best regulatory agency for this type of complaint."""
 
     response = await _generate_with_fallback(
         lambda model: model.generate_content(prompt)
