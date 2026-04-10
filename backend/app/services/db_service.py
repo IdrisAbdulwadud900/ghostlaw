@@ -7,7 +7,7 @@ import uuid
 import hashlib
 import secrets
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Union
 
 
 def _hash_password(password: str) -> str:
@@ -79,7 +79,7 @@ def find_or_create_social_user(email: str, name: str, provider: str) -> dict:
     return user
 
 
-def verify_user(email: str, password: str):
+def verify_user(email: str, password: str) -> Union[dict, None, bool]:
     """Return user dict on success, None if wrong password, False if email not found."""
     for user in _users.values():
         if user["email"] == email:

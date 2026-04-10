@@ -15,11 +15,14 @@ def test_create_and_verify_user():
     assert "password_hash" in user
 
     verified = verify_user("db@test.com", "Password1!")
-    assert verified is not None
+    assert isinstance(verified, dict)
     assert verified["user_id"] == user["user_id"]
 
     wrong = verify_user("db@test.com", "WrongPass!")
     assert wrong is None
+
+    not_found = verify_user("nonexistent@test.com", "Whatever!")
+    assert not_found is False
 
 
 def test_get_user():
