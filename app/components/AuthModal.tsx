@@ -8,8 +8,6 @@ declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     google?: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    AppleID?: any;
   }
 }
 
@@ -18,7 +16,6 @@ declare global {
    ═══════════════════════════════════════════════════════════ */
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
-const APPLE_CLIENT_ID = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "";
 
 interface AuthModalProps {
   mode: "login" | "signup";
@@ -33,7 +30,7 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<"google" | "apple" | null>(null);
+  const [socialLoading, setSocialLoading] = useState<"google" | null>(null);
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
   // ── Load Google Identity Services SDK ──────────────────────
@@ -83,48 +80,6 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
     // Trigger the One Tap / popup flow
     window.google.accounts.id.prompt();
   }
-
-  // ── Apple Sign-In ──────────────────────────────────────────
-  async function handleAppleClick() {
-    if (!APPLE_CLIENT_ID || !window.AppleID) {
-      setError("Apple Sign-In is not configured yet. Use email signup.");
-      return;
-    }
-    setSocialLoading("apple");
-    setError("");
-    try {
-      window.AppleID.auth.init({
-        clientId: APPLE_CLIENT_ID,
-        scope: "email name",
-        redirectURI: window.location.origin,
-        usePopup: true,
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const res: any = await window.AppleID.auth.signIn();
-      await socialLogin("apple", res.authorization.id_token);
-      onSuccess();
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "error" in err) {
-        // User cancelled
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((err as any).error === "popup_closed_by_user") return;
-      }
-      setError(err instanceof Error ? err.message : "Apple sign-in failed");
-    } finally {
-      setSocialLoading(null);
-    }
-  }
-
-  // ── Load Apple JS SDK ──────────────────────────────────────
-  useEffect(() => {
-    if (!APPLE_CLIENT_ID) return;
-    if (document.getElementById("apple-signin-script")) return;
-    const script = document.createElement("script");
-    script.id = "apple-signin-script";
-    script.src = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
-    script.async = true;
-    document.head.appendChild(script);
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -221,25 +176,6 @@ export default function AuthModal({ mode, onClose, onSuccess, onSwitchMode }: Au
               )}
               <span style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: 14, fontWeight: 500, color: "#3c4043" }}>
                 {mode === "signup" ? "Sign up with Google" : "Sign in with Google"}
-              </span>
-            </button>
-
-            {/* Apple */}
-            <button
-              onClick={handleAppleClick}
-              disabled={!!socialLoading}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 transition-all hover:brightness-110 disabled:opacity-50"
-              style={{ background: "#000000", border: "1px solid #333", borderRadius: 0, cursor: socialLoading === "apple" ? "wait" : "pointer" }}
-            >
-              {socialLoading === "apple" ? (
-                <span className="spinner-sm" style={{ width: 18, height: 18, borderColor: "#fff transparent transparent transparent" }} />
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.53-3.23 0-1.44.62-2.2.44-3.06-.4C4.24 16.7 4.89 10.34 8.7 10.1c1.25.07 2.12.72 2.86.76.91-.18 1.78-.87 2.95-.79 1.4.1 2.45.6 3.14 1.7-2.88 1.72-2.2 5.52.4 6.57-.5 1.26-1.14 2.5-2 3.94zM12.03 10c-.14-2.65 2.08-4.95 4.75-5.12.33 2.93-2.7 5.19-4.75 5.12z"/>
-                </svg>
-              )}
-              <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif", fontSize: 14, fontWeight: 500, color: "#ffffff" }}>
-                {mode === "signup" ? "Sign up with Apple" : "Sign in with Apple"}
               </span>
             </button>
 
