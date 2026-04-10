@@ -23,7 +23,7 @@ limiter = Limiter(key_func=get_remote_address, enabled=not _testing)
 
 
 @router.post("/request")
-@limiter.limit("10/hour")
+@limiter.limit("60/hour")
 async def request_call(
     request: Request,
     req: CallRequest,

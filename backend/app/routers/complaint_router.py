@@ -78,7 +78,7 @@ SUPPORTING DOCUMENTATION:
 
 
 @router.post("/generate")
-@limiter.limit("10/hour")
+@limiter.limit("60/hour")
 async def generate_complaint(
     request: Request,
     req: ComplaintRequest,

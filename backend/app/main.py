@@ -2,6 +2,7 @@
 
 import os
 import uuid
+import asyncio
 import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +19,10 @@ logger = logging.getLogger(__name__)
 # ── Rate Limiter ────────────────────────────────────────────
 _testing = os.environ.get("TESTING", "").lower() in ("1", "true", "yes")
 limiter = Limiter(key_func=get_remote_address, enabled=not _testing)
+
+# ── Concurrency guard (protects Gemini free-tier from stampede) ───
+MAX_CONCURRENT = int(os.environ.get("MAX_CONCURRENT_REQUESTS", "50"))
+_semaphore = asyncio.Semaphore(MAX_CONCURRENT)
 
 app = FastAPI(
     title="GhostLaw",
@@ -39,10 +44,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Input sanitization middleware ───────────────────────────
+# ── Input sanitization + concurrency middleware ─────────────
 @app.middleware("http")
 async def sanitize_input(request: Request, call_next):
-    """Basic input size guard — reject absurdly large payloads."""
+    """Input size guard, request tracing, and concurrency limiter."""
     request_id = request.headers.get("x-request-id") or uuid.uuid4().hex
     request.state.request_id = request_id
 
@@ -54,8 +59,18 @@ async def sanitize_input(request: Request, call_next):
             content={"detail": "Payload too large (max 15MB)", "request_id": request_id},
         )
 
+    # Shed load when too many requests are in-flight
+    if _semaphore.locked():
+        logger.warning("Concurrency limit reached — shedding load", extra={"request_id": request_id})
+        return JSONResponse(
+            status_code=503,
+            headers={"X-Request-ID": request_id, "Retry-After": "5"},
+            content={"detail": "Server busy — please retry in a few seconds", "request_id": request_id},
+        )
+
     try:
-        response = await call_next(request)
+        async with _semaphore:
+            response = await call_next(request)
         response.headers["X-Request-ID"] = request_id
         return response
     except Exception as e:

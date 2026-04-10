@@ -5,9 +5,18 @@
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.11",
-        "maxLambdaSize": "50mb"
+        "maxLambdaSize": "50mb",
+        "maxDuration": 60
       }
     }
   ],
-  "routes": [{ "src": "/(.*)", "dest": "api/index.py" }]
+  "routes": [{ "src": "/(.*)", "dest": "api/index.py" }],
+  "headers": [
+    {
+      "source": "/health",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=30, s-maxage=30" }
+      ]
+    }
+  ]
 }

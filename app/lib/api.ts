@@ -143,8 +143,8 @@ async function api(path: string, options: RequestInit = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const method = (options.method || "GET").toUpperCase();
-  const maxAttempts = method === "GET" ? 2 : 1;
+  const maxAttempts = 2; // Retry once on transient failures (cold starts, 503s)
+  const retryableStatuses = [502, 503, 504]; // Retry on gateway / server-busy errors
 
   let res: Response | null = null;
   let lastError: Error | null = null;
@@ -159,6 +159,13 @@ async function api(path: string, options: RequestInit = {}) {
         signal: controller.signal,
       });
       clearTimeout(timeout);
+      // Retry on transient server errors for safe methods
+      if (retryableStatuses.includes(res.status) && attempt < maxAttempts) {
+        const retryAfter = Number(res.headers.get("Retry-After") || "2");
+        await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+        res = null;
+        continue;
+      }
       break;
     } catch (err) {
       clearTimeout(timeout);

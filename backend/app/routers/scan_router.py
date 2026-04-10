@@ -21,7 +21,7 @@ limiter = Limiter(key_func=get_remote_address, enabled=not _testing)
 
 
 @router.post("/upload")
-@limiter.limit("10/hour")
+@limiter.limit("60/hour")
 async def scan_document(
     request: Request,
     file: UploadFile = File(...),
@@ -56,7 +56,7 @@ async def scan_document(
 
 
 @router.post("/text")
-@limiter.limit("10/hour")
+@limiter.limit("120/hour")
 async def scan_text(
     request: Request,
     document_text: str = Form(...),
