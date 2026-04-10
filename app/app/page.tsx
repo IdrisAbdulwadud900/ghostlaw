@@ -251,6 +251,48 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ═══ TRUST STRIP ═══════════════════════════════════ */}
+      <section className="py-14 md:py-18 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal relative overflow-hidden">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="grid md:grid-cols-4 gap-4">
+            {[
+              {
+                title: "Real regulator-ready output",
+                desc: "GhostLaw drafts actual complaint text for CFPB, FCC, FCCPC, CBN, NCC, and more — not vague advice.",
+                label: "Built for action",
+              },
+              {
+                title: "Private by design",
+                desc: "Your account has export and delete controls, and the app is built with authenticated requests and production safeguards.",
+                label: "You stay in control",
+              },
+              {
+                title: "Works best on money disputes",
+                desc: "Bills, subscriptions, telecom charges, banking reversals, insurance, tenancy, and consumer overcharges are the sweet spot.",
+                label: "Focused scope",
+              },
+              {
+                title: "Fast, retry-safe, cloud deployed",
+                desc: "Caching, retries, and production deployment are already live so users get a stable first experience.",
+                label: "Production ready",
+              },
+            ].map((item) => (
+              <div key={item.title} className="trust-tile">
+                <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 10, color: "var(--red)", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 10 }}>
+                  {item.label}
+                </div>
+                <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+                  {item.title}
+                </div>
+                <div style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>
+                  {item.desc}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══ SCANNER DEMO ══════════════════════════════════ */}
       <section className="py-20 md:py-32 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal relative overflow-hidden" id="scanner">
         <div
@@ -401,7 +443,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-[1px] bg-[var(--border)] mt-10 border border-[var(--border)] features-grid-3">
             {[
-              { num: "01", icon: "�", title: "Demand Letters", desc: "AI writes a legal demand letter that sounds like it came from a lawyer. Companies take these seriously." },
+              { num: "01", icon: "✉️", title: "Demand Letters", desc: "AI writes a legal demand letter that sounds like it came from a lawyer. Companies take these seriously." },
               { num: "02", icon: "📞", title: "Call Scripts", desc: "Exactly what to say when you call. Word-for-word. Including what to do when they try to shut you down." },
               { num: "03", icon: "🏛️", title: "One-Tap Complaints", desc: "File directly to CFPB, FCCPC, CBN, NCC, NERC — with pre-filled text. One tap. Companies respond FAST." },
               { num: "04", icon: "⏱️", title: "Escalation Deadlines", desc: "\"If unresolved in 7 days, this escalates to [REGULATOR].\" Fear factor that actually works." },
@@ -425,6 +467,48 @@ export default function Home() {
                   {f.desc}
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ WHEN IT WORKS BEST ═══════════════════════════ */}
+      <section className="py-20 md:py-28 px-4 sm:px-6 md:px-12 bg-[var(--obsidian)] reveal relative overflow-hidden">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div
+            className="flex items-center gap-3 mb-4"
+            style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
+          >
+            <span className="w-5 h-[1px] bg-[var(--red)]" />
+            Best Use Cases
+          </div>
+          <h2 style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(44px, 6vw, 76px)", lineHeight: 1 }}>
+            WHERE GHOSTLAW<br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>DELIVERS FASTEST</span>
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
+            {[
+              ["Overcharges & hidden fees", "Hospital bills, telecom charges, rent add-ons, utility overbilling"],
+              ["Unauthorized debits", "Bank reversals, subscriptions, card charges, loan app abuse"],
+              ["Complaint escalation", "You need regulator-ready text and the exact next step to file"],
+              ["Negotiation prep", "You want a demand letter, call script, and timeline before contacting the company"],
+            ].map(([title, desc]) => (
+              <div key={title} className="signal-card">
+                <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 13, fontWeight: 600, marginBottom: 8 }}>{title}</div>
+                <div style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>{desc}</div>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3 mt-8">
+            {[
+              "Best with bills, contracts, complaints, and screenshots",
+              "Not a replacement for a courtroom lawyer",
+              "Most useful when you want action in the next 5 minutes",
+            ].map((item) => (
+              <span key={item} className="proof-pill" style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, letterSpacing: "0.04em" }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--red)]" />
+                {item}
+              </span>
             ))}
           </div>
         </div>
@@ -899,6 +983,38 @@ export default function Home() {
               <span className="w-1.5 h-1.5 bg-[#41e866] rounded-full" style={{ animation: "blink 2s ease-in-out infinite" }} />
               100% Free · 60 Seconds · No Lawyer Needed
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ FAQ ═══════════════════════════════════════════ */}
+      <section className="py-20 md:py-28 px-4 sm:px-6 md:px-12 bg-[var(--black)] reveal relative overflow-hidden">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div
+            className="flex items-center gap-3 mb-4"
+            style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "var(--red)" }}
+          >
+            <span className="w-5 h-[1px] bg-[var(--red)]" />
+            FAQ
+          </div>
+          <h2 style={{ fontFamily: "var(--font-bebas-neue), sans-serif", fontSize: "clamp(44px, 6vw, 76px)", lineHeight: 1 }}>
+            BEFORE SOMEONE SAYS<br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)", color: "transparent" }}>“THIS IS USELESS”</span>
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4 mt-10">
+            {[
+              ["Does this give real next steps?", "Yes. The product is strongest when a user needs a clear dispute letter, phone script, or filing text they can use immediately."],
+              ["Will it work for every legal problem?", "No. GhostLaw is intentionally focused on consumer money disputes and complaint workflows, not litigation strategy or complex criminal/family law."],
+              ["What if GhostLaw finds nothing?", "That still helps the user. It tells them there may not be a strong money-recovery angle, which saves time and prevents bad escalation."],
+              ["Is my data under my control?", "Yes. The product already supports authenticated accounts plus export and account deletion tools so users stay in control of their records."],
+              ["What gives the app credibility?", "It references actual regulator paths, country-specific consumer law, and generates concrete outputs instead of generic motivational advice."],
+              ["How do I get the best result?", "Upload the actual bill, contract, screenshot, or write a plain-English summary with dates, amounts, and company names. More specifics = stronger output."],
+            ].map(([question, answer]) => (
+              <div key={question} className="faq-card">
+                <div style={{ fontFamily: "var(--font-ibm-plex-mono), monospace", fontSize: 14, fontWeight: 600, marginBottom: 8 }}>{question}</div>
+                <div style={{ fontFamily: "var(--font-ibm-plex-sans), sans-serif", fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>{answer}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
