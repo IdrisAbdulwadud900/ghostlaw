@@ -11,6 +11,7 @@ import logging
 import asyncio
 from typing import Optional, List
 from app.config import get_settings
+from app.services.cache_service import get_cached, set_cached
 
 logger = logging.getLogger(__name__)
 
@@ -432,10 +433,21 @@ GENERAL RULES:
 - urgency: 'immediate' if time-sensitive, 'soon' if within 1-2 weeks, 'standard' otherwise.
 - recommended_agency: Best agency. Use "none" if the charge is legitimate."""
 
+    # Check cache first
+    cached = await get_cached("gen", prompt)
+    if cached:
+        logger.info("Cache hit for generation")
+        return cached
+
     response = await _generate_with_fallback(
         lambda model: model.generate_content(prompt)
     )
-    return _parse_json_response(response.text)
+    result = _parse_json_response(response.text)
+    
+    if result:
+        await set_cached("gen", prompt, result, ttl_seconds=86400 * 7)
+        
+    return result
 
 
 async def generate_dispute_letter(
@@ -489,10 +501,21 @@ Return a JSON object with EXACTLY this structure:
 
 Make the letter POWERFUL. This should make the company want to resolve it immediately."""
 
+    # Check cache first
+    cached = await get_cached("gen", prompt)
+    if cached:
+        logger.info("Cache hit for generation")
+        return cached
+
     response = await _generate_with_fallback(
         lambda model: model.generate_content(prompt)
     )
-    return _parse_json_response(response.text)
+    result = _parse_json_response(response.text)
+    
+    if result:
+        await set_cached("gen", prompt, result, ttl_seconds=86400 * 7)
+        
+    return result
 
 
 async def generate_call_script(
@@ -535,10 +558,21 @@ Return a JSON object with this structure:
 
 Make this script so good that anyone could follow it and win the dispute."""
 
+    # Check cache first
+    cached = await get_cached("gen", prompt)
+    if cached:
+        logger.info("Cache hit for generation")
+        return cached
+
     response = await _generate_with_fallback(
         lambda model: model.generate_content(prompt)
     )
-    return _parse_json_response(response.text)
+    result = _parse_json_response(response.text)
+    
+    if result:
+        await set_cached("gen", prompt, result, ttl_seconds=86400 * 7)
+        
+    return result
 
 
 async def generate_regulatory_complaint(
@@ -664,10 +698,21 @@ Return a JSON object:
 
 Make the complaint devastating. Government agencies prioritize well-documented, specific complaints."""
 
+    # Check cache first
+    cached = await get_cached("gen", prompt)
+    if cached:
+        logger.info("Cache hit for generation")
+        return cached
+
     response = await _generate_with_fallback(
         lambda model: model.generate_content(prompt)
     )
-    return _parse_json_response(response.text)
+    result = _parse_json_response(response.text)
+    
+    if result:
+        await set_cached("gen", prompt, result, ttl_seconds=86400 * 7)
+        
+    return result
 
 
 # ── Demo mode (no API key needed) ────────────────────────────

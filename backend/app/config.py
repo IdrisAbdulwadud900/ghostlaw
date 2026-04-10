@@ -27,6 +27,9 @@ class Settings:
     supabase_url: str = ""
     supabase_key: str = ""
 
+    # Caching Layer (Redis)
+    redis_url: str = ""
+
     # Frontend origins
     cors_origins: List[str] = field(default_factory=lambda: [
         "http://localhost:3000",
@@ -59,6 +62,7 @@ def get_settings() -> Settings:
         apple_client_id=os.environ.get("APPLE_CLIENT_ID", ""),
         supabase_url=os.environ.get("SUPABASE_URL", ""),
         supabase_key=os.environ.get("SUPABASE_KEY", ""),
+        redis_url=os.environ.get("REDIS_URL", ""),
         jwt_secret=jwt_secret or "ghostlaw-dev-secret-change-in-prod",
         cors_origins=cors_origins,
     )
